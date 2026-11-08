@@ -277,7 +277,39 @@ export default function App() {
   else await loadTeam();
 }
 
-  const teamSummaries = useMemo(() => {
+async function deleteRecord(id: string) {
+  if (!supabase || !isCoordinator) {
+    setError("Only coordinators can remove submissions.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Are you sure you want to permanently delete this scouting submission?"
+  );
+
+  if (!confirmed) return;
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  const { error: deleteError } = await supabase
+    .from("match_records")
+    .delete()
+    .eq("id", id)
+    .eq("team_id", teamId);
+
+  if (deleteError) {
+    setError(deleteError.message);
+  } else {
+    setMessage("Submission successfully removed.");
+    await loadTeam();
+  }
+
+  setBusy(false);
+}
+
+const teamSummaries = useMemo(() => {
     const grouped = new Map<number, RecordRow[]>();
 
     records.forEach(r => {
