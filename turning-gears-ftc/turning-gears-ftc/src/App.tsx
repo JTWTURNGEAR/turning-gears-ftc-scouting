@@ -610,88 +610,93 @@ const teamSummaries = useMemo(() => {
 </div>
       </section>}
 
-      <div className="section-head">
-  <h3>Recent submissions</h3>
-  <span className="muted tiny">
-    Showing {filteredRecords.length} of {records.length} records
-  </span>
-</div>
+           {tab === "records" && <section className="panel">
+             
+        <div className="section-head">
+          <h3>Recent submissions</h3>
+          <span className="muted tiny">
+            Showing {filteredRecords.length} of {records.length} records
+          </span>
+        </div>
 
-<div className="filter-panel">
-  <input
-    value={recordSearch}
-    onChange={e => setRecordSearch(e.target.value)}
-    placeholder="Search team number or scout name..."
-  />
+        <div className="filter-panel">
+          <input
+            value={recordSearch}
+            onChange={e => setRecordSearch(e.target.value)}
+            placeholder="Search team number or scout name..."
+          />
 
-  <div className="two-col">
-    <input
-      type="number"
-      min="1"
-      value={recordMatchFilter}
-      onChange={e => setRecordMatchFilter(e.target.value)}
-      placeholder="Filter by match number"
-    />
+          <div className="two-col">
+            <input
+              type="number"
+              min="1"
+              value={recordMatchFilter}
+              onChange={e => setRecordMatchFilter(e.target.value)}
+              placeholder="Filter by match number"
+            />
 
-    <select
-      value={recordAllianceFilter}
-      onChange={e => setRecordAllianceFilter(e.target.value)}
-    >
-      <option value="All">All alliances</option>
-      <option value="Red">Red alliance</option>
-      <option value="Blue">Blue alliance</option>
-    </select>
-  </div>
+            <select
+              value={recordAllianceFilter}
+              onChange={e => setRecordAllianceFilter(e.target.value)}
+            >
+              <option value="All">All alliances</option>
+              <option value="Red">Red alliance</option>
+              <option value="Blue">Blue alliance</option>
+            </select>
+          </div>
 
-  <button
-    className="text-btn"
-    onClick={() => {
-      setRecordSearch("");
-      setRecordMatchFilter("");
-      setRecordAllianceFilter("All");
-    }}
-  >
-    <RefreshCw size={15} /> Reset filters
-  </button>
-</div>
+          <button
+            className="text-btn"
+            onClick={() => {
+              setRecordSearch("");
+              setRecordMatchFilter("");
+              setRecordAllianceFilter("All");
+            }}
+          >
+            <RefreshCw size={15} /> Reset filters
+          </button>
+        </div>
 
         {filteredRecords.length === 0 ? (
-  <Empty text={
-    records.length === 0
-      ? "No match submissions yet."
-      : "No submissions match your filters."
-  }/>
-) : filteredRecords.map(r => <div className="record" key={r.id}>
+          <Empty text={
+            records.length === 0
+              ? "No match submissions yet."
+              : "No submissions match your filters."
+          }/>
+        ) : filteredRecords.map(r => (
+          <div className="record" key={r.id}>
             <div className="record-top">
-  <b>Team {r.team_number}</b>
-  <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
-  <span className="muted tiny">Match {r.match_number}</span>
+              <b>Team {r.team_number}</b>
+              <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
+              <span className="muted tiny">Match {r.match_number}</span>
 
-  {(isCoordinator || r.submitted_by === authUserId) && (
-  <button
-    className="text-btn"
-    onClick={() => editRecord(r)}
-    disabled={busy}
-    title="Edit submission"
-  >
-    <Pencil size={15} /> Edit
-  </button>
-)}
+              {(isCoordinator || r.submitted_by === authUserId) && (
+                <button
+                  className="text-btn"
+                  onClick={() => editRecord(r)}
+                  disabled={busy}
+                  title="Edit submission"
+                >
+                  <Pencil size={15} /> Edit
+                </button>
+              )}
 
-{isCoordinator && (
-  <button
-    className="text-btn"
-    onClick={() => deleteRecord(r.id)}
-    disabled={busy}
-    title="Remove submission"
-  >
-    <Trash2 size={15} /> Remove
-  </button>
-)}
-</div>
+              {isCoordinator && (
+                <button
+                  className="text-btn"
+                  onClick={() => deleteRecord(r.id)}
+                  disabled={busy}
+                  title="Remove submission"
+                >
+                  <Trash2 size={15} /> Remove
+                </button>
+              )}
+            </div>
+
             <div className="record-meta">
               Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
             </div>
+
             <div className="mini-ratings">
               <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
               <span>Shooting <b>{r.shooting_accuracy ?? "—"}/5</b></span>
@@ -702,9 +707,10 @@ const teamSummaries = useMemo(() => {
               <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
               <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
             </div>
+
             {r.notes && <p className="record-notes">{r.notes}</p>}
-          </div>)
-        }
+          </div>
+        ))}
       </section>}
 
       {tab === "teams" && <section className="panel">
