@@ -147,42 +147,90 @@ const [editingScoutName, setEditingScoutName] = useState("");
   }
 
   async function submitRecord() {
-    if (!supabase || !selectedScout) {
-      setError("Choose your scout name first.");
-      return;
-    }
+  if (!supabase || (!editingRecordId && !selectedScout)) {
+    setError("Choose your scout name first.");
+    return;
+  }
 
-    const team = Number(form.team_number);
-    const match = Number(form.match_number);
+  const team = Number(form.team_number);
+  const match = Number(form.match_number);
 
-    if (!Number.isInteger(team) || team < 1 ||
-        !Number.isInteger(match) || match < 1) {
-      setError("Enter a valid team number and match number.");
-      return;
-    }
+  if (!Number.isInteger(team) || team < 1 ||
+      !Number.isInteger(match) || match < 1) {
+    setError("Enter a valid team number and match number.");
+    return;
+  }
 
-    if (!Number.isInteger(form.hive_tips) || form.hive_tips < 0 || form.hive_tips > 10) {
-      setError("Hive tips must be a whole number from 0 to 10.");
-      return;
-    }
+  if (!Number.isInteger(form.hive_tips) ||
+      form.hive_tips < 0 || form.hive_tips > 10) {
+    setError("Hive tips must be a whole number from 0 to 10.");
+    return;
+  }
 
-    if (!Number.isInteger(form.ranking_points) ||
-        form.ranking_points < 0 || form.ranking_points > 6) {
-      setError("Ranking points must be a whole number from 0 to 6.");
-      return;
-    }
+  if (!Number.isInteger(form.ranking_points) ||
+      form.ranking_points < 0 || form.ranking_points > 6) {
+    setError("Ranking points must be a whole number from 0 to 6.");
+    return;
+  }
 
-    setBusy(true);
-    setError("");
-    setMessage("");
+  setBusy(true);
+  setError("");
+  setMessage("");
 
-    const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !authData.user || !teamId) {
-      setError("Your team session needs to be refreshed. Please return to the dashboard and rejoin.");
-      setBusy(false);
-      return;
-    }
+  if (authError || !authData.user || !teamId) {
+    setError("Your team session needs to be refreshed. Please return to the dashboard and rejoin.");
+    setBusy(false);
+    return;
+  }
+
+  const recordData = {
+    team_number: team,
+    match_number: match,
+    alliance: form.alliance,
+    scout_name: editingRecordId ? editingScoutName : selectedScout,
+    auto_rating: form.auto_rating,
+    shooting_accuracy: form.shooting_accuracy,
+    shooting_speed: form.shooting_speed,
+    driving_speed: form.driving_speed,
+    maneuverability: form.maneuverability,
+    reliability: form.reliability,
+    hive_tips: form.hive_tips,
+    can_shoot_nectar: form.can_shoot_nectar,
+    refilled_flower: form.refilled_flower,
+    ranking_points: form.ranking_points,
+    notes: form.notes.trim() || null
+  };
+
+  const saveResult = editingRecordId
+    ? await supabase.from("match_records")
+        .update(recordData)
+        .eq("id", editingRecordId)
+        .eq("team_id", teamId)
+    : await supabase.from("match_records")
+        .insert({
+          ...recordData,
+          team_id: teamId,
+          submitted_by: authData.user.id
+        });
+
+  if (saveResult.error) {
+    setError(saveResult.error.message);
+  } else {
+    setMessage(editingRecordId
+      ? "Submission successfully updated."
+      : "Match scouting saved for the whole team.");
+
+    setForm(emptyForm);
+    setEditingRecordId(null);
+    setEditingScoutName("");
+    await loadTeam();
+    setTab("records");
+  }
+
+  setBusy(false);
+}
 
     const payload = {
       team_id: teamId,
@@ -471,7 +519,7 @@ const teamSummaries = useMemo(() => {
       {tab === "scout" && <section className="panel form-panel">
         <div className="form-intro">
           <span className="eyebrow">NEW OBSERVATION</span>
-          <h3>Match performance</h3>
+          <h3>{editingRecordId ? "Edit submission" : "Match performance"}</h3>
           <p className="muted">Rate what the robot can do and how consistently it performs.</p>
         </div>
 
@@ -547,10 +595,30 @@ const teamSummaries = useMemo(() => {
         {!selectedScout &&
           <p className="warning">Choose your scout name on the Dashboard before submitting.</p>}
 
-        <button className="primary full" onClick={submitRecord}
-          disabled={busy || !selectedScout}>
-          {busy ? "Saving…" : "Save match scouting"}
-        </button>
+      <div className="two-col">
+  <button
+    className="primary full"
+    onClick={submitRecord}
+    disabled={busy || (!selectedScout && !editingRecordId)}
+  >
+    {busy ? "Saving…" : editingRecordId ? "Save changes" : "Save match scouting"}
+  </button>
+
+  {editingRecordId && (
+    <button
+      className="text-btn"
+      onClick={() => {
+        setEditingRecordId(null);
+        setEditingScoutName("");
+        setForm(emptyForm);
+        setTab("records");
+        setMessage("Editing cancelled.");
+      }}
+    >
+      Cancel editing
+    </button>
+  )}
+</div>
       </section>}
 
       {tab === "records" && <section className="panel">
