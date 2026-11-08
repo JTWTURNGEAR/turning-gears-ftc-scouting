@@ -64,6 +64,9 @@ export default function App() {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
 const [editingScoutName, setEditingScoutName] = useState("");
   const [authUserId, setAuthUserId] = useState("");
+  const [recordSearch, setRecordSearch] = useState("");
+const [recordMatchFilter, setRecordMatchFilter] = useState("");
+const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -383,7 +386,26 @@ const teamSummaries = useMemo(() => {
           : null
       }));
   }, [records]);
+  const filteredRecords = useMemo(() => {
+  const search = recordSearch.trim().toLowerCase();
 
+  return records.filter(r => {
+    const matchesSearch =
+      !search ||
+      String(r.team_number).includes(search) ||
+      r.scout_name.toLowerCase().includes(search);
+
+    const matchesMatch =
+      !recordMatchFilter ||
+      String(r.match_number) === recordMatchFilter;
+
+    const matchesAlliance =
+      recordAllianceFilter === "All" ||
+      r.alliance === recordAllianceFilter;
+
+    return matchesSearch && matchesMatch && matchesAlliance;
+  });
+}, [records, recordSearch, recordMatchFilter, recordAllianceFilter]);
   if (!configured) return <SetupScreen />;
 
   if (!sessionReady) {
@@ -588,14 +610,58 @@ const teamSummaries = useMemo(() => {
 </div>
       </section>}
 
-      {tab === "records" && <section className="panel">
-        <div className="section-head">
-          <h3>Recent submissions</h3>
-          <span className="muted tiny">{records.length} records</span>
-        </div>
+      <div className="section-head">
+  <h3>Recent submissions</h3>
+  <span className="muted tiny">
+    Showing {filteredRecords.length} of {records.length} records
+  </span>
+</div>
 
-        {records.length === 0 ? <Empty text="No match submissions yet."/> :
-          records.map(r => <div className="record" key={r.id}>
+<div className="filter-panel">
+  <input
+    value={recordSearch}
+    onChange={e => setRecordSearch(e.target.value)}
+    placeholder="Search team number or scout name..."
+  />
+
+  <div className="two-col">
+    <input
+      type="number"
+      min="1"
+      value={recordMatchFilter}
+      onChange={e => setRecordMatchFilter(e.target.value)}
+      placeholder="Filter by match number"
+    />
+
+    <select
+      value={recordAllianceFilter}
+      onChange={e => setRecordAllianceFilter(e.target.value)}
+    >
+      <option value="All">All alliances</option>
+      <option value="Red">Red alliance</option>
+      <option value="Blue">Blue alliance</option>
+    </select>
+  </div>
+
+  <button
+    className="text-btn"
+    onClick={() => {
+      setRecordSearch("");
+      setRecordMatchFilter("");
+      setRecordAllianceFilter("All");
+    }}
+  >
+    <RefreshCw size={15} /> Reset filters
+  </button>
+</div>
+
+        {filteredRecords.length === 0 ? (
+  <Empty text={
+    records.length === 0
+      ? "No match submissions yet."
+      : "No submissions match your filters."
+  }/>
+) : filteredRecords.map(r => <div className="record" key={r.id}>
             <div className="record-top">
   <b>Team {r.team_number}</b>
   <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
