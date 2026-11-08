@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Activity, Users, ClipboardList, Wrench, BarChart3, Plus,
-  RefreshCw, CheckCircle2, AlertCircle
+RefreshCw, CheckCircle2, AlertCircle, Trash2
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
 
@@ -269,13 +269,13 @@ export default function App() {
   }
 
   async function deactivateScout(id: string) {
-    if (!supabase) return;
-    const { error: updateError } = await supabase
-      .from("scouts").update({ active: false }).eq("id", id);
+  if (!supabase) return;
+  const { error: updateError } = await supabase
+    .from("scouts").update({ active: false }).eq("id", id);
 
-    if (updateError) setError(updateError.message);
-    else await loadTeam();
-  }
+  if (updateError) setError(updateError.message);
+  else await loadTeam();
+}
 
   const teamSummaries = useMemo(() => {
     const grouped = new Map<number, RecordRow[]>();
