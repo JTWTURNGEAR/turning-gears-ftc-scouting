@@ -67,6 +67,7 @@ const [editingScoutName, setEditingScoutName] = useState("");
   const [recordSearch, setRecordSearch] = useState("");
 const [recordMatchFilter, setRecordMatchFilter] = useState("");
 const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
+  const [recordSort, setRecordSort] = useState("match");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -389,7 +390,7 @@ const teamSummaries = useMemo(() => {
   const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
-  return records.filter(r => {
+  const filtered = records.filter(r => {
     const matchesSearch =
       !search ||
       String(r.team_number).includes(search) ||
@@ -405,7 +406,28 @@ const teamSummaries = useMemo(() => {
 
     return matchesSearch && matchesMatch && matchesAlliance;
   });
-}, [records, recordSearch, recordMatchFilter, recordAllianceFilter]);
+
+  return [...filtered].sort((a, b) => {
+    if (recordSort === "ranking") {
+      return (b.ranking_points ?? 0) - (a.ranking_points ?? 0);
+    }
+
+    if (recordSort === "hive") {
+      return (b.hive_tips ?? 0) - (a.hive_tips ?? 0);
+    }
+
+    return (
+      a.match_number - b.match_number ||
+      a.team_number - b.team_number
+    );
+  });
+}, [
+  records,
+  recordSearch,
+  recordMatchFilter,
+  recordAllianceFilter,
+  recordSort
+]);
   if (!configured) return <SetupScreen />;
 
   if (!sessionReady) {
@@ -644,13 +666,22 @@ const teamSummaries = useMemo(() => {
               <option value="Blue">Blue alliance</option>
             </select>
           </div>
-
+          <select
+            className="sort-select"
+            value={recordSort}
+            onChange={e => setRecordSort(e.target.value)}
+          >
+            <option value="match">Sort: Match number (low to high)</option>
+            <option value="ranking">Sort: Ranking points (high to low)</option>
+            <option value="hive">Sort: Hive tips (high to low)</option>
+          </select>
           <button
             className="text-btn"
             onClick={() => {
               setRecordSearch("");
               setRecordMatchFilter("");
               setRecordAllianceFilter("All");
+              setRecordSort("match");
             }}
           >
             <RefreshCw size={15} /> Reset filters
