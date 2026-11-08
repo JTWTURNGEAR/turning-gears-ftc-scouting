@@ -415,7 +415,19 @@ const teamSummaries = useMemo(() => {
     if (recordSort === "hive") {
       return (b.hive_tips ?? 0) - (a.hive_tips ?? 0);
     }
+if (recordSort === "team-low") {
+  return (
+    a.team_number - b.team_number ||
+    a.match_number - b.match_number
+  );
+}
 
+if (recordSort === "team-high") {
+  return (
+    b.team_number - a.team_number ||
+    a.match_number - b.match_number
+  );
+}
     return (
       a.match_number - b.match_number ||
       a.team_number - b.team_number
@@ -674,6 +686,8 @@ const teamSummaries = useMemo(() => {
             <option value="match">Sort: Match number (low to high)</option>
             <option value="ranking">Sort: Ranking points (high to low)</option>
             <option value="hive">Sort: Hive tips (high to low)</option>
+            <option value="team-low">Sort: Team number (low to high)</option>
+            <option value="team-high">Sort: Team number (high to low)</option>
           </select>
           <button
             className="text-btn"
