@@ -640,3 +640,29 @@ button { cursor: pointer; }
 .filter-panel .sort-select {
   width: 100%;
 }
+/* FINAL SUBMISSIONS FILTER FIX */
+
+.filter-panel input,
+.filter-panel select {
+  background-color: #0b0907 !important;
+  color: #f4f4f4 !important;
+  border: 1px solid #49301e !important;
+  border-radius: 10px;
+  color-scheme: dark;
+}
+
+.filter-panel input::placeholder {
+  color: #a99a8c !important;
+  opacity: 1;
+}
+
+.filter-panel select option {
+  background-color: #14100d;
+  color: #f4f4f4;
+}
+
+.filter-panel input:focus,
+.filter-panel select:focus {
+  border-color: #ff8728 !important;
+  box-shadow: 0 0 0 2px #ff872822;
+}
