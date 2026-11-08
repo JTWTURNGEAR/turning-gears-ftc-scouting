@@ -63,6 +63,7 @@ export default function App() {
   const [isCoordinator, setIsCoordinator] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
 const [editingScoutName, setEditingScoutName] = useState("");
+  const [authUserId, setAuthUserId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -88,7 +89,7 @@ const [editingScoutName, setEditingScoutName] = useState("");
   async function loadTeam() {
     if (!supabase) return;
     const { data: authData } = await supabase.auth.getUser();
-
+    setAuthUserId(authData.user?.id || "");
     const [
       { data: scoutData, error: scoutError },
       { data: recordData, error: recordError },
@@ -231,40 +232,6 @@ const [editingScoutName, setEditingScoutName] = useState("");
 
   setBusy(false);
 }
-
-    const payload = {
-      team_id: teamId,
-      submitted_by: authData.user.id,
-      team_number: team,
-      match_number: match,
-      alliance: form.alliance,
-      scout_name: selectedScout,
-      auto_rating: form.auto_rating,
-      shooting_accuracy: form.shooting_accuracy,
-      shooting_speed: form.shooting_speed,
-      driving_speed: form.driving_speed,
-      maneuverability: form.maneuverability,
-      reliability: form.reliability,
-      hive_tips: form.hive_tips,
-      can_shoot_nectar: form.can_shoot_nectar,
-      refilled_flower: form.refilled_flower,
-      ranking_points: form.ranking_points,
-      notes: form.notes.trim() || null
-    };
-
-    const { error: saveError } = await supabase.from("match_records").insert(payload);
-
-    if (saveError) {
-      setError(saveError.message);
-    } else {
-      setMessage("Match scouting saved for the whole team.");
-      setForm(emptyForm);
-      await loadTeam();
-      setTab("records");
-    }
-
-    setBusy(false);
-  }
 
   async function addScout() {
     const cleanName = newScout.trim().replace(/\s+/g, " ");
