@@ -634,16 +634,27 @@ const teamSummaries = useMemo(() => {
   <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
   <span className="muted tiny">Match {r.match_number}</span>
 
-  {isCoordinator && (
-    <button
-      className="text-btn"
-      onClick={() => deleteRecord(r.id)}
-      disabled={busy}
-      title="Remove submission"
-    >
-      <Trash2 size={15} /> Remove
-    </button>
-  )}
+  {(isCoordinator || r.submitted_by === authUserId) && (
+  <button
+    className="text-btn"
+    onClick={() => editRecord(r)}
+    disabled={busy}
+    title="Edit submission"
+  >
+    <Pencil size={15} /> Edit
+  </button>
+)}
+
+{isCoordinator && (
+  <button
+    className="text-btn"
+    onClick={() => deleteRecord(r.id)}
+    disabled={busy}
+    title="Remove submission"
+  >
+    <Trash2 size={15} /> Remove
+  </button>
+)}
 </div>
             <div className="record-meta">
               Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
