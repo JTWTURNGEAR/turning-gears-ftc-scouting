@@ -586,3 +586,57 @@ button { cursor: pointer; }
   .nav-item { min-width: 48px; }
   .two-col { grid-template-columns: 1fr; gap: 0; }
 }
+/* SUBMISSIONS FILTERS */
+
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.filter-panel > input,
+.filter-panel select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  background: #0b0907;
+  color: #f4f4f4;
+  border: 1px solid #49301e;
+  border-radius: 10px;
+  outline: none;
+  font-size: 12px;
+}
+
+.filter-panel > input::placeholder {
+  color: #938174;
+  opacity: 1;
+}
+
+.filter-panel > input:focus,
+.filter-panel select:focus {
+  border-color: #ff8728;
+  box-shadow: 0 0 0 2px #ff872822;
+}
+
+.filter-panel select {
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.filter-panel select option {
+  background: #14100d;
+  color: #f4f4f4;
+}
+
+.filter-panel .two-col {
+  width: 100%;
+}
+
+.filter-panel .sort-select {
+  width: 100%;
+}
