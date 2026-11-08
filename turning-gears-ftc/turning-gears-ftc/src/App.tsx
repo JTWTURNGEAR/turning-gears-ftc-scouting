@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Activity, Users, ClipboardList, Wrench, BarChart3, Plus,
-RefreshCw, CheckCircle2, AlertCircle, Trash2
+RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
 
@@ -10,6 +10,7 @@ type Scout = { id: string; name: string; active: boolean };
 
 type RecordRow = {
   id: string;
+  submitted_by: string;
   team_number: number;
   match_number: number;
   alliance: string;
@@ -60,6 +61,8 @@ export default function App() {
   const [coordinatorCode, setCoordinatorCode] = useState("");
   const [newScout, setNewScout] = useState("");
   const [isCoordinator, setIsCoordinator] = useState(false);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+const [editingScoutName, setEditingScoutName] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -276,7 +279,41 @@ export default function App() {
   if (updateError) setError(updateError.message);
   else await loadTeam();
 }
+async function editRecord(record: RecordRow) {
+  if (!supabase) return;
 
+  const { data: authData } = await supabase.auth.getUser();
+  const userId = authData.user?.id;
+
+  if (!isCoordinator && record.submitted_by !== userId) {
+    setError("You can only edit your own submissions.");
+    return;
+  }
+
+  setEditingRecordId(record.id);
+  setEditingScoutName(record.scout_name);
+
+  setForm({
+    team_number: String(record.team_number),
+    match_number: String(record.match_number),
+    alliance: record.alliance,
+    auto_rating: record.auto_rating ?? 3,
+    shooting_accuracy: record.shooting_accuracy ?? 3,
+    shooting_speed: record.shooting_speed ?? 3,
+    driving_speed: record.driving_speed ?? 3,
+    maneuverability: record.maneuverability ?? 3,
+    reliability: record.reliability ?? 3,
+    hive_tips: record.hive_tips ?? 0,
+    can_shoot_nectar: record.can_shoot_nectar ?? false,
+    refilled_flower: record.refilled_flower ?? false,
+    ranking_points: record.ranking_points ?? 0,
+    notes: record.notes ?? ""
+  });
+
+  setMessage("Editing submission for Team " + record.team_number);
+  setError("");
+  setTab("scout");
+}
 async function deleteRecord(id: string) {
   if (!supabase || !isCoordinator) {
     setError("Only coordinators can remove submissions.");
