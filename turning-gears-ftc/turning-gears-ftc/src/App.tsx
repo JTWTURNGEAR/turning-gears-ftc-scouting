@@ -493,10 +493,21 @@ export default function App() {
         {records.length === 0 ? <Empty text="No match submissions yet."/> :
           records.map(r => <div className="record" key={r.id}>
             <div className="record-top">
-              <b>Team {r.team_number}</b>
-              <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
-              <span className="muted tiny">Match {r.match_number}</span>
-            </div>
+  <b>Team {r.team_number}</b>
+  <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
+  <span className="muted tiny">Match {r.match_number}</span>
+
+  {isCoordinator && (
+    <button
+      className="text-btn"
+      onClick={() => deleteRecord(r.id)}
+      disabled={busy}
+      title="Remove submission"
+    >
+      <Trash2 size={15} /> Remove
+    </button>
+  )}
+</div>
             <div className="record-meta">
               Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
             </div>
