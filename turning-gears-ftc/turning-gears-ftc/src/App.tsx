@@ -418,6 +418,16 @@ const teamSummaries = useMemo(() => {
     return a.team - b.team;
   });
 }, [teamSummaries, teamSort]);
+  const comparisonTeams = [
+  compareTeam1,
+  compareTeam2,
+  compareTeam3
+]
+  .filter(Boolean)
+  .map(teamNumber =>
+    teamSummaries.find(t => String(t.team) === teamNumber)
+  )
+  .filter((team): team is (typeof teamSummaries)[number] => Boolean(team));
   const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
@@ -516,7 +526,8 @@ if (recordSort === "team-high") {
           <h2>{tab === "home" ? "Dashboard" :
             tab === "scout" ? "Match scouting" :
             tab === "records" ? "Submissions" :
-            tab === "teams" ? "Team analytics" : "Scout roster"}</h2>
+            tab === "teams" ? "Team analytics" :
+tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
         </div>
         <div className="live"><span/> SHARED DATA</div>
       </div>
@@ -837,7 +848,134 @@ if (recordSort === "team-high") {
           </div>
         }
       </section>}
+{tab === "compare" && <section className="panel">
+  <div className="section-head">
+    <h3>Team comparison</h3>
+    <span className="muted tiny">Compare up to 3 teams</span>
+  </div>
 
+  <p className="muted tiny">
+    Select two or three teams to compare their scouting performance side by side.
+  </p>
+
+  <div className="compare-selectors">
+    <label className="field">
+      <span>Team 1</span>
+      <select
+        value={compareTeam1}
+        onChange={e => setCompareTeam1(e.target.value)}
+      >
+        <option value="">Choose team</option>
+        {teamSummaries.map(t => (
+          <option
+            key={t.team}
+            value={String(t.team)}
+            disabled={[compareTeam2, compareTeam3].includes(String(t.team))}
+          >
+            Team {t.team}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    <label className="field">
+      <span>Team 2</span>
+      <select
+        value={compareTeam2}
+        onChange={e => setCompareTeam2(e.target.value)}
+      >
+        <option value="">Choose team</option>
+        {teamSummaries.map(t => (
+          <option
+            key={t.team}
+            value={String(t.team)}
+            disabled={[compareTeam1, compareTeam3].includes(String(t.team))}
+          >
+            Team {t.team}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    <label className="field">
+      <span>Team 3 (optional)</span>
+      <select
+        value={compareTeam3}
+        onChange={e => setCompareTeam3(e.target.value)}
+      >
+        <option value="">Choose team</option>
+        {teamSummaries.map(t => (
+          <option
+            key={t.team}
+            value={String(t.team)}
+            disabled={[compareTeam1, compareTeam2].includes(String(t.team))}
+          >
+            Team {t.team}
+          </option>
+        ))}
+      </select>
+    </label>
+  </div>
+
+  {comparisonTeams.length < 2 ? (
+    <Empty text="Choose at least two different teams to start comparing."/>
+  ) : (
+    <div className="comparison-grid">
+      {comparisonTeams.map(t => (
+        <div className="comparison-card" key={t.team}>
+          <div className="comparison-card-head">
+            <span className="eyebrow">TEAM</span>
+            <h3>#{t.team}</h3>
+            <span className="muted tiny">
+              {t.count} observations
+            </span>
+          </div>
+
+          <div className="comparison-stat">
+            <span>Autonomous</span>
+            <RatingPill value={t.autonomous}/>
+          </div>
+
+          <div className="comparison-stat">
+            <span>Shooting</span>
+            <RatingPill value={t.shooting}/>
+          </div>
+
+          <div className="comparison-stat">
+            <span>Mobility</span>
+            <RatingPill value={t.mobility}/>
+          </div>
+
+          <div className="comparison-stat">
+            <span>Reliability</span>
+            <RatingPill value={t.reliability}/>
+          </div>
+
+          <div className="comparison-stat">
+            <span>RP Total</span>
+            <RatingPill value={t.rankingTotal}/>
+          </div>
+
+          <div className="comparison-stat">
+            <span>RP Average</span>
+            <RatingPill value={t.rankingAverage}/>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  <button
+    className="text-btn"
+    onClick={() => {
+      setCompareTeam1("");
+      setCompareTeam2("");
+      setCompareTeam3("");
+    }}
+  >
+    <RefreshCw size={15}/> Clear comparison
+  </button>
+</section>}
       {tab === "roster" && <section className="panel">
         <div className="section-head">
           <h3>Scout roster</h3>
@@ -863,6 +1001,7 @@ if (recordSort === "team-high") {
       <NavItem active={tab === "home"} icon={<Activity/>} label="Home" onClick={() => setTab("home")}/>
       <NavItem active={tab === "scout"} icon={<ClipboardList/>} label="Scout" onClick={() => setTab("scout")}/>
       <NavItem active={tab === "teams"} icon={<BarChart3/>} label="Teams" onClick={() => setTab("teams")}/>
+      <NavItem active={tab === "compare"} icon={<Activity/>} label="Compare" onClick={() => setTab("compare")}/>
       <NavItem active={tab === "records"} icon={<Wrench/>} label="Records" onClick={() => setTab("records")}/>
       <NavItem active={tab === "roster"} icon={<Users/>} label="Roster" onClick={() => setTab("roster")}/>
     </nav>
