@@ -1053,7 +1053,14 @@ tab === "event-manager" ? "Event Manager" :
             <h3>🏁 Live Match Tracker</h3>
             <span className="live">SCHEDULE BASED</span>
           </div>
-
+<div className="match-legend">
+  <strong>QUICK COLOR GUIDE</strong>
+  <div>🟡 <b>Gold outline:</b> Future partner or opponent</div>
+  <div>⭐ <b>7215:</b> Our team</div>
+  <div>🔴 <b>Red glow:</b> Red alliance</div>
+  <div>🔵 <b>Blue glow:</b> Blue alliance</div>
+  <div>Normal box: No identified future connection</div>
+</div>
           {!activeEventId ? (
             <Empty text="No event selected." />
           ) : eventMatches.length === 0 ? (
