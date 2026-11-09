@@ -123,7 +123,29 @@ const [compareTeam3, setCompareTeam3] = useState("");
 
     return () => window.clearInterval(timer);
   }, []);
+useEffect(() => {
+  if (!supabase || !activeEventId || !joined) return;
 
+  const channel = supabase
+    .channel(`event-matches-${activeEventId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "event_matches",
+        filter: `event_id=eq.${activeEventId}`
+      },
+      () => {
+        loadEventMatches(activeEventId);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [activeEventId, joined]);
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(async ({ data }) => {
