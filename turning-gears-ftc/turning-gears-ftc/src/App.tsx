@@ -903,18 +903,44 @@ if (recordSort === "team-high") {
       <p className="muted">Individual match scouting history</p>
     </div>
 
-    {selectedTeamSummary && (
-      <div className="stats-grid">
-        <Stat label="Matches scouted" value={selectedTeamSummary.count} />
-        <Stat label="Autonomous" value={selectedTeamSummary.autonomous.toFixed(1)} />
-        <Stat label="Shooting" value={selectedTeamSummary.shooting.toFixed(1)} />
-        <Stat label="Mobility" value={selectedTeamSummary.mobility.toFixed(1)} />
-        <Stat label="Reliability" value={selectedTeamSummary.reliability.toFixed(1)} />
-        <Stat label="RP total" value={selectedTeamSummary.rpTotal} />
-        <Stat label="RP average" value={selectedTeamSummary.rpAverage.toFixed(1)} />
-      </div>
-    )}
+   {selectedTeamSummary && (
+  <div className="stats-grid">
+    <div className="stat">
+      <strong>{selectedTeamSummary.count}</strong>
+      <span>Matches scouted</span>
+    </div>
 
+    <div className="stat">
+      <strong>{selectedTeamSummary.autonomous?.toFixed(1) ?? "—"}</strong>
+      <span>Autonomous</span>
+    </div>
+
+    <div className="stat">
+      <strong>{selectedTeamSummary.shooting?.toFixed(1) ?? "—"}</strong>
+      <span>Shooting</span>
+    </div>
+
+    <div className="stat">
+      <strong>{selectedTeamSummary.mobility?.toFixed(1) ?? "—"}</strong>
+      <span>Mobility</span>
+    </div>
+
+    <div className="stat">
+      <strong>{selectedTeamSummary.reliability?.toFixed(1) ?? "—"}</strong>
+      <span>Reliability</span>
+    </div>
+
+    <div className="stat">
+      <strong>{selectedTeamSummary.rankingTotal}</strong>
+      <span>RP total</span>
+    </div>
+
+    <div className="stat">
+      <strong>{selectedTeamSummary.rankingAverage?.toFixed(1) ?? "—"}</strong>
+      <span>RP average</span>
+    </div>
+  </div>
+)}
     <h3 className="section-title">Match-by-match history</h3>
 
     {selectedTeamRecords.length === 0 ? (
