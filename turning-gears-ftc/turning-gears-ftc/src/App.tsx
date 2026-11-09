@@ -24,11 +24,13 @@ type RecordRow = {
   maneuverability: number | null;
   reliability: number | null;
   hive_tips: number;
+  auto_hive_tips: number;
+  teleop_hive_tips: number;
   can_shoot_nectar: boolean;
   refilled_flower: boolean;
   ranking_points: number;
   red_final_score: number;
-blue_final_score: number;
+  blue_final_score: number;
   notes: string | null;
 };
 
@@ -43,7 +45,9 @@ const emptyForm = {
   driving_speed: 3,
   maneuverability: 3,
   reliability: 3,
-  hive_tips: 0,
+ hive_tips: 0,
+auto_hive_tips: 0,
+teleop_hive_tips: 0,
   can_shoot_nectar: false,
   refilled_flower: false,
  ranking_points: 0,
@@ -182,6 +186,20 @@ const [compareTeam3, setCompareTeam3] = useState("");
     setError("Hive tips must be a whole number from 0 to 10.");
     return;
   }
+      if (
+    !Number.isInteger(form.auto_hive_tips) ||
+    form.auto_hive_tips < 0 ||
+    !Number.isInteger(form.teleop_hive_tips) ||
+    form.teleop_hive_tips < 0
+  ) {
+    setError("Auto and TeleOp hive tips must be whole numbers of 0 or more.");
+    return;
+  }
+
+  if (form.auto_hive_tips + form.teleop_hive_tips > form.hive_tips) {
+    setError("Auto and TeleOp hive tips cannot add up to more than Total Hive Tips.");
+    return;
+  }
 
   if (!Number.isInteger(form.ranking_points) ||
       form.ranking_points < 0 || form.ranking_points > 6) {
@@ -225,6 +243,8 @@ const recordData = {
     maneuverability: form.maneuverability,
     reliability: form.reliability,
     hive_tips: form.hive_tips,
+  auto_hive_tips: form.auto_hive_tips,
+teleop_hive_tips: form.teleop_hive_tips,
     can_shoot_nectar: form.can_shoot_nectar,
     refilled_flower: form.refilled_flower,
       ranking_points: form.ranking_points,
@@ -350,6 +370,8 @@ async function editRecord(record: RecordRow) {
     maneuverability: record.maneuverability ?? 3,
     reliability: record.reliability ?? 3,
     hive_tips: record.hive_tips ?? 0,
+    auto_hive_tips: record.auto_hive_tips ?? 0,
+teleop_hive_tips: record.teleop_hive_tips ?? 0,
     can_shoot_nectar: record.can_shoot_nectar ?? false,
     refilled_flower: record.refilled_flower ?? false,
      ranking_points: record.ranking_points ?? 0,
@@ -665,18 +687,65 @@ if (recordSort === "team-high") {
             onChange={v => setForm({...form, reliability: v})}/>
         </div>
 
-        <div className="two-col">
-          <Field label="Number of hive tips (0–10)">
-            <input type="number" min="0" max="10" step="1"
-              value={form.hive_tips}
-              onChange={e => setForm({...form, hive_tips: Number(e.target.value)})}/>
-          </Field>
-          <Field label="Ranking points earned (0–6)">
-            <input type="number" min="0" max="6" step="1"
-              value={form.ranking_points}
-              onChange={e => setForm({...form, ranking_points: Number(e.target.value)})}/>
-          </Field>
-        </div>
+        
+<Field label="Total Hive Tips (0–10)">
+  <input
+    type="number"
+    min="0"
+    max="10"
+    step="1"
+    value={form.hive_tips}
+    onChange={e => setForm({
+      ...form,
+      hive_tips: Number(e.target.value)
+    })}
+  />
+</Field>
+
+<div className="two-col">
+  <Field label="Auto Hive Tips">
+    <input
+      type="number"
+      min="0"
+      max="10"
+      step="1"
+      value={form.auto_hive_tips}
+      onChange={e => setForm({
+        ...form,
+        auto_hive_tips: Number(e.target.value)
+      })}
+    />
+  </Field>
+
+  <Field label="TeleOp Hive Tips">
+    <input
+      type="number"
+      min="0"
+      max="10"
+      step="1"
+      value={form.teleop_hive_tips}
+      onChange={e => setForm({
+        ...form,
+        teleop_hive_tips: Number(e.target.value)
+      })}
+    />
+  </Field>
+</div>
+
+<Field label="Ranking points earned (0–6)">
+  <input
+    type="number"
+    min="0"
+    max="6"
+    step="1"
+    value={form.ranking_points}
+    onChange={e => setForm({
+      ...form,
+      ranking_points: Number(e.target.value)
+    })}
+  />
+</Field>
+
                 <div className="two-col">
           <Field label="Red alliance final score">
             <input
@@ -867,10 +936,12 @@ if (recordSort === "team-high") {
               <span>Shooting <b>{r.shooting_accuracy ?? "—"}/5</b></span>
               <span>Mobility <b>{r.maneuverability ?? "—"}/5</b></span>
               <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
-              <span>Hive tips <b>{r.hive_tips ?? 0}</b></span>
+              <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
+              <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
+              <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
               <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
               <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
-<span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
+              <span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
               <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
               <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
             </div>
@@ -1011,7 +1082,9 @@ if (recordSort === "team-high") {
             <span>Driving speed <b>{r.driving_speed ?? "—"}/5</b></span>
             <span>Maneuverability <b>{r.maneuverability ?? "—"}/5</b></span>
             <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
-            <span>Hive tips <b>{r.hive_tips ?? 0}</b></span>
+            <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
+            <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
+            <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
             <span>Can shoot nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
             <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
