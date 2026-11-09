@@ -74,6 +74,11 @@ export default function App() {
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [activeEventId, setActiveEventId] = useState("");
+    const [teamListText, setTeamListText] = useState("");
+  const [scheduleText, setScheduleText] = useState("");
+  const [importBusy, setImportBusy] = useState(false);
+    const [teamListText, setTeamListText] = useState("");
+  const [scheduleText, setScheduleText] = useState("");
   const [records, setRecords] = useState<RecordRow[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [teamCode, setTeamCode] = useState("");
@@ -161,7 +166,137 @@ const [compareTeam3, setCompareTeam3] = useState("");
     setJoined(true);
     setError("");
   }
-  
+  function parseTeamList(text: string) {
+  return text
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const parts = line.split(/\t|,/).map(part => part.trim());
+
+      const teamNumber = Number(parts[0]);
+      const teamName = parts[1];
+
+      if (!Number.isInteger(teamNumber) || !teamName) {
+        return null;
+      }
+
+      return {
+        team_number: teamNumber,
+        team_name: teamName
+      };
+    })
+    .filter((team): team is {
+      team_number: number;
+      team_name: string;
+    } => team !== null);
+}
+  function parseSchedule(text: string, year?: number) {
+  const lines = text
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  const matches: {
+    match_type: string;
+    match_number: number;
+    red_team_1: number;
+    red_team_2: number;
+    blue_team_1: number;
+    blue_team_2: number;
+    imported_time?: string;
+    red_score?: number;
+    blue_score?: number;
+  }[] = [];
+
+  const headers = /^(Qualification|Playoff|Semifinal|Final)\s+(\d+)$/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const header = lines[i].match(headers);
+    if (!header) continue;
+
+    const matchType =
+      header[1].charAt(0).toUpperCase() +
+      header[1].slice(1).toLowerCase();
+
+    const matchNumber = Number(header[2]);
+
+    const nextHeader = lines.findIndex(
+      (line, index) => index > i && headers.test(line)
+    );
+
+    const block = lines.slice(
+      i + 1,
+      nextHeader === -1 ? lines.length : nextHeader
+    );
+
+    let importedTime: string | undefined;
+
+    for (const line of block) {
+      const timeMatch = line.match(
+        /(?:\w{3}\s+)?(\d{1,2})\/(\d{1,2})\s*-\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i
+      );
+
+      if (timeMatch) {
+        const month = Number(timeMatch[1]) - 1;
+        const day = Number(timeMatch[2]);
+        let hour = Number(timeMatch[3]);
+        const minute = Number(timeMatch[4]);
+        const ampm = timeMatch[5].toUpperCase();
+
+        if (ampm === "PM" && hour !== 12) hour += 12;
+        if (ampm === "AM" && hour === 12) hour = 0;
+
+        const date = new Date(
+          year || new Date().getFullYear(),
+          month,
+          day,
+          hour,
+          minute
+        );
+
+        importedTime = date.toISOString();
+        break;
+      }
+    }
+
+    const numbers = block
+      .filter(line => /^\d+$/.test(line))
+      .map(Number);
+
+    if (numbers.length < 4) continue;
+
+    const match: {
+      match_type: string;
+      match_number: number;
+      red_team_1: number;
+      red_team_2: number;
+      blue_team_1: number;
+      blue_team_2: number;
+      imported_time?: string;
+      red_score?: number;
+      blue_score?: number;
+    } = {
+      match_type: matchType,
+      match_number: matchNumber,
+      red_team_1: numbers[0],
+      red_team_2: numbers[1],
+      blue_team_1: numbers[2],
+      blue_team_2: numbers[3]
+    };
+
+    if (importedTime) match.imported_time = importedTime;
+
+    if (numbers.length >= 6) {
+      match.red_score = numbers[4];
+      match.blue_score = numbers[5];
+    }
+
+    matches.push(match);
+  }
+
+  return matches;
+}
   async function createEvent() {
     if (!supabase || !teamId || !eventName.trim()) {
       setError("Enter an event name first.");
@@ -196,7 +331,102 @@ const [compareTeam3, setCompareTeam3] = useState("");
 
     setBusy(false);
   }
+  async function importEventData() {
+    if (!supabase || !activeEventId) {
+      setError("Select an event before importing.");
+      return;
+    }
 
+    const importedTeams = parseTeamList(teamListText);
+    const importedMatches = parseSchedule(
+      scheduleText,
+      Number(
+        events.find(ev => ev.id === activeEventId)?.event_date?.slice(0, 4)
+      ) || new Date().getFullYear()
+    );
+
+    if (importedTeams.length === 0 && importedMatches.length === 0) {
+      setError("No valid teams or matches found. Check the pasted information.");
+      return;
+    }
+
+    setImportBusy(true);
+    setError("");
+    setMessage("");
+
+    try {
+      if (importedTeams.length > 0) {
+        const { error: teamError } = await supabase
+          .from("event_teams")
+          .upsert(
+            importedTeams.map(team => ({
+              event_id: activeEventId,
+              ...team
+            })),
+            { onConflict: "event_id,team_number" }
+          );
+
+        if (teamError) throw teamError;
+      }
+
+      if (importedMatches.length > 0) {
+        const { data: existingMatches, error: existingError } =
+          await supabase
+            .from("event_matches")
+            .select("*")
+            .eq("event_id", activeEventId);
+
+        if (existingError) throw existingError;
+
+        const existingMap = new Map(
+          (existingMatches || []).map(match => [
+            `${match.match_type}-${match.match_number}`,
+            match
+          ])
+        );
+
+        const rows = importedMatches.map(match => {
+          const existing = existingMap.get(
+            `${match.match_type}-${match.match_number}`
+          );
+
+          return {
+            event_id: activeEventId,
+            ...match,
+            imported_time:
+              match.imported_time ?? existing?.imported_time ?? null,
+            red_score:
+              match.red_score ?? existing?.red_score ?? null,
+            blue_score:
+              match.blue_score ?? existing?.blue_score ?? null,
+            completed:
+              match.red_score !== undefined &&
+              match.blue_score !== undefined
+                ? true
+                : existing?.completed ?? false
+          };
+        });
+
+        const { error: matchError } = await supabase
+          .from("event_matches")
+          .upsert(rows, {
+            onConflict: "event_id,match_type,match_number"
+          });
+
+        if (matchError) throw matchError;
+      }
+
+      setMessage(
+        `Import successful: ${importedTeams.length} teams and ${importedMatches.length} matches processed.`
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong during import."
+      );
+    }
+
+    setImportBusy(false);
+  }
   // Your next existing function continues here
   async function enterTeam() {
     if (!supabase) return;
@@ -736,7 +966,46 @@ if (recordSort === "team-high") {
           >
             {busy ? "Creating…" : "Create event"}
           </button>
+          <div className="section-head">
+            <h3>Import teams</h3>
+          </div>
 
+          <p className="muted">
+            Paste your event team list here. Include team numbers and names.
+          </p>
+
+          <Field label="Team list">
+            <textarea
+              rows={6}
+              value={teamListText}
+              onChange={e => setTeamListText(e.target.value)}
+              placeholder={"7215 Turning Gears\n7085 F.L.A.G. Fight Like a Girl"}
+            />
+          </Field>
+
+          <div className="section-head">
+            <h3>Import match schedule</h3>
+          </div>
+
+          <p className="muted">
+            Paste the qualification matches, times, alliance teams, and scores.
+          </p>
+
+          <Field label="Match schedule">
+            <textarea
+              rows={10}
+              value={scheduleText}
+              onChange={e => setScheduleText(e.target.value)}
+              placeholder={"Qualification 1\nSat 11/7 - 11:01 AM\n7085\n22738\n7215\n21790"}
+            />
+          </Field> 
+                    <button
+            className="primary full"
+            onClick={importEventData}
+            disabled={importBusy || (!teamListText.trim() && !scheduleText.trim()) || !activeEventId}
+          >
+            {importBusy ? "Importing..." : "Import Teams & Schedule"}
+          </button>
           <div className="section-head">
             <h3>Your events</h3>
           </div>
