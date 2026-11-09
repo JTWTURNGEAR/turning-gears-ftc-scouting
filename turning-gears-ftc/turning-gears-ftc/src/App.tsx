@@ -966,14 +966,16 @@ tab === "event-manager" ? "Event Manager" :
         </div>
 
         <div className="section-head"><h3>Quick actions</h3></div>
-        <div className="action-grid">
-                    {isCoordinator && (
+               <div className="action-grid">
+          {isCoordinator && (
             <button className="action-card" onClick={() => setTab("event-manager")}>
               <CalendarDays/>
               <b>Event Manager</b>
               <span>Create and manage event schedules</span>
             </button>
-              <button
+          )}
+
+          <button
             className="action-card"
             onClick={() => setTab("schedule")}
           >
@@ -981,8 +983,7 @@ tab === "event-manager" ? "Event Manager" :
             <b>Event Schedule</b>
             <span>View matches, alliances, and scores</span>
           </button>
-          )}
-          <button className="action-card" onClick={() => setTab("scout")}>
+                 <button className="action-card" onClick={() => setTab("scout")}>
             <ClipboardList/><b>Match scouting</b><span>Log a team's performance</span>
           </button>
           <button className="action-card" onClick={() => setTab("teams")}>
