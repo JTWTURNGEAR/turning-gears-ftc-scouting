@@ -881,13 +881,18 @@ button { cursor: pointer; }
 }
 
 .alliance-team.our-team {
-  border: 2px solid #facc15;
+  border: 3px solid #ffe600 !important;
+  background: rgba(255, 220, 0, 0.25) !important;
+  box-shadow: 0 0 10px #ffe600, 0 0 22px rgba(255, 230, 0, 0.7);
   font-weight: 900;
 }
 
 .alliance-team.related-team {
+  border: 2px solid #ffe600 !important;
+  outline: 2px solid rgba(255, 230, 0, 0.65);
+  outline-offset: 2px;
+  box-shadow: 0 0 10px rgba(255, 230, 0, 0.55);
   font-weight: 900;
-  outline: 2px solid rgba(250, 204, 21, 0.65);
 }
 
 .red-label {
