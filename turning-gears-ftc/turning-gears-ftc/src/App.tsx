@@ -12,7 +12,22 @@ type EventRow = {
   event_name: string;
   event_date: string | null;
 };
-
+type EventMatch = {
+  id: string;
+  event_id: string;
+  match_number: number;
+  match_type: string;
+  red_team_1: number;
+  red_team_2: number;
+  blue_team_1: number;
+  blue_team_2: number;
+  imported_time: string | null;
+  manual_offset_minutes: number;
+  manual_time_override: string | null;
+  red_score: number | null;
+  blue_score: number | null;
+  completed: boolean;
+};
 type RecordRow = {
   id: string;
   submitted_by: string;
@@ -74,6 +89,7 @@ export default function App() {
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [activeEventId, setActiveEventId] = useState("");
+  const [eventMatches, setEventMatches] = useState<EventMatch[]>([]);
     const [teamListText, setTeamListText] = useState("");
   const [scheduleText, setScheduleText] = useState("");
   const [importBusy, setImportBusy] = useState(false);
@@ -116,7 +132,25 @@ const [compareTeam3, setCompareTeam3] = useState("");
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+  async function loadEventMatches(eventId: string) {
+    if (!supabase || !eventId) {
+      setEventMatches([]);
+      return;
+    }
 
+    const { data, error: matchError } = await supabase
+      .from("event_matches")
+      .select("*")
+      .eq("event_id", eventId)
+      .order("match_number", { ascending: true });
+
+    if (matchError) {
+      setError(matchError.message);
+      return;
+    }
+
+    setEventMatches((data || []) as EventMatch[]);
+  }
   async function loadTeam() {
     if (!supabase) return;
 
@@ -159,7 +193,13 @@ const [compareTeam3, setCompareTeam3] = useState("");
     }
 
     setScouts(scoutData || []);
-    setEvents((eventData || []) as EventRow[]);
+    const loadedEvents = (eventData || []) as EventRow[];
+    setEvents(loadedEvents);
+
+    if (loadedEvents.length > 0) {
+      setActiveEventId(loadedEvents[0].id);
+      await loadEventMatches(loadedEvents[0].id);
+    }
     setRecords((recordData || []) as RecordRow[]);
     setJoined(true);
     setError("");
@@ -889,7 +929,8 @@ if (recordSort === "team-high") {
   tab === "records" ? "Submissions" :
   tab === "teams" ? "Team analytics" :
   tab === "team-detail" ? `Team ${selectedTeamNumber} profile` :
-  tab === "event-manager" ? "Event Manager" :
+  tab === "schedule" ? "Event Schedule" :
+tab === "event-manager" ? "Event Manager" :
   tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
         </div>
         <div className="live"><span/> SHARED DATA</div>
@@ -932,6 +973,14 @@ if (recordSort === "team-high") {
               <b>Event Manager</b>
               <span>Create and manage event schedules</span>
             </button>
+              <button
+            className="action-card"
+            onClick={() => setTab("schedule")}
+          >
+            <CalendarDays />
+            <b>Event Schedule</b>
+            <span>View matches, alliances, and scores</span>
+          </button>
           )}
           <button className="action-card" onClick={() => setTab("scout")}>
             <ClipboardList/><b>Match scouting</b><span>Log a team's performance</span>
@@ -950,6 +999,96 @@ if (recordSort === "team-high") {
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
       </>}
+      {tab === "schedule" && (
+        <section className="panel">
+          <div className="section-head">
+            <h3>Match Schedule</h3>
+            <span>{eventMatches.length} matches</span>
+          </div>
+
+          {!activeEventId ? (
+            <Empty text="No event selected yet." />
+          ) : eventMatches.length === 0 ? (
+            <Empty text="No matches have been imported for this event yet." />
+          ) : (
+            eventMatches.map(match => {
+              const matchTime = match.manual_time_override
+                ? new Date(match.manual_time_override)
+                : match.imported_time
+                  ? new Date(
+                      new Date(match.imported_time).getTime() +
+                      match.manual_offset_minutes * 60000
+                    )
+                  : null;
+
+              const teams = [
+                match.red_team_1,
+                match.red_team_2,
+                match.blue_team_1,
+                match.blue_team_2
+              ];
+
+              return (
+                <div className="action-card" key={match.id}>
+                  <b>
+                    {match.match_type} {match.match_number}
+                  </b>
+
+                  <span>
+                    {matchTime
+                      ? matchTime.toLocaleString([], {
+                          weekday: "short",
+                          month: "numeric",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit"
+                        })
+                      : "Time not set"}
+                  </span>
+
+                  <div>
+                    <b>🔴 Red Alliance</b>
+                    <p>
+                      {teams.slice(0, 2).map((team, index) => (
+                        <span key={team}>
+                          {index > 0 && " + "}
+                          {team === 7215 ? (
+                            <strong>⭐ {team} (OUR TEAM)</strong>
+                          ) : (
+                            team
+                          )}
+                        </span>
+                      ))}
+                    </p>
+                    {match.red_score !== null && (
+                      <span>Red score: {match.red_score}</span>
+                    )}
+                  </div>
+
+                  <div>
+                    <b>🔵 Blue Alliance</b>
+                    <p>
+                      {teams.slice(2, 4).map((team, index) => (
+                        <span key={team}>
+                          {index > 0 && " + "}
+                          {team === 7215 ? (
+                            <strong>⭐ {team} (OUR TEAM)</strong>
+                          ) : (
+                            team
+                          )}
+                        </span>
+                      ))}
+                    </p>
+                    {match.blue_score !== null && (
+                      <span>Blue score: {match.blue_score}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </section>
+      )}
       {tab === "event-manager" && isCoordinator && (
         <section className="panel">
           <div className="section-head">
@@ -1030,7 +1169,10 @@ if (recordSort === "team-high") {
               <button
                 key={ev.id}
                 className="action-card"
-                onClick={() => setActiveEventId(ev.id)}
+                onClick={() => {
+                setActiveEventId(ev.id);
+                loadEventMatches(ev.id);
+             }}
               >
                 <b>{ev.event_name}</b>
                 <span>{ev.event_date || "Date not set"}</span>
