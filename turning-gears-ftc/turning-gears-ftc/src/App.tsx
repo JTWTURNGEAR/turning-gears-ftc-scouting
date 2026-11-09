@@ -113,6 +113,8 @@ const [compareTeam3, setCompareTeam3] = useState("");
   const [selectedTeamNumber, setSelectedTeamNumber] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [adjustmentStartMatchId, setAdjustmentStartMatchId] = useState("");
+const [adjustmentMinutes, setAdjustmentMinutes] = useState(5);
   const [error, setError] = useState("");
     const [clockNow, setClockNow] = useState(() => Date.now());
 
@@ -175,7 +177,8 @@ useEffect(() => {
       .from("event_matches")
       .select("*")
       .eq("event_id", eventId)
-      .order("match_number", { ascending: true });
+      .order("imported_time", { ascending: true, nullsFirst: false })
+.order("match_number", { ascending: true });
 
     if (matchError) {
       setError(matchError.message);
@@ -417,6 +420,54 @@ useEffect(() => {
 
     setBusy(false);
   }
+  async function applyScheduleAdjustment() {
+  if (!supabase || !isCoordinator || !activeEventId) return;
+
+  const startIndex = eventMatches.findIndex(
+    match => match.id === adjustmentStartMatchId
+  );
+
+  if (startIndex < 0 || adjustmentMinutes === 0) {
+    setError("Select a starting match and a non-zero time adjustment.");
+    return;
+  }
+
+  const matchesToAdjust = eventMatches.slice(startIndex);
+
+  const confirmed = window.confirm(
+    `Apply ${adjustmentMinutes > 0 ? "+" : ""}${adjustmentMinutes} minutes to ${matchesToAdjust.length} matches, starting with ${matchesToAdjust[0].match_type} ${matchesToAdjust[0].match_number}?`
+  );
+
+  if (!confirmed) return;
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  for (const match of matchesToAdjust) {
+    const { error: updateError } = await supabase
+      .from("event_matches")
+      .update({
+        manual_offset_minutes:
+          (match.manual_offset_minutes || 0) + adjustmentMinutes
+      })
+      .eq("id", match.id);
+
+    if (updateError) {
+      setError(`Schedule adjustment stopped: ${updateError.message}`);
+      setBusy(false);
+      await loadEventMatches(activeEventId);
+      return;
+    }
+  }
+
+  await loadEventMatches(activeEventId);
+
+  setMessage(
+    `Successfully adjusted ${matchesToAdjust.length} matches.`
+  );
+  setBusy(false);
+}
   async function deleteEvent(eventId: string) {
   if (!supabase || !teamId || !isCoordinator) return;
 
@@ -1285,7 +1336,45 @@ tab === "event-manager" ? "Event Manager" :
             <h3>Match Schedule</h3>
             <span>{eventMatches.length} matches</span>
           </div>
+{isCoordinator && activeEventId && eventMatches.length > 0 && (
+  <div className="panel">
+    <h3>Adjust Schedule Times</h3>
+    <p className="muted">
+      Choose a starting match, then shift that match and all later matches.
+      Use a negative number to reduce a previous delay.
+    </p>
 
+    <Field label="Starting match">
+      <select
+        value={adjustmentStartMatchId}
+        onChange={e => setAdjustmentStartMatchId(e.target.value)}
+      >
+        <option value="">Choose a match...</option>
+        {eventMatches.map(match => (
+          <option key={match.id} value={match.id}>
+            {match.match_type} {match.match_number}
+          </option>
+        ))}
+      </select>
+    </Field>
+
+    <Field label="Minutes to add or subtract">
+      <input
+        type="number"
+        value={adjustmentMinutes}
+        onChange={e => setAdjustmentMinutes(Number(e.target.value))}
+      />
+    </Field>
+
+    <button
+      className="primary full"
+      onClick={applyScheduleAdjustment}
+      disabled={busy || !adjustmentStartMatchId || adjustmentMinutes === 0}
+    >
+      {busy ? "Adjusting..." : "Apply Schedule Adjustment"}
+    </button>
+  </div>
+)}
           {!activeEventId ? (
             <Empty text="No event selected yet." />
           ) : eventMatches.length === 0 ? (
