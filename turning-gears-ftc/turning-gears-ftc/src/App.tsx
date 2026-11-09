@@ -2,11 +2,16 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Activity, House, Users, ClipboardList, Wrench, BarChart3, Plus,
-  RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil
+  RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil, CalendarDays
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
 
 type Scout = { id: string; name: string; active: boolean };
+type EventRow = {
+  id: string;
+  event_name: string;
+  event_date: string | null;
+};
 
 type RecordRow = {
   id: string;
@@ -65,6 +70,10 @@ export default function App() {
     () => localStorage.getItem("tg-selected-scout") || ""
   );
   const [teamId, setTeamId] = useState("");
+    const [events, setEvents] = useState<EventRow[]>([]);
+  const [eventName, setEventName] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [activeEventId, setActiveEventId] = useState("");
   const [records, setRecords] = useState<RecordRow[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [teamCode, setTeamCode] = useState("");
@@ -107,17 +116,35 @@ const [compareTeam3, setCompareTeam3] = useState("");
 
   async function loadTeam() {
     if (!supabase) return;
+
     const { data: authData } = await supabase.auth.getUser();
     setAuthUserId(authData.user?.id || "");
+
     const [
       { data: scoutData, error: scoutError },
       { data: recordData, error: recordError },
-      { data: memberData }
+      { data: memberData },
+      { data: eventData }
     ] = await Promise.all([
-      supabase.from("scouts").select("id,name,active").eq("active", true).order("name"),
-      supabase.from("match_records").select("*").order("created_at", { ascending: false }).limit(250),
-      supabase.from("team_members").select("role,team_id")
-        .eq("user_id", authData.user?.id || "").limit(1).maybeSingle()
+      supabase.from("scouts")
+        .select("id,name,active")
+        .eq("active", true)
+        .order("name"),
+
+      supabase.from("match_records")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(250),
+
+      supabase.from("team_members")
+        .select("role,team_id")
+        .eq("user_id", authData.user?.id || "")
+        .limit(1)
+        .maybeSingle(),
+
+      supabase.from("events")
+        .select("id,event_name,event_date")
+        .order("created_at", { ascending: false })
     ]);
 
     setIsCoordinator(memberData?.role === "coordinator");
@@ -129,11 +156,48 @@ const [compareTeam3, setCompareTeam3] = useState("");
     }
 
     setScouts(scoutData || []);
+    setEvents((eventData || []) as EventRow[]);
     setRecords((recordData || []) as RecordRow[]);
     setJoined(true);
     setError("");
   }
+  
+  async function createEvent() {
+    if (!supabase || !teamId || !eventName.trim()) {
+      setError("Enter an event name first.");
+      return;
+    }
 
+    setBusy(true);
+    setError("");
+    setMessage("");
+
+    const { data, error: createError } = await supabase
+      .from("events")
+      .insert({
+        team_id: teamId,
+        event_name: eventName.trim(),
+        event_date: eventDate || null
+      })
+      .select("id,event_name,event_date")
+      .single();
+
+    if (createError) {
+      setError(createError.code === "23505"
+        ? "An event with that name already exists."
+        : createError.message);
+    } else {
+      setEvents(previous => [data as EventRow, ...previous]);
+      setActiveEventId(data.id);
+      setEventName("");
+      setEventDate("");
+      setMessage("Event created successfully.");
+    }
+
+    setBusy(false);
+  }
+
+  // Your next existing function continues here
   async function enterTeam() {
     if (!supabase) return;
     setBusy(true);
@@ -582,6 +646,7 @@ if (recordSort === "team-high") {
   tab === "records" ? "Submissions" :
   tab === "teams" ? "Team analytics" :
   tab === "team-detail" ? `Team ${selectedTeamNumber} profile` :
+  tab === "event-manager" ? "Event Manager" :
   tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
         </div>
         <div className="live"><span/> SHARED DATA</div>
@@ -618,6 +683,13 @@ if (recordSort === "team-high") {
 
         <div className="section-head"><h3>Quick actions</h3></div>
         <div className="action-grid">
+                    {isCoordinator && (
+            <button className="action-card" onClick={() => setTab("event-manager")}>
+              <CalendarDays/>
+              <b>Event Manager</b>
+              <span>Create and manage event schedules</span>
+            </button>
+          )}
           <button className="action-card" onClick={() => setTab("scout")}>
             <ClipboardList/><b>Match scouting</b><span>Log a team's performance</span>
           </button>
@@ -635,7 +707,59 @@ if (recordSort === "team-high") {
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
       </>}
+      {tab === "event-manager" && isCoordinator && (
+        <section className="panel">
+          <div className="section-head">
+            <h3>Create an event</h3>
+          </div>
 
+          <Field label="Event name">
+            <input
+              value={eventName}
+              onChange={e => setEventName(e.target.value)}
+              placeholder="e.g. Turning Gears Qualifier"
+            />
+          </Field>
+
+          <Field label="Event date">
+            <input
+              type="date"
+              value={eventDate}
+              onChange={e => setEventDate(e.target.value)}
+            />
+          </Field>
+
+          <button
+            className="primary full"
+            onClick={createEvent}
+            disabled={busy || !eventName.trim()}
+          >
+            {busy ? "Creating…" : "Create event"}
+          </button>
+
+          <div className="section-head">
+            <h3>Your events</h3>
+          </div>
+
+          {events.length === 0 ? (
+            <Empty text="No events created yet." />
+          ) : (
+            events.map(ev => (
+              <button
+                key={ev.id}
+                className="action-card"
+                onClick={() => setActiveEventId(ev.id)}
+              >
+                <b>{ev.event_name}</b>
+                <span>{ev.event_date || "Date not set"}</span>
+                <span>
+                  {activeEventId === ev.id ? "Selected" : "Select event"}
+                </span>
+              </button>
+            ))
+          )}
+        </section>
+      )}
       {tab === "scout" && <section className="panel form-panel">
         <div className="form-intro">
           <span className="eyebrow">NEW OBSERVATION</span>
