@@ -1,8 +1,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, Users, ClipboardList, Wrench, BarChart3, Plus,
-RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil
+  Activity, House, Users, ClipboardList, Wrench, BarChart3, Plus,
+  RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
 
@@ -819,7 +819,15 @@ if (recordSort === "team-high") {
         ) : filteredRecords.map(r => (
           <div className="record" key={r.id}>
             <div className="record-top">
-              <b>Team {r.team_number}</b>
+              <button
+  className="team-number-link"
+  onClick={() => {
+    setSelectedTeamNumber(r.team_number);
+    setTab("team-detail");
+  }}
+>
+  Team {r.team_number}
+</button>
               <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
               <span className="muted tiny">Match {r.match_number}</span>
 
@@ -1169,7 +1177,7 @@ if (recordSort === "team-high") {
     </main>
 
     <nav className="bottom-nav">
-      <NavItem active={tab === "home"} icon={<Activity/>} label="Home" onClick={() => setTab("home")}/>
+     <NavItem active={tab === "home"} icon={<House/>} label="Home" onClick={() => setTab("home")}/>
       <NavItem active={tab === "scout"} icon={<ClipboardList/>} label="Scout" onClick={() => setTab("scout")}/>
       <NavItem active={tab === "teams" || tab === "team-detail"} icon={<BarChart3/>} label="Teams" onClick={() => setTab("teams")}/>
       <NavItem active={tab === "compare"} icon={<Activity/>} label="Compare" onClick={() => setTab("compare")}/>
