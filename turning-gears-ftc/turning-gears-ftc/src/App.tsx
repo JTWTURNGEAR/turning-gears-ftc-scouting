@@ -77,8 +77,6 @@ export default function App() {
     const [teamListText, setTeamListText] = useState("");
   const [scheduleText, setScheduleText] = useState("");
   const [importBusy, setImportBusy] = useState(false);
-    const [teamListText, setTeamListText] = useState("");
-  const [scheduleText, setScheduleText] = useState("");
   const [records, setRecords] = useState<RecordRow[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [teamCode, setTeamCode] = useState("");
