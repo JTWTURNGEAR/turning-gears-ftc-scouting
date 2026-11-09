@@ -68,6 +68,7 @@ const [editingScoutName, setEditingScoutName] = useState("");
 const [recordMatchFilter, setRecordMatchFilter] = useState("");
 const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [recordSort, setRecordSort] = useState("match");
+  const [teamSort, setTeamSort] = useState("team-low");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -387,6 +388,33 @@ const teamSummaries = useMemo(() => {
           : null
       }));
   }, [records]);
+  const sortedTeamSummaries = useMemo(() => {
+  return [...teamSummaries].sort((a, b) => {
+    if (teamSort === "team-high") {
+      return b.team - a.team;
+    }
+
+    if (teamSort === "rp-total-low") {
+      return a.rankingTotal - b.rankingTotal || a.team - b.team;
+    }
+
+    if (teamSort === "rp-total-high") {
+      return b.rankingTotal - a.rankingTotal || a.team - b.team;
+    }
+
+    if (teamSort === "rp-average-low") {
+      return (a.rankingAverage ?? 0) - (b.rankingAverage ?? 0)
+        || a.team - b.team;
+    }
+
+    if (teamSort === "rp-average-high") {
+      return (b.rankingAverage ?? 0) - (a.rankingAverage ?? 0)
+        || a.team - b.team;
+    }
+
+    return a.team - b.team;
+  });
+}, [teamSummaries, teamSort]);
   const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
@@ -767,7 +795,20 @@ if (recordSort === "team-high") {
           Ratings are averages of submitted 1–5 scores. Ranking points show both
           the total and average earned per observation.
         </p>
-
+<div className="filter-panel">
+  <select
+    className="sort-select"
+    value={teamSort}
+    onChange={e => setTeamSort(e.target.value)}
+  >
+    <option value="team-low">Sort: Team number (low to high)</option>
+    <option value="team-high">Sort: Team number (high to low)</option>
+    <option value="rp-total-low">Sort: RP total (low to high)</option>
+    <option value="rp-total-high">Sort: RP total (high to low)</option>
+    <option value="rp-average-low">Sort: RP average (low to high)</option>
+    <option value="rp-average-high">Sort: RP average (high to low)</option>
+  </select>
+</div>
         {teamSummaries.length === 0 ? <Empty text="Team analytics will appear after scouts submit matches."/> :
           <div className="team-table">
             <div className="team-row table-head analytics-row">
@@ -780,7 +821,7 @@ if (recordSort === "team-high") {
               <span>RP TOTAL</span>
               <span>RP AVG.</span>
             </div>
-            {teamSummaries.map(t => <div className="team-row analytics-row" key={t.team}>
+            {sortedTeamSummaries.map(t => <div className="team-row analytics-row" key={t.team}>
               <b>#{t.team}</b>
               <span>{t.count}</span>
               <RatingPill value={t.autonomous}/>
