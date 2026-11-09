@@ -114,6 +114,15 @@ const [compareTeam3, setCompareTeam3] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+    const [clockNow, setClockNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setClockNow(Date.now());
+    }, 15000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -829,6 +838,64 @@ const teamSummaries = useMemo(() => {
 const selectedTeamSummary = teamSummaries.find(
   t => t.team === selectedTeamNumber
 );
+  const scheduledMatches = useMemo(() => {
+  return eventMatches
+    .map(match => {
+      const time = match.manual_time_override
+        ? new Date(match.manual_time_override).getTime()
+        : match.imported_time
+          ? new Date(match.imported_time).getTime() +
+            match.manual_offset_minutes * 60000
+          : null;
+
+      return { ...match, scheduledTime: time };
+    })
+    .sort((a, b) =>
+      (a.scheduledTime ?? Infinity) - (b.scheduledTime ?? Infinity)
+    );
+}, [eventMatches]);
+
+const currentMatch = scheduledMatches.find(match =>
+  !match.completed &&
+  match.scheduledTime !== null &&
+  match.scheduledTime <= clockNow
+);
+
+const nextMatch = scheduledMatches.find(match =>
+  !match.completed &&
+  match.scheduledTime !== null &&
+  match.scheduledTime > clockNow
+);
+
+const currentMatchTeams = currentMatch
+  ? [
+      currentMatch.red_team_1,
+      currentMatch.red_team_2,
+      currentMatch.blue_team_1,
+      currentMatch.blue_team_2
+    ]
+  : [];
+
+const futureRelatedTeams = new Set(
+  scheduledMatches
+    .filter(match => !match.completed)
+    .filter(match =>
+      !currentMatch || match.id !== currentMatch.id
+    )
+    .filter(match => [
+      match.red_team_1,
+      match.red_team_2,
+      match.blue_team_1,
+      match.blue_team_2
+    ].includes(7215))
+    .flatMap(match => [
+      match.red_team_1,
+      match.red_team_2,
+      match.blue_team_1,
+      match.blue_team_2
+    ])
+    .filter(team => team !== 7215)
+);
   const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
@@ -882,6 +949,29 @@ if (recordSort === "team-high") {
   recordAllianceFilter,
   recordSort
 ]);
+  function openTeamProfile(team: number) {
+  setSelectedTeamNumber(team);
+  setTab("team-detail");
+}
+
+function allianceTeamButton(team: number, alliance: "red" | "blue") {
+  const isOurTeam = team === 7215;
+  const isRelated = futureRelatedTeams.has(team);
+
+  return (
+    <button
+      type="button"
+      key={team}
+      className={`alliance-team ${alliance} ${
+        isOurTeam ? "our-team" : ""
+      } ${isRelated ? "related-team" : ""}`}
+      onClick={() => openTeamProfile(team)}
+    >
+      {isOurTeam ? "⭐ " : ""}
+      {team}
+    </button>
+  );
+}
   if (!configured) return <SetupScreen />;
 
   if (!sessionReady) {
@@ -958,7 +1048,105 @@ tab === "event-manager" ? "Event Manager" :
               disabled={busy || !newScout.trim()}><Plus size={18}/> Add name</button>
           </div>
         </section>
+        <section className="panel live-match-panel">
+          <div className="section-head">
+            <h3>🏁 Live Match Tracker</h3>
+            <span className="live">SCHEDULE BASED</span>
+          </div>
 
+          {!activeEventId ? (
+            <Empty text="No event selected." />
+          ) : eventMatches.length === 0 ? (
+            <Empty text="No matches have been imported yet." />
+          ) : (
+            <>
+              {currentMatch && (
+                <div className="live-match-card">
+                  <span className="eyebrow">CURRENTLY SCHEDULED</span>
+                  <h3>
+                    {currentMatch.match_type} {currentMatch.match_number}
+                  </h3>
+                  <p className="muted">Scheduled start time has passed.</p>
+
+                  <div className="alliance-display">
+                    <div className="alliance-group">
+                      <b className="red-label">🔴 RED ALLIANCE</b>
+                      <div className="alliance-team-row">
+                        {allianceTeamButton(currentMatch.red_team_1, "red")}
+                        {allianceTeamButton(currentMatch.red_team_2, "red")}
+                      </div>
+                      {currentMatch.red_score !== null && (
+                        <span>Score: {currentMatch.red_score}</span>
+                      )}
+                    </div>
+
+                    <div className="alliance-group">
+                      <b className="blue-label">🔵 BLUE ALLIANCE</b>
+                      <div className="alliance-team-row">
+                        {allianceTeamButton(currentMatch.blue_team_1, "blue")}
+                        {allianceTeamButton(currentMatch.blue_team_2, "blue")}
+                      </div>
+                      {currentMatch.blue_score !== null && (
+                        <span>Score: {currentMatch.blue_score}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {nextMatch && (
+                <div className="live-match-card">
+                  <span className="eyebrow">
+                    {currentMatch ? "UP NEXT" : "NEXT SCHEDULED MATCH"}
+                  </span>
+                  <h3>
+                    {nextMatch.match_type} {nextMatch.match_number}
+                  </h3>
+
+                  <p className="muted">
+                    {new Date(nextMatch.scheduledTime!).toLocaleString([], {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit"
+                    })}
+                  </p>
+
+                  <p className="match-countdown">
+                    Starts in{" "}
+                    {Math.floor(
+                      Math.max(0, nextMatch.scheduledTime! - clockNow) / 60000
+                    )}{" "}
+                    minutes
+                  </p>
+
+                  <div className="alliance-display">
+                    <div className="alliance-group">
+                      <b className="red-label">🔴 RED ALLIANCE</b>
+                      <div className="alliance-team-row">
+                        {allianceTeamButton(nextMatch.red_team_1, "red")}
+                        {allianceTeamButton(nextMatch.red_team_2, "red")}
+                      </div>
+                    </div>
+
+                    <div className="alliance-group">
+                      <b className="blue-label">🔵 BLUE ALLIANCE</b>
+                      <div className="alliance-team-row">
+                        {allianceTeamButton(nextMatch.blue_team_1, "blue")}
+                        {allianceTeamButton(nextMatch.blue_team_2, "blue")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!currentMatch && !nextMatch && (
+                <Empty text="No upcoming matches. All imported matches may be completed or missing times." />
+              )}
+            </>
+          )}
+        </section>
         <div className="stats-grid">
           <Stat label="SUBMISSIONS" value={records.length} icon={<ClipboardList/>}/>
           <Stat label="TEAMS SCOUTED" value={teamSummaries.length} icon={<Activity/>}/>
