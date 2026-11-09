@@ -12,6 +12,7 @@ type RecordRow = {
   id: string;
   submitted_by: string;
   team_number: number;
+  partner_team_number: number | null;
   match_number: number;
   alliance: string;
   scout_name: string;
@@ -31,6 +32,7 @@ type RecordRow = {
 
 const emptyForm = {
   team_number: "",
+  partner_team_number: "",
   match_number: "",
   alliance: "Red",
   auto_rating: 3,
@@ -194,23 +196,21 @@ const [compareTeam3, setCompareTeam3] = useState("");
     return;
   }
 
-  const recordData = {
+ const partnerTeam = form.partner_team_number.trim() === ""
+  ? null
+  : Number(form.partner_team_number);
+
+if (partnerTeam !== null &&
+    (!Number.isInteger(partnerTeam) || partnerTeam < 1)) {
+  setError("Enter a valid alliance partner team number.");
+  setBusy(false);
+  return;
+}
+
+const recordData = {
     team_number: team,
+    partner_team_number: partnerTeam,
     match_number: match,
-    alliance: form.alliance,
-    scout_name: editingRecordId ? editingScoutName : selectedScout,
-    auto_rating: form.auto_rating,
-    shooting_accuracy: form.shooting_accuracy,
-    shooting_speed: form.shooting_speed,
-    driving_speed: form.driving_speed,
-    maneuverability: form.maneuverability,
-    reliability: form.reliability,
-    hive_tips: form.hive_tips,
-    can_shoot_nectar: form.can_shoot_nectar,
-    refilled_flower: form.refilled_flower,
-    ranking_points: form.ranking_points,
-    notes: form.notes.trim() || null
-  };
 
   const saveResult = editingRecordId
     ? await supabase.from("match_records")
@@ -318,6 +318,9 @@ async function editRecord(record: RecordRow) {
 
   setForm({
     team_number: String(record.team_number),
+    partner_team_number: record.partner_team_number
+      ? String(record.partner_team_number)
+      : "",
     match_number: String(record.match_number),
     alliance: record.alliance,
     auto_rating: record.auto_rating ?? 3,
@@ -588,18 +591,25 @@ tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
           <p className="muted">Rate what the robot can do and how consistently it performs.</p>
         </div>
 
-        <div className="two-col">
-          <Field label="Team number">
-            <input inputMode="numeric" value={form.team_number}
-              onChange={e => setForm({...form, team_number: e.target.value})}
-              placeholder="e.g. 12345"/>
-          </Field>
-          <Field label="Match number">
-            <input inputMode="numeric" value={form.match_number}
-              onChange={e => setForm({...form, match_number: e.target.value})}
-              placeholder="e.g. 8"/>
-          </Field>
-        </div>
+       <div className="two-col">
+  <Field label="Team number">
+    <input inputMode="numeric" value={form.team_number}
+      onChange={e => setForm({...form, team_number: e.target.value})}
+      placeholder="e.g. 12345"/>
+  </Field>
+
+  <Field label="Alliance partner team number">
+    <input inputMode="numeric" value={form.partner_team_number}
+      onChange={e => setForm({...form, partner_team_number: e.target.value})}
+      placeholder="e.g. 67890"/>
+  </Field>
+</div>
+
+<Field label="Match number">
+  <input inputMode="numeric" value={form.match_number}
+    onChange={e => setForm({...form, match_number: e.target.value})}
+    placeholder="e.g. 8"/>
+</Field>
 
         <Field label="Alliance">
           <div className="segmented">
@@ -780,9 +790,13 @@ tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
               )}
             </div>
 
-            <div className="record-meta">
-              Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
-            </div>
+          <div className="record-meta">
+  Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
+  <br/>
+  Alliance partner: {r.partner_team_number
+    ? `Team ${r.partner_team_number}`
+    : "Not recorded"}
+</div>
 
             <div className="mini-ratings">
               <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
