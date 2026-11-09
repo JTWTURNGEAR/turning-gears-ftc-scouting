@@ -739,3 +739,16 @@ button { cursor: pointer; }
     grid-template-columns: 1fr;
   }
 }
+.compare-selectors select {
+  background: #111 !important;
+  color: #fff !important;
+  border: 1px solid #49301e !important;
+  border-radius: 8px;
+  padding: 11px 12px;
+  color-scheme: dark;
+}
+
+.compare-selectors select option {
+  background: #111;
+  color: #fff;
+}
