@@ -1421,22 +1421,51 @@ tab === "event-manager" ? "Event Manager" :
           {events.length === 0 ? (
             <Empty text="No events created yet." />
           ) : (
-            events.map(ev => (
-              <button
-                key={ev.id}
-                className="action-card"
-                onClick={() => {
-                setActiveEventId(ev.id);
-                loadEventMatches(ev.id);
-             }}
-              >
-                <b>{ev.event_name}</b>
-                <span>{ev.event_date || "Date not set"}</span>
-                <span>
-                  {activeEventId === ev.id ? "Selected" : "Select event"}
-                </span>
-              </button>
-            ))
+           events.map(ev => (
+  <div
+    key={ev.id}
+    style={{
+      display: "flex",
+      gap: "10px",
+      alignItems: "stretch",
+      marginBottom: "10px"
+    }}
+  >
+    <button
+      className="action-card"
+      style={{ flex: 1 }}
+      onClick={() => {
+        setActiveEventId(ev.id);
+        loadEventMatches(ev.id);
+      }}
+    >
+      <b>{ev.event_name}</b>
+      <span>{ev.event_date || "Date not set"}</span>
+      <span>
+        {activeEventId === ev.id ? "Selected" : "Select event"}
+      </span>
+    </button>
+
+    {isCoordinator && (
+      <button
+        type="button"
+        onClick={() => deleteEvent(ev.id)}
+        disabled={busy}
+        style={{
+          background: "rgba(220, 38, 38, 0.15)",
+          border: "1px solid #ef4444",
+          color: "#ff7777",
+          borderRadius: "10px",
+          padding: "10px",
+          cursor: "pointer",
+          fontWeight: 700
+        }}
+      >
+        Remove
+      </button>
+    )}
+  </div>
+))
           )}
         </section>
       )}
