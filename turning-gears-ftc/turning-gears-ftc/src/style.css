@@ -666,3 +666,76 @@ button { cursor: pointer; }
   border-color: #ff8728 !important;
   box-shadow: 0 0 0 2px #ff872822;
 }
+/* TEAM COMPARISON */
+
+.compare-selectors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.compare-selectors .field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #ff8728;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.compare-selectors select {
+  width: 100%;
+  min-width: 0;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.comparison-card {
+  background: #111;
+  border: 1px solid #49301e;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.comparison-card-head {
+  border-bottom: 1px solid #49301e;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.comparison-card-head h3 {
+  color: #ff8728;
+  font-size: 25px;
+  margin: 5px 0;
+}
+
+.comparison-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0;
+  border-bottom: 1px solid #29221d;
+  font-size: 13px;
+}
+
+.comparison-stat:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 700px) {
+  .compare-selectors {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
