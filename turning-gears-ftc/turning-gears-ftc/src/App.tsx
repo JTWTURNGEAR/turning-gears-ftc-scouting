@@ -212,8 +212,22 @@ const recordData = {
     team_number: team,
     partner_team_number: partnerTeam,
     match_number: match,
+    alliance: form.alliance,
+    scout_name: editingRecordId ? editingScoutName : selectedScout,
+    auto_rating: form.auto_rating,
+    shooting_accuracy: form.shooting_accuracy,
+    shooting_speed: form.shooting_speed,
+    driving_speed: form.driving_speed,
+    maneuverability: form.maneuverability,
+    reliability: form.reliability,
+    hive_tips: form.hive_tips,
+    can_shoot_nectar: form.can_shoot_nectar,
+    refilled_flower: form.refilled_flower,
+    ranking_points: form.ranking_points,
+    notes: form.notes.trim()
+};
 
-  const saveResult = editingRecordId
+const saveResult = editingRecordId
     ? await supabase.from("match_records")
         .update(recordData)
         .eq("id", editingRecordId)
@@ -224,7 +238,6 @@ const recordData = {
           team_id: teamId,
           submitted_by: authData.user.id
         });
-
   if (saveResult.error) {
     setError(saveResult.error.message);
   } else {
