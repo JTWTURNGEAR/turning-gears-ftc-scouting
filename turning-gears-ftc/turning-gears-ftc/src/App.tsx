@@ -124,9 +124,11 @@ const [compareTeam3, setCompareTeam3] = useState("");
     return () => window.clearInterval(timer);
   }, []);
 useEffect(() => {
-  if (!supabase || !activeEventId || !joined) return;
+  const client = supabase;
 
-  const channel = supabase
+  if (!client || !activeEventId || !joined) return;
+
+  const channel = client
     .channel(`event-matches-${activeEventId}`)
     .on(
       "postgres_changes",
@@ -143,7 +145,7 @@ useEffect(() => {
     .subscribe();
 
   return () => {
-    supabase.removeChannel(channel);
+    client.removeChannel(channel);
   };
 }, [activeEventId, joined]);
   useEffect(() => {
