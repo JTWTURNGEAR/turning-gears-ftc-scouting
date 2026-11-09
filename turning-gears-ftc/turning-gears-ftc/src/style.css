@@ -913,3 +913,21 @@ button { cursor: pointer; }
     grid-template-columns: 1fr;
   }
 }
+.match-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 15px;
+  margin: 12px 0;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 10px;
+  background: rgba(250, 204, 21, 0.06);
+  font-size: 0.85rem;
+}
+
+.match-legend strong {
+  color: #ffe600;
+  margin-bottom: 3px;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
