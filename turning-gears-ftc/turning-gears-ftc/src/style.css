@@ -839,7 +839,18 @@ button { cursor: pointer; }
 
 .alliance-team-row {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  width: 100%;
+}
+
+.alliance-team {
+  display: block;
+  flex: 1 1 50%;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 14px 8px;
+  font-size: 1.05rem;
+  text-align: center;
 }
 
 .alliance-team {
