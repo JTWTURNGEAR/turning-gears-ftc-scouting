@@ -164,18 +164,32 @@ const [compareTeam3, setCompareTeam3] = useState("");
     setJoined(true);
     setError("");
   }
-  function parseTeamList(text: string) {
+ function parseTeamList(text: string) {
   return text
+    .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .map(line => line.trim())
     .filter(Boolean)
     .map(line => {
-      const parts = line.split(/\t|,/).map(part => part.trim());
+      // Ignore FTC headings such as "Match Participants 29"
+      if (/^Match Participants/i.test(line)) return null;
+
+      let parts: string[];
+
+      if (line.includes("\t")) {
+        parts = line.split("\t").map(part => part.trim());
+      } else if (line.includes(",")) {
+        parts = line.split(",").map(part => part.trim());
+      } else {
+        const match = line.match(/^(\d+)\s+(.+)$/);
+        if (!match) return null;
+        parts = [match[1], match[2].trim()];
+      }
 
       const teamNumber = Number(parts[0]);
       const teamName = parts[1];
 
-      if (!Number.isInteger(teamNumber) || !teamName) {
+      if (!Number.isInteger(teamNumber) || teamNumber <= 0 || !teamName) {
         return null;
       }
 
@@ -188,7 +202,8 @@ const [compareTeam3, setCompareTeam3] = useState("");
       team_number: number;
       team_name: string;
     } => team !== null);
-}
+} 
+  
   function parseSchedule(text: string, year?: number) {
   const lines = text
     .split(/\r?\n/)
