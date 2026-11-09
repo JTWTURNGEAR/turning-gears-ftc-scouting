@@ -74,6 +74,7 @@ const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [compareTeam1, setCompareTeam1] = useState("");
 const [compareTeam2, setCompareTeam2] = useState("");
 const [compareTeam3, setCompareTeam3] = useState("");
+  const [selectedTeamNumber, setSelectedTeamNumber] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -431,6 +432,13 @@ const teamSummaries = useMemo(() => {
     teamSummaries.find(t => String(t.team) === teamNumber)
   )
   .filter((team): team is (typeof teamSummaries)[number] => Boolean(team));
+  const selectedTeamRecords = records
+  .filter(r => r.team_number === selectedTeamNumber)
+  .sort((a, b) => a.match_number - b.match_number);
+
+const selectedTeamSummary = teamSummaries.find(
+  t => t.team === selectedTeamNumber
+);
   const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
@@ -527,10 +535,11 @@ if (recordSort === "team-high") {
         <div>
           <p className="eyebrow">TEAM SCOUTING HUB</p>
           <h2>{tab === "home" ? "Dashboard" :
-            tab === "scout" ? "Match scouting" :
-            tab === "records" ? "Submissions" :
-            tab === "teams" ? "Team analytics" :
-tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
+  tab === "scout" ? "Match scouting" :
+  tab === "records" ? "Submissions" :
+  tab === "teams" ? "Team analytics" :
+  tab === "team-detail" ? `Team ${selectedTeamNumber} profile` :
+  tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
         </div>
         <div className="live"><span/> SHARED DATA</div>
       </div>
@@ -850,7 +859,15 @@ tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
               <span>RP AVG.</span>
             </div>
             {sortedTeamSummaries.map(t => <div className="team-row analytics-row" key={t.team}>
-              <b>#{t.team}</b>
+             <button
+  className="team-number-link"
+  onClick={() => {
+    setSelectedTeamNumber(t.team);
+    setTab("team-detail");
+  }}
+>
+  #{t.team}
+</button>
               <span>{t.count}</span>
               <RatingPill value={t.autonomous}/>
               <RatingPill value={t.shooting}/>
@@ -862,6 +879,69 @@ tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
           </div>
         }
       </section>}
+      {tab === "team-detail" && selectedTeamNumber !== null && (
+  <section className="panel">
+    <button className="text-btn" onClick={() => setTab("teams")}>
+      ← Back to teams
+    </button>
+
+    <div className="section-heading">
+      <h3>Team {selectedTeamNumber}</h3>
+      <p className="muted">Individual match scouting history</p>
+    </div>
+
+    {selectedTeamSummary && (
+      <div className="stats-grid">
+        <Stat label="Matches scouted" value={selectedTeamSummary.count} />
+        <Stat label="Autonomous" value={selectedTeamSummary.autonomous.toFixed(1)} />
+        <Stat label="Shooting" value={selectedTeamSummary.shooting.toFixed(1)} />
+        <Stat label="Mobility" value={selectedTeamSummary.mobility.toFixed(1)} />
+        <Stat label="Reliability" value={selectedTeamSummary.reliability.toFixed(1)} />
+        <Stat label="RP total" value={selectedTeamSummary.rpTotal} />
+        <Stat label="RP average" value={selectedTeamSummary.rpAverage.toFixed(1)} />
+      </div>
+    )}
+
+    <h3 className="section-title">Match-by-match history</h3>
+
+    {selectedTeamRecords.length === 0 ? (
+      <p className="muted">No scouting records found for this team.</p>
+    ) : (
+      selectedTeamRecords.map(r => (
+        <div className="record" key={r.id}>
+          <div className="record-top">
+            <b>Match {r.match_number}</b>
+            <span className={"alliance " + r.alliance.toLowerCase()}>
+              {r.alliance}
+            </span>
+            <span>Partner: {r.partner_team_number ?? "Not recorded"}</span>
+          </div>
+
+          <div className="record-meta">
+            Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
+          </div>
+
+          <div className="mini-ratings">
+            <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
+            <span>Shooting accuracy <b>{r.shooting_accuracy ?? "—"}/5</b></span>
+            <span>Shooting speed <b>{r.shooting_speed ?? "—"}/5</b></span>
+            <span>Driving speed <b>{r.driving_speed ?? "—"}/5</b></span>
+            <span>Maneuverability <b>{r.maneuverability ?? "—"}/5</b></span>
+            <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
+            <span>Hive tips <b>{r.hive_tips ?? 0}</b></span>
+            <span>Can shoot nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
+            <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
+            <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
+          </div>
+
+          {r.notes && (
+            <p className="record-notes">{r.notes}</p>
+          )}
+        </div>
+      ))
+    )}
+  </section>
+)}
 {tab === "compare" && <section className="panel">
   <div className="section-head">
     <h3>Team comparison</h3>
@@ -1014,7 +1094,7 @@ tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
     <nav className="bottom-nav">
       <NavItem active={tab === "home"} icon={<Activity/>} label="Home" onClick={() => setTab("home")}/>
       <NavItem active={tab === "scout"} icon={<ClipboardList/>} label="Scout" onClick={() => setTab("scout")}/>
-      <NavItem active={tab === "teams"} icon={<BarChart3/>} label="Teams" onClick={() => setTab("teams")}/>
+      <NavItem active={tab === "teams" || tab === "team-detail"} icon={<BarChart3/>} label="Teams" onClick={() => setTab("teams")}/>
       <NavItem active={tab === "compare"} icon={<Activity/>} label="Compare" onClick={() => setTab("compare")}/>
       <NavItem active={tab === "records"} icon={<Wrench/>} label="Records" onClick={() => setTab("records")}/>
       <NavItem active={tab === "roster"} icon={<Users/>} label="Roster" onClick={() => setTab("roster")}/>
