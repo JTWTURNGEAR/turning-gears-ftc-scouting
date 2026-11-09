@@ -794,7 +794,12 @@ if (recordSort === "team-high") {
 
         {!selectedScout &&
           <p className="warning">Choose your scout name on the Dashboard before submitting.</p>}
-
+        {error && (
+          <div className="errorbox">
+            <AlertCircle size={16}/>
+            {error}
+          </div>
+        )}
       <div className="two-col">
   <button
     className="primary full"
