@@ -393,6 +393,66 @@ const [compareTeam3, setCompareTeam3] = useState("");
 
     setBusy(false);
   }
+  async function deleteEvent(eventId: string) {
+  if (!supabase || !teamId || !isCoordinator) return;
+
+  const event = events.find(ev => ev.id === eventId);
+  if (!event) return;
+
+  const confirmed = window.confirm(
+    `Remove "${event.event_name}" and all its imported teams and matches? This cannot be undone.`
+  );
+
+  if (!confirmed) return;
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  const { error: matchError } = await supabase
+    .from("event_matches")
+    .delete()
+    .eq("event_id", eventId);
+
+  if (matchError) {
+    setError(matchError.message);
+    setBusy(false);
+    return;
+  }
+
+  const { error: teamError } = await supabase
+    .from("event_teams")
+    .delete()
+    .eq("event_id", eventId);
+
+  if (teamError) {
+    setError(teamError.message);
+    setBusy(false);
+    return;
+  }
+
+  const { error: eventError } = await supabase
+    .from("events")
+    .delete()
+    .eq("id", eventId)
+    .eq("team_id", teamId);
+
+  if (eventError) {
+    setError(eventError.message);
+    setBusy(false);
+    return;
+  }
+
+  setEvents(previous => previous.filter(ev => ev.id !== eventId));
+
+  if (activeEventId === eventId) {
+    setActiveEventId("");
+    setEventMatches([]);
+  }
+
+  setMessage("Event removed successfully.");
+  setBusy(false);
+}
   async function importEventData() {
     if (!supabase || !activeEventId) {
       setError("Select an event before importing.");
