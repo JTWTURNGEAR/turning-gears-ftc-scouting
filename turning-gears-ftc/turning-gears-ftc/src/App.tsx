@@ -27,6 +27,8 @@ type RecordRow = {
   can_shoot_nectar: boolean;
   refilled_flower: boolean;
   ranking_points: number;
+  red_final_score: number;
+blue_final_score: number;
   notes: string | null;
 };
 
@@ -44,8 +46,10 @@ const emptyForm = {
   hive_tips: 0,
   can_shoot_nectar: false,
   refilled_flower: false,
-  ranking_points: 0,
-  notes: ""
+ ranking_points: 0,
+red_final_score: 0,
+blue_final_score: 0,
+notes: ""
 };
 
 export default function App() {
@@ -223,7 +227,9 @@ const recordData = {
     hive_tips: form.hive_tips,
     can_shoot_nectar: form.can_shoot_nectar,
     refilled_flower: form.refilled_flower,
-    ranking_points: form.ranking_points,
+      ranking_points: form.ranking_points,
+    red_final_score: form.red_final_score,
+    blue_final_score: form.blue_final_score,
     notes: form.notes.trim()
 };
 
@@ -346,7 +352,9 @@ async function editRecord(record: RecordRow) {
     hive_tips: record.hive_tips ?? 0,
     can_shoot_nectar: record.can_shoot_nectar ?? false,
     refilled_flower: record.refilled_flower ?? false,
-    ranking_points: record.ranking_points ?? 0,
+     ranking_points: record.ranking_points ?? 0,
+    red_final_score: record.red_final_score ?? 0,
+    blue_final_score: record.blue_final_score ?? 0,
     notes: record.notes ?? ""
   });
 
@@ -669,7 +677,33 @@ if (recordSort === "team-high") {
               onChange={e => setForm({...form, ranking_points: Number(e.target.value)})}/>
           </Field>
         </div>
+                <div className="two-col">
+          <Field label="Red alliance final score">
+            <input
+              type="number"
+              min="0"
+              value={form.red_final_score}
+              onChange={e => setForm({
+                ...form,
+                red_final_score: Number(e.target.value)
+              })}
+              placeholder="Red score"
+            />
+          </Field>
 
+          <Field label="Blue alliance final score">
+            <input
+              type="number"
+              min="0"
+              value={form.blue_final_score}
+              onChange={e => setForm({
+                ...form,
+                blue_final_score: Number(e.target.value)
+              })}
+              placeholder="Blue score"
+            />
+          </Field>
+        </div>
         <div className="checkbox-list">
           <label className="check-field">
             <input type="checkbox" checked={form.can_shoot_nectar}
@@ -827,6 +861,8 @@ if (recordSort === "team-high") {
               <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
               <span>Hive tips <b>{r.hive_tips ?? 0}</b></span>
               <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
+              <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
+<span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
               <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
               <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
             </div>
@@ -971,6 +1007,8 @@ if (recordSort === "team-high") {
             <span>Can shoot nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
             <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
+            <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
+<span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
           </div>
 
           {r.notes && (
