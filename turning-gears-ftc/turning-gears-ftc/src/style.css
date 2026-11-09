@@ -810,3 +810,90 @@ button { cursor: pointer; }
     grid-template-columns: 1fr;
   }
 }
+/* Live Match Tracker */
+.live-match-panel {
+  margin-bottom: 20px;
+}
+
+.live-match-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.alliance-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.alliance-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.alliance-team-row {
+  display: flex;
+  gap: 8px;
+}
+
+.alliance-team {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 5px;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.alliance-team:hover {
+  transform: translateY(-2px);
+}
+
+.alliance-team.red {
+  background: rgba(190, 35, 50, 0.22);
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+}
+
+.alliance-team.blue {
+  background: rgba(35, 100, 210, 0.22);
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+}
+
+.alliance-team.our-team {
+  border: 2px solid #facc15;
+  font-weight: 900;
+}
+
+.alliance-team.related-team {
+  font-weight: 900;
+  outline: 2px solid rgba(250, 204, 21, 0.65);
+}
+
+.red-label {
+  color: #ff7777;
+}
+
+.blue-label {
+  color: #72aaff;
+}
+
+.match-countdown {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 520px) {
+  .alliance-display {
+    grid-template-columns: 1fr;
+  }
+}
