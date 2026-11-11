@@ -1427,7 +1427,8 @@ return (
         : "Time not set"}
     </span>
 
-    <div className={`schedule-score-box red-score-box ${redWins || isTie ? "score-winner" : ""}`}>
+    
+    <div className="schedule-score-box red-score-box">
       <div className="schedule-alliance-info">
         <b>🔴 Red Alliance</b>
         <span>
@@ -1444,12 +1445,12 @@ return (
         </span>
       </div>
 
-      <strong className="schedule-score">
+      <span className={`schedule-score ${redWins || isTie ? "score-winner" : "score-loser"}`}>
         {match.red_score ?? "—"}{isTie ? "*" : ""}
-      </strong>
+      </span>
     </div>
 
-    <div className={`schedule-score-box blue-score-box ${blueWins || isTie ? "score-winner" : ""}`}>
+    <div className="schedule-score-box blue-score-box">
       <div className="schedule-alliance-info">
         <b>🔵 Blue Alliance</b>
         <span>
@@ -1466,9 +1467,9 @@ return (
         </span>
       </div>
 
-      <strong className="schedule-score">
+      <span className={`schedule-score ${blueWins || isTie ? "score-winner" : "score-loser"}`}>
         {match.blue_score ?? "—"}{isTie ? "*" : ""}
-      </strong>
+      </span>
     </div>
 
     {isTie && (
@@ -1476,6 +1477,7 @@ return (
         * Resulted in tie
       </div>
     )}
+
   </div>
 );
             })
