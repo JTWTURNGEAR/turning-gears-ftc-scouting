@@ -932,6 +932,7 @@ button { cursor: pointer; }
   font-size: 0.75rem;
 }
 
+
 /* Large red and blue match score boxes */
 .schedule-match-card {
   gap: 12px;
@@ -970,16 +971,21 @@ button { cursor: pointer; }
   overflow-wrap: anywhere;
 }
 
-.schedule-score {
-  font-size: 2rem;
+.schedule-match-card .schedule-score {
+  font-size: 2.5rem !important;
+  color: #ffffff !important;
+  font-weight: 400 !important;
+  line-height: 1;
   flex-shrink: 0;
   text-align: right;
 }
 
-.schedule-score-box.score-winner .schedule-alliance-info,
-.schedule-score-box.score-winner .schedule-score {
-  font-weight: 900;
-  
+.schedule-match-card .schedule-score.score-winner {
+  font-weight: 900 !important;
+}
+
+.schedule-match-card .schedule-score.score-loser {
+  font-weight: 400 !important;
 }
 
 .schedule-tie-note {
@@ -987,15 +993,4 @@ button { cursor: pointer; }
   font-size: 0.9rem;
   color: #facc15;
   margin-top: 2px;
-}
-.schedule-score {
-  font-weight: 400 !important;
-}
-
-.schedule-score.score-winner {
-  font-weight: 900 !important;
-}
-
-.schedule-score.score-loser {
-  font-weight: 400 !important;
 }
