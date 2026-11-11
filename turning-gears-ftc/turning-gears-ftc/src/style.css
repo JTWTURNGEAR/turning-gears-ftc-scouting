@@ -994,3 +994,9 @@ button { cursor: pointer; }
   color: #facc15;
   margin-top: 2px;
 }
+.schedule-match-card .schedule-score.score-winner {
+  font-weight: 900 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
