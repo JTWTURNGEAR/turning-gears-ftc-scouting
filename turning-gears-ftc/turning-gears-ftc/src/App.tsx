@@ -1391,69 +1391,93 @@ tab === "event-manager" ? "Event Manager" :
                   : null;
 
               const teams = [
-                match.red_team_1,
-                match.red_team_2,
-                match.blue_team_1,
-                match.blue_team_2
-              ];
+  match.red_team_1,
+  match.red_team_2,
+  match.blue_team_1,
+  match.blue_team_2
+];
 
-              return (
-                <div className="action-card" key={match.id}>
-                  <b>
-                    {match.match_type} {match.match_number}
-                  </b>
+const hasScores =
+  match.red_score !== null && match.blue_score !== null;
 
-                  <span>
-                    {matchTime
-                      ? matchTime.toLocaleString([], {
-                          weekday: "short",
-                          month: "numeric",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit"
-                        })
-                      : "Time not set"}
-                  </span>
+const isTie =
+  hasScores && match.red_score === match.blue_score;
 
-                  <div>
-                    <b>🔴 Red Alliance</b>
-                    <p>
-                      {teams.slice(0, 2).map((team, index) => (
-                        <span key={team}>
-                          {index > 0 && " + "}
-                          {team === 7215 ? (
-                            <strong>⭐ {team} (OUR TEAM)</strong>
-                          ) : (
-                            team
-                          )}
-                        </span>
-                      ))}
-                    </p>
-                    {match.red_score !== null && (
-                      <span>Red score: {match.red_score}</span>
-                    )}
-                  </div>
+const redWins =
+  hasScores && match.red_score! > match.blue_score!;
 
-                  <div>
-                    <b>🔵 Blue Alliance</b>
-                    <p>
-                      {teams.slice(2, 4).map((team, index) => (
-                        <span key={team}>
-                          {index > 0 && " + "}
-                          {team === 7215 ? (
-                            <strong>⭐ {team} (OUR TEAM)</strong>
-                          ) : (
-                            team
-                          )}
-                        </span>
-                      ))}
-                    </p>
-                    {match.blue_score !== null && (
-                      <span>Blue score: {match.blue_score}</span>
-                    )}
-                  </div>
-                </div>
-              );
+const blueWins =
+  hasScores && match.blue_score! > match.red_score!;
+
+return (
+  <div className="action-card schedule-match-card" key={match.id}>
+    <b>
+      {match.match_type} {match.match_number}
+    </b>
+
+    <span>
+      {matchTime
+        ? matchTime.toLocaleString([], {
+            weekday: "short",
+            month: "numeric",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+          })
+        : "Time not set"}
+    </span>
+
+    <div className={`schedule-score-box red-score-box ${redWins || isTie ? "score-winner" : ""}`}>
+      <div className="schedule-alliance-info">
+        <b>🔴 Red Alliance</b>
+        <span>
+          {teams.slice(0, 2).map((team, index) => (
+            <span key={team}>
+              {index > 0 && " + "}
+              {team === 7215 ? (
+                <strong>⭐ {team} (OUR TEAM)</strong>
+              ) : (
+                team
+              )}
+            </span>
+          ))}
+        </span>
+      </div>
+
+      <strong className="schedule-score">
+        {match.red_score ?? "—"}{isTie ? "*" : ""}
+      </strong>
+    </div>
+
+    <div className={`schedule-score-box blue-score-box ${blueWins || isTie ? "score-winner" : ""}`}>
+      <div className="schedule-alliance-info">
+        <b>🔵 Blue Alliance</b>
+        <span>
+          {teams.slice(2, 4).map((team, index) => (
+            <span key={team}>
+              {index > 0 && " + "}
+              {team === 7215 ? (
+                <strong>⭐ {team} (OUR TEAM)</strong>
+              ) : (
+                team
+              )}
+            </span>
+          ))}
+        </span>
+      </div>
+
+      <strong className="schedule-score">
+        {match.blue_score ?? "—"}{isTie ? "*" : ""}
+      </strong>
+    </div>
+
+    {isTie && (
+      <div className="schedule-tie-note">
+        * Resulted in tie
+      </div>
+    )}
+  </div>
+);
             })
           )}
         </section>
