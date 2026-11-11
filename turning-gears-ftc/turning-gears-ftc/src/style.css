@@ -931,3 +931,59 @@ button { cursor: pointer; }
   letter-spacing: 0.08em;
   font-size: 0.75rem;
 }
+
+/* Large red and blue match score boxes */
+.schedule-match-card {
+  gap: 12px;
+}
+
+.schedule-score-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 12px;
+  color: white;
+}
+
+.red-score-box {
+  background: #9f2533;
+  border: 2px solid #ef4444;
+}
+
+.blue-score-box {
+  background: #2459a6;
+  border: 2px solid #3b82f6;
+}
+
+.schedule-alliance-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.schedule-alliance-info span {
+  overflow-wrap: anywhere;
+}
+
+.schedule-score {
+  font-size: 2rem;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.schedule-score-box.score-winner .schedule-alliance-info,
+.schedule-score-box.score-winner .schedule-score {
+  font-weight: 900;
+}
+
+.schedule-tie-note {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #facc15;
+  margin-top: 2px;
+}
