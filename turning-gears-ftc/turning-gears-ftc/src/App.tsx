@@ -990,7 +990,7 @@ const selectedTeamSummary = teamSummaries.find(
     );
 }, [eventMatches]);
 
-const currentMatch = scheduledMatches.find(match =>
+const currentMatch = [...scheduledMatches].reverse().find(match =>
   !match.completed &&
   match.scheduledTime !== null &&
   match.scheduledTime <= clockNow
