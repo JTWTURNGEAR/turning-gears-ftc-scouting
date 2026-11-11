@@ -979,6 +979,7 @@ button { cursor: pointer; }
 .schedule-score-box.score-winner .schedule-alliance-info,
 .schedule-score-box.score-winner .schedule-score {
   font-weight: 900;
+  
 }
 
 .schedule-tie-note {
@@ -986,4 +987,15 @@ button { cursor: pointer; }
   font-size: 0.9rem;
   color: #facc15;
   margin-top: 2px;
+}
+.schedule-score {
+  font-weight: 400 !important;
+}
+
+.schedule-score.score-winner {
+  font-weight: 900 !important;
+}
+
+.schedule-score.score-loser {
+  font-weight: 400 !important;
 }
