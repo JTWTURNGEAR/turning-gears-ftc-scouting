@@ -1876,7 +1876,18 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
               <b>{team.team_number}</b>
               <span>{team.team_name}</span>
             </div>
-            <strong>{Number(team.ranking_points).toFixed(2)} RP</strong>
+            <div style={{ textAlign: "right" }}>
+  <div>
+    <strong>{Number(team.ranking_points).toFixed(2)}</strong>
+    <span className="muted"> Avg RP</span>
+  </div>
+  <div>
+    <strong>
+      {(Number(team.ranking_points) * Number(team.matches_played)).toFixed(2)}
+    </strong>
+    <span className="muted"> Total RP</span>
+  </div>
+</div>
           </div>
         ))
     )}
@@ -2999,7 +3010,26 @@ onClick={async () => {
               {t.count} observations
             </span>
           </div>
+          <div className="comparison-stat">
+            <span>Average RP</span>
+            <strong>
+              {eventTeams.find(et => et.team_number === t.team)
+                ? Number(eventTeams.find(et => et.team_number === t.team)!.ranking_points).toFixed(2)
+                : "—"}
+            </strong>
+          </div>
 
+          <div className="comparison-stat">
+            <span>Total RP</span>
+            <strong>
+              {eventTeams.find(et => et.team_number === t.team)
+                ? (
+                    Number(eventTeams.find(et => et.team_number === t.team)!.ranking_points) *
+                    Number(eventTeams.find(et => et.team_number === t.team)!.matches_played)
+                  ).toFixed(2)
+                : "—"}
+            </strong>
+          </div>
           <div className="comparison-stat">
             <span>Autonomous</span>
             <RatingPill value={t.autonomous}/>
