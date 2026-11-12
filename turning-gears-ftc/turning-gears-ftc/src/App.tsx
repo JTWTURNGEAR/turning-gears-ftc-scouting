@@ -29,6 +29,7 @@ type EventTeamRow = {
   team_name: string;
   event_rank: number | null;
   ranking_points: number;
+  matches_played: number;
 };
 type EventMatch = {
   id: string;
@@ -816,6 +817,7 @@ setMessage(
   }
 
  
+
 async function importOfficialRankings() {
   if (!supabase || !activeEventId) {
     setError("Select an event first.");
@@ -833,16 +835,24 @@ async function importOfficialRankings() {
   const rankIndex = header.indexOf("rank");
   const teamIndex = header.indexOf("team");
   const rpIndex = header.indexOf("rp");
+  const matchesPlayedIndex = header.indexOf("matches played");
 
-  if (rankIndex === -1 || teamIndex === -1 || rpIndex === -1) {
-    setError("Could not find Rank, Team, and RP columns. Check the report format.");
+  if (
+    rankIndex === -1 ||
+    teamIndex === -1 ||
+    rpIndex === -1 ||
+    matchesPlayedIndex === -1
+  ) {
+    setError("Could not find Rank, Team, RP, and Matches Played columns. Check the report format.");
     return;
   }
 
   const knownTeams = new Set(eventTeams.map(t => t.team_number));
+
   const updates = new Map<number, {
     event_rank: number;
     ranking_points: number;
+    matches_played: number;
   }>();
 
   lines.slice(1).forEach(line => {
@@ -853,6 +863,9 @@ async function importOfficialRankings() {
       columns[teamIndex]?.trim().replace(/^#/, "")
     );
     const rankingPoints = Number(columns[rpIndex]?.trim());
+    const matchesPlayed = Number(
+      columns[matchesPlayedIndex]?.trim()
+    );
 
     if (
       Number.isInteger(rank) &&
@@ -860,11 +873,14 @@ async function importOfficialRankings() {
       Number.isInteger(teamNumber) &&
       teamNumber > 0 &&
       Number.isFinite(rankingPoints) &&
+      Number.isInteger(matchesPlayed) &&
+      matchesPlayed >= 0 &&
       knownTeams.has(teamNumber)
     ) {
       updates.set(teamNumber, {
         event_rank: rank,
-        ranking_points: rankingPoints
+        ranking_points: rankingPoints,
+        matches_played: matchesPlayed
       });
     }
   });
