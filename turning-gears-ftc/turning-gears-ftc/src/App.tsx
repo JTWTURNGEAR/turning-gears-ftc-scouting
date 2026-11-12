@@ -214,7 +214,6 @@ useEffect(() => {
     setAuthUserId(authData.user?.id || "");
 
     const [
-    const [
   { data: scoutData, error: scoutError },
   { data: recordData, error: recordError },
   { data: noteData, error: noteError },
