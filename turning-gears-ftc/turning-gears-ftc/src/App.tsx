@@ -1126,9 +1126,18 @@ const teamSummaries = useMemo(() => {
     teamSummaries.find(t => String(t.team) === teamNumber)
   )
   .filter((team): team is (typeof teamSummaries)[number] => Boolean(team));
-  const selectedTeamRecords = records
-  .filter(r => r.team_number === selectedTeamNumber)
+ 
+const selectedTeamRecords = records
+  .filter(r =>
+    r.team_number === selectedTeamNumber &&
+    (
+      selectedScoutGroups.length === 0 ||
+      (r.scout_group !== null &&
+        selectedScoutGroups.includes(r.scout_group))
+    )
+  )
   .sort((a, b) => a.match_number - b.match_number);
+
 
 const selectedTeamSummary = teamSummaries.find(
   t => t.team === selectedTeamNumber
@@ -2477,10 +2486,53 @@ return (
           )}
         </div>
       ))
+   
+    )}
+
+    <h3 className="section-title">General Notes</h3>
+
+    {generalNotes
+      .filter(n =>
+        n.team_number === selectedTeamNumber &&
+        (
+          selectedScoutGroups.length === 0 ||
+          selectedScoutGroups.includes(n.scout_group)
+        )
+      )
+      .sort((a, b) =>
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime()
+      )
+      .map(n => (
+        <div className="record" key={n.id}>
+          <div className="record-top">
+            <b>General Observation</b>
+            <span className="muted">
+              {n.scout_group}
+            </span>
+          </div>
+
+          <div className="record-meta">
+            Scouted by {n.scout_name} · {new Date(n.created_at).toLocaleString()}
+          </div>
+
+          <p className="record-notes">{n.notes}</p>
+        </div>
+      ))}
+
+    {generalNotes.filter(n =>
+      n.team_number === selectedTeamNumber &&
+      (
+        selectedScoutGroups.length === 0 ||
+        selectedScoutGroups.includes(n.scout_group)
+      )
+    ).length === 0 && (
+      <p className="muted">No general notes found for this team.</p>
     )}
   </section>
 )}
 {tab === "compare" && <section className="panel">
+
   <div className="section-head">
     <h3>Team comparison</h3>
     <span className="muted tiny">Compare up to 3 teams</span>
