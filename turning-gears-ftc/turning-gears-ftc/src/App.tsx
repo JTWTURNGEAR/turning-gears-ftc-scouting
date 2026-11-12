@@ -127,6 +127,9 @@ const [noteText, setNoteText] = useState("");
 const [editingScoutName, setEditingScoutName] = useState("");
   const [authUserId, setAuthUserId] = useState("");
   const [recordSearch, setRecordSearch] = useState("");
+  const [recordTypeFilter, setRecordTypeFilter] = useState<
+  "Both" | "Match Records" | "General Notes"
+>("Both");
 const [recordMatchFilter, setRecordMatchFilter] = useState("");
 const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [recordSort, setRecordSort] = useState("match");
@@ -1172,17 +1175,30 @@ const futureRelatedTeams = new Set(
   const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
-  const filtered = records.filter(r => {
+  const matchRecords = recordTypeFilter !== "General Notes"
+    ? records.map(r => ({ ...r, submissionType: "match" as const }))
+    : [];
+
+  const noteRecords = recordTypeFilter !== "Match Records"
+    ? generalNotes.map(n => ({ ...n, submissionType: "note" as const }))
+    : [];
+
+  const combined = [...matchRecords, ...noteRecords];
+
+  const filtered = combined.filter(r => {
     const matchesSearch =
       !search ||
       String(r.team_number).includes(search) ||
-      r.scout_name.toLowerCase().includes(search);
+      r.scout_name.toLowerCase().includes(search) ||
+      (r.submissionType === "note" && r.notes.toLowerCase().includes(search));
 
     const matchesMatch =
+      r.submissionType === "note" ||
       !recordMatchFilter ||
       String(r.match_number) === recordMatchFilter;
 
     const matchesAlliance =
+      r.submissionType === "note" ||
       recordAllianceFilter === "All" ||
       r.alliance === recordAllianceFilter;
 
@@ -1191,36 +1207,36 @@ const futureRelatedTeams = new Set(
 
   return [...filtered].sort((a, b) => {
     if (recordSort === "ranking") {
-      return (b.ranking_points ?? 0) - (a.ranking_points ?? 0);
+      return (b.submissionType === "match" ? b.ranking_points ?? 0 : 0) -
+        (a.submissionType === "match" ? a.ranking_points ?? 0 : 0);
     }
 
     if (recordSort === "hive") {
-      return (b.hive_tips ?? 0) - (a.hive_tips ?? 0);
+      return (b.submissionType === "match" ? b.hive_tips ?? 0 : 0) -
+        (a.submissionType === "match" ? a.hive_tips ?? 0 : 0);
     }
-if (recordSort === "team-low") {
-  return (
-    a.team_number - b.team_number ||
-    a.match_number - b.match_number
-  );
-}
 
-if (recordSort === "team-high") {
-  return (
-    b.team_number - a.team_number ||
-    a.match_number - b.match_number
-  );
-}
-    return (
-      a.match_number - b.match_number ||
-      a.team_number - b.team_number
-    );
+    if (recordSort === "team-low") {
+      return a.team_number - b.team_number;
+    }
+
+    if (recordSort === "team-high") {
+      return b.team_number - a.team_number;
+    }
+
+    const aMatch = a.submissionType === "match" ? a.match_number : Infinity;
+    const bMatch = b.submissionType === "match" ? b.match_number : Infinity;
+
+    return aMatch - bMatch || a.team_number - b.team_number;
   });
 }, [
   records,
+  generalNotes,
   recordSearch,
   recordMatchFilter,
   recordAllianceFilter,
-  recordSort
+  recordSort,
+  recordTypeFilter
 ]);
   function openTeamProfile(team: number) {
   setSelectedTeamNumber(team);
