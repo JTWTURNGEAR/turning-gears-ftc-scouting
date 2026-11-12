@@ -1645,7 +1645,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           <h2>{tab === "home" ? "Dashboard" :
   tab === "scout" ? "Match scouting" :
   tab === "records" ? "Submissions" :
-  tab === "teams" ? "Team analytics" :
+ 
   tab === "team-detail" ? `Team ${selectedTeamNumber} profile` :
   tab === "event" ? "Event Center" :
   tab === "schedule" ? "Event Schedule" :
