@@ -2179,6 +2179,7 @@ return (
         setRecordAllianceFilter("All");
         setRecordSort("match");
         setRecordTypeFilter("Both");
+        setSelectedScoutGroups([]);
       }}
     >
       <RefreshCw size={15} /> Reset filters
