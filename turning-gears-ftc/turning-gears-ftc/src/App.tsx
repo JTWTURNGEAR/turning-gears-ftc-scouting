@@ -99,6 +99,9 @@ export default function App() {
   const [sessionReady, setSessionReady] = useState(false);
   const [joined, setJoined] = useState(false);
   const [tab, setTab] = useState("home");
+  const [scoutMode, setScoutMode] = useState<"match" | "notes">("match");
+const [noteTeamNumber, setNoteTeamNumber] = useState("");
+const [noteText, setNoteText] = useState("");
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [selectedScout, setSelectedScout] = useState(
     () => localStorage.getItem("tg-selected-scout") || ""
@@ -691,6 +694,71 @@ useEffect(() => {
   }
 
  
+async function submitGeneralNote() {
+  if (!supabase || !selectedScout || !teamId) {
+    setError("Choose your scout name first.");
+    return;
+  }
+
+  const selectedScoutRow = scouts.find(
+    s => s.name === selectedScout
+  );
+
+  if (!selectedScoutRow?.scout_group) {
+    setError("Your scout needs a group assigned before submitting.");
+    return;
+  }
+
+  const team = Number(noteTeamNumber);
+  const cleanNotes = noteText.trim();
+
+  if (!Number.isInteger(team) || team < 1) {
+    setError("Enter a valid team number.");
+    return;
+  }
+
+  if (!cleanNotes) {
+    setError("Please enter your observation notes.");
+    return;
+  }
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  const { data: authData, error: authError } =
+    await supabase.auth.getUser();
+
+  if (authError || !authData.user) {
+    setError("Your team session needs to be refreshed.");
+    setBusy(false);
+    return;
+  }
+
+  const { error: noteError } = await supabase
+    .from("general_notes")
+    .insert({
+      team_id: teamId,
+      submitted_by: authData.user.id,
+      scout_name: selectedScout,
+      scout_group: selectedScoutRow.scout_group,
+      team_number: team,
+      notes: cleanNotes
+    });
+
+  if (noteError) {
+    setError(noteError.message);
+  } else {
+    setNoteTeamNumber("");
+    setNoteText("");
+    setMessage("General notes saved for the whole team.");
+    await loadTeam();
+    setTab("records");
+  }
+
+  setBusy(false);
+}
+
 async function submitRecord() {
   if (!supabase || (!editingRecordId && !selectedScout)) {
     setError("Choose your scout name first.");
@@ -1694,6 +1762,71 @@ return (
         </section>
       )}
       {tab === "scout" && <section className="panel form-panel">
+        
+        <div className="form-intro">
+          <span className="eyebrow">SCOUTING MODE</span>
+          <div className="segmented">
+            <button
+              className={scoutMode === "match" ? "selected" : ""}
+              onClick={() => setScoutMode("match")}
+              disabled={!!editingRecordId}
+            >
+              Match Report
+            </button>
+            <button
+              className={scoutMode === "notes" ? "selected" : ""}
+              onClick={() => setScoutMode("notes")}
+              disabled={!!editingRecordId}
+            >
+              Notes Only
+            </button>
+          </div>
+        </div>
+
+        {scoutMode === "notes" ? (
+          <>
+            <div className="form-intro">
+              <h3>General Team Notes</h3>
+              <p className="muted">
+                Record observations about a team without attaching them to a specific match.
+              </p>
+            </div>
+
+            <Field label="Team number">
+              <input
+                inputMode="numeric"
+                value={noteTeamNumber}
+                onChange={e => setNoteTeamNumber(e.target.value)}
+                placeholder="e.g. 12345"
+              />
+            </Field>
+
+            <Field label="General observations">
+              <textarea
+                rows={6}
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                placeholder="Enter observations about this team's robot, strengths, weaknesses, or strategy..."
+              />
+            </Field>
+
+            {!selectedScout && (
+              <p className="warning">
+                Choose your scout name on the Dashboard before submitting.
+              </p>
+            )}
+
+            <button
+              className="primary full"
+              onClick={submitGeneralNote}
+              disabled={busy || !selectedScout || !noteTeamNumber.trim() || !noteText.trim()}
+            >
+              {busy ? "Saving…" : "Save general notes"}
+            </button>
+          </>
+        ) : (
+          <>
+
         <div className="form-intro">
           <span className="eyebrow">NEW OBSERVATION</span>
           <h3>{editingRecordId ? "Edit submission" : "Match performance"}</h3>
@@ -1878,9 +2011,10 @@ return (
       }}
     >
       Cancel editing
-    </button>
-  )}
+      </button>
 </div>
+          </>
+        )}
       </section>}
 
            {tab === "records" && <section className="panel">
