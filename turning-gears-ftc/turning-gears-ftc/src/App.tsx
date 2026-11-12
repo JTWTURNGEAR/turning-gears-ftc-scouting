@@ -6,7 +6,17 @@ import {
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
 
-type Scout = { id: string; name: string; active: boolean };
+type ScoutGroup =
+  | "Scouting Coach"
+  | "Parent Scout"
+  | "Student Scout";
+
+type Scout = {
+  id: string;
+  name: string;
+  active: boolean;
+  scout_group: ScoutGroup | null;
+};
 type EventRow = {
   id: string;
   event_name: string;
@@ -36,6 +46,7 @@ type RecordRow = {
   match_number: number;
   alliance: string;
   scout_name: string;
+  scout_group: ScoutGroup | null;
   created_at: string;
   auto_rating: number | null;
   shooting_accuracy: number | null;
@@ -53,7 +64,15 @@ type RecordRow = {
   blue_final_score: number;
   notes: string | null;
 };
-
+type GeneralNoteRow = {
+  id: string;
+  submitted_by: string;
+  team_number: number;
+  scout_name: string;
+  scout_group: ScoutGroup;
+  notes: string;
+  created_at: string;
+};
 const emptyForm = {
   team_number: "",
   partner_team_number: "",
@@ -94,6 +113,7 @@ export default function App() {
   const [scheduleText, setScheduleText] = useState("");
   const [importBusy, setImportBusy] = useState(false);
   const [records, setRecords] = useState<RecordRow[]>([]);
+  const [generalNotes, setGeneralNotes] = useState<GeneralNoteRow[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [teamCode, setTeamCode] = useState("");
   const [coordinatorCode, setCoordinatorCode] = useState("");
@@ -194,39 +214,51 @@ useEffect(() => {
     setAuthUserId(authData.user?.id || "");
 
     const [
-      { data: scoutData, error: scoutError },
-      { data: recordData, error: recordError },
-      { data: memberData },
-      { data: eventData }
-    ] = await Promise.all([
-      supabase.from("scouts")
-        .select("id,name,active")
-        .eq("active", true)
-        .order("name"),
+    const [
+  { data: scoutData, error: scoutError },
+  { data: recordData, error: recordError },
+  { data: noteData, error: noteError },
+  { data: memberData },
+  { data: eventData }
+] = await Promise.all([
+  supabase.from("scouts")
+    .select("id,name,active,scout_group")
+    .eq("active", true)
+    .order("name"),
 
-      supabase.from("match_records")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(250),
+  supabase.from("match_records")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(250),
 
-      supabase.from("team_members")
-        .select("role,team_id")
-        .eq("user_id", authData.user?.id || "")
-        .limit(1)
-        .maybeSingle(),
+  supabase.from("general_notes")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(250),
 
-      supabase.from("events")
-        .select("id,event_name,event_date")
-        .order("created_at", { ascending: false })
-    ]);
+  supabase.from("team_members")
+    .select("role,team_id")
+    .eq("user_id", authData.user?.id || "")
+    .limit(1)
+    .maybeSingle(),
+
+  supabase.from("events")
+    .select("id,event_name,event_date")
+    .order("created_at", { ascending: false })
+]);
 
     setIsCoordinator(memberData?.role === "coordinator");
     setTeamId(memberData?.team_id || "");
 
-    if (scoutError || recordError) {
-      setError(scoutError?.message || recordError?.message || "Could not load team data.");
-      return;
-    }
+   if (scoutError || recordError || noteError) {
+  setError(
+    scoutError?.message ||
+    recordError?.message ||
+    noteError?.message ||
+    "Could not load team data."
+  );
+  return;
+}
 
     setScouts(scoutData || []);
     const loadedEvents = (eventData || []) as EventRow[];
@@ -237,6 +269,7 @@ useEffect(() => {
       await loadEventMatches(loadedEvents[0].id);
     }
     setRecords((recordData || []) as RecordRow[]);
+    setGeneralNotes((noteData || []) as GeneralNoteRow[]);
     setJoined(true);
     setError("");
   }
