@@ -1086,14 +1086,21 @@ async function editRecord(record: RecordRow) {
   setError("");
   setTab("scout");
 }
-async function deleteRecord(id: string) {
-  if (!supabase || !isCoordinator) {
-    setError("Only coordinators can remove submissions.");
+
+async function deleteRecord(
+  id: string,
+  submissionType: "match" | "note",
+  submittedBy: string
+) {
+  if (!supabase || !authUserId || !teamId) return;
+
+  if (!isCoordinator && submittedBy !== authUserId) {
+    setError("You can only delete your own submissions.");
     return;
   }
 
   const confirmed = window.confirm(
-    "Are you sure you want to permanently delete this scouting submission?"
+    "Are you sure you want to permanently delete this submission?"
   );
 
   if (!confirmed) return;
@@ -1102,11 +1109,47 @@ async function deleteRecord(id: string) {
   setError("");
   setMessage("");
 
-  const { error: deleteError } = await supabase
-    .from("match_records")
-    .delete()
-    .eq("id", id)
-    .eq("team_id", teamId);
+  let deleteError: { message: string } | null = null;
+
+  if (isCoordinator) {
+    if (submissionType === "match") {
+      const result = await supabase
+        .from("match_records")
+        .delete()
+        .eq("id", id)
+        .eq("team_id", teamId);
+
+      deleteError = result.error;
+    } else {
+      const result = await supabase
+        .from("general_notes")
+        .delete()
+        .eq("id", id)
+        .eq("team_id", teamId);
+
+      deleteError = result.error;
+    }
+  } else {
+    if (submissionType === "match") {
+      const result = await supabase
+        .from("match_records")
+        .delete()
+        .eq("id", id)
+        .eq("team_id", teamId)
+        .eq("submitted_by", authUserId);
+
+      deleteError = result.error;
+    } else {
+      const result = await supabase
+        .from("general_notes")
+        .delete()
+        .eq("id", id)
+        .eq("team_id", teamId)
+        .eq("submitted_by", authUserId);
+
+      deleteError = result.error;
+    }
+  }
 
   if (deleteError) {
     setError(deleteError.message);
@@ -1117,7 +1160,6 @@ async function deleteRecord(id: string) {
 
   setBusy(false);
 }
-
 
 const teamSummaries = useMemo(() => {
   const filteredRecords = records.filter(r =>
@@ -2248,19 +2290,32 @@ return (
 
         return (
           <div className="record" key={`note-${n.id}`}>
-            <div className="record-top">
-              <button
-                className="team-number-link"
-                onClick={() => {
-                  setSelectedTeamNumber(n.team_number);
-                  setTab("team-detail");
-                }}
-              >
-                Team {n.team_number}
-              </button>
+           
+<div className="record-top">
+  <button
+    className="team-number-link"
+    onClick={() => {
+      setSelectedTeamNumber(n.team_number);
+      setTab("team-detail");
+    }}
+  >
+    Team {n.team_number}
+  </button>
 
-              <span className="alliance">GENERAL NOTE</span>
-            </div>
+  <span className="alliance">GENERAL NOTE</span>
+
+  {(isCoordinator || n.submitted_by === authUserId) && (
+    <button
+      className="text-btn"
+      onClick={() => deleteRecord(n.id, "note", n.submitted_by)}
+      disabled={busy}
+      title="Delete general note"
+    >
+      <Trash2 size={15} /> Delete
+    </button>
+  )}
+</div>
+
 
             <div className="record-meta">
               Scouted by {n.scout_name} · {n.scout_group}
@@ -2305,16 +2360,18 @@ return (
               </button>
             )}
 
-            {isCoordinator && (
-              <button
-                className="text-btn"
-                onClick={() => deleteRecord(r.id)}
-                disabled={busy}
-                title="Remove submission"
-              >
-                <Trash2 size={15} /> Remove
-              </button>
-            )}
+            
+{(isCoordinator || r.submitted_by === authUserId) && (
+  <button
+    className="text-btn"
+    onClick={() => deleteRecord(r.id, "match", r.submitted_by)}
+    disabled={busy}
+    title="Delete submission"
+  >
+    <Trash2 size={15} /> Delete
+  </button>
+)}
+
           </div>
 
           <div className="record-meta">
