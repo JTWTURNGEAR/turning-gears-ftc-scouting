@@ -2289,9 +2289,7 @@ return (
             <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
             <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
-            <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
-            <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
-            <span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
+           <span>Emptied flower <b>{r.emptied_flower ? "Yes" : "No"}</b></span>
             <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
           </div>
@@ -2461,9 +2459,7 @@ return (
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
             <span>Can shoot nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
-            <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
-            <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
-<span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
+           <span>Emptied flower <b>{r.emptied_flower ? "Yes" : "No"}</b></span>
           </div>
 
           {r.notes && (
