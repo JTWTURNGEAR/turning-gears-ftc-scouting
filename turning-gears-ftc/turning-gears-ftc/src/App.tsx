@@ -59,6 +59,7 @@ type RecordRow = {
   teleop_hive_tips: number;
   can_shoot_nectar: boolean;
   refilled_flower: boolean;
+  emptied_flower: boolean;
   ranking_points: number;
   red_final_score: number;
   blue_final_score: number;
@@ -92,7 +93,8 @@ auto_hive_tips: 0,
 teleop_hive_tips: 0,
   can_shoot_nectar: false,
   refilled_flower: false,
- ranking_points: 0,
+ emptied_flower: false,
+  ranking_points: 0,
 red_final_score: 0,
 blue_final_score: 0,
 notes: ""
@@ -849,28 +851,26 @@ async function submitRecord() {
   }
 
   const recordData = {
-    team_number: team,
-    partner_team_number: partnerTeam,
-    match_number: match,
-    alliance: form.alliance,
-    scout_name: editingRecordId ? editingScoutName : selectedScout,
-    scout_group: scoutGroup,
-    auto_rating: form.auto_rating,
-    shooting_accuracy: form.shooting_accuracy,
-    shooting_speed: form.shooting_speed,
-    driving_speed: form.driving_speed,
-    maneuverability: form.maneuverability,
-    reliability: form.reliability,
-    hive_tips: form.hive_tips,
-    auto_hive_tips: form.auto_hive_tips,
-    teleop_hive_tips: form.teleop_hive_tips,
-    can_shoot_nectar: form.can_shoot_nectar,
-    refilled_flower: form.refilled_flower,
-    ranking_points: form.ranking_points,
-    red_final_score: form.red_final_score,
-    blue_final_score: form.blue_final_score,
-    notes: form.notes.trim()
-  };
+  team_number: team,
+  partner_team_number: partnerTeam,
+  match_number: match,
+  alliance: form.alliance,
+  scout_name: editingRecordId ? editingScoutName : selectedScout,
+  scout_group: scoutGroup,
+  auto_rating: form.auto_rating,
+  shooting_accuracy: form.shooting_accuracy,
+  shooting_speed: form.shooting_speed,
+  driving_speed: form.driving_speed,
+  maneuverability: form.maneuverability,
+  reliability: form.reliability,
+  hive_tips: form.hive_tips,
+  auto_hive_tips: form.auto_hive_tips,
+  teleop_hive_tips: form.teleop_hive_tips,
+  can_shoot_nectar: form.can_shoot_nectar,
+  refilled_flower: form.refilled_flower,
+  emptied_flower: form.emptied_flower,
+  notes: form.notes.trim()
+};
 
   const saveResult = editingRecordId
     ? await supabase.from("match_records")
