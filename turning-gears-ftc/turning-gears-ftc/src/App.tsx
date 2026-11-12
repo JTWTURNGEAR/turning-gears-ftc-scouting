@@ -73,6 +73,9 @@ type GeneralNoteRow = {
   notes: string;
   created_at: string;
 };
+type FilteredRecordItem =
+  | { submissionType: "match"; record: RecordRow }
+  | { submissionType: "note"; record: GeneralNoteRow };
 const emptyForm = {
   team_number: "",
   partner_team_number: "",
@@ -1172,40 +1175,50 @@ const futureRelatedTeams = new Set(
     ])
     .filter(team => team !== 7215)
 );
-  const filteredRecords = useMemo(() => {
+ 
+const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
-  const matchRecords = recordTypeFilter !== "General Notes"
-    ? records.map(r => ({
-        submissionType: "match" as const,
-        record: r
-      }))
-    : [];
+  const matchRecords: FilteredRecordItem[] =
+    recordTypeFilter !== "General Notes"
+      ? records.map(r => ({
+          submissionType: "match",
+          record: r
+        }))
+      : [];
 
-  const noteRecords = recordTypeFilter !== "Match Records"
-    ? generalNotes.map(n => ({
-        submissionType: "note" as const,
-        record: n
-      }))
-    : [];
+  const noteRecords: FilteredRecordItem[] =
+    recordTypeFilter !== "Match Records"
+      ? generalNotes.map(n => ({
+          submissionType: "note",
+          record: n
+        }))
+      : [];
 
-  const combined = [...matchRecords, ...noteRecords];
+  const combined: FilteredRecordItem[] = [
+    ...matchRecords,
+    ...noteRecords
+  ];
 
   const filtered = combined.filter(item => {
-    const r = item.record;
-
-    const matchesSearch =
-      !search ||
-      String(r.team_number).includes(search) ||
-      r.scout_name.toLowerCase().includes(search) ||
-      (item.submissionType === "note" && r.notes.toLowerCase().includes(search));
-
     if (item.submissionType === "note") {
-      return matchesSearch;
+      const n = item.record;
+
+      return (
+        !search ||
+        String(n.team_number).includes(search) ||
+        n.scout_name.toLowerCase().includes(search) ||
+        n.notes.toLowerCase().includes(search)
+      );
     }
 
+    const r = item.record;
+
     return (
-      matchesSearch &&
+      (!search ||
+        String(r.team_number).includes(search) ||
+        r.scout_name.toLowerCase().includes(search) ||
+        (r.notes || "").toLowerCase().includes(search)) &&
       (!recordMatchFilter ||
         String(r.match_number) === recordMatchFilter) &&
       (recordAllianceFilter === "All" ||
@@ -1223,19 +1236,37 @@ const futureRelatedTeams = new Set(
     }
 
     if (recordSort === "ranking") {
-      const aValue = a.submissionType === "match" ? a.record.ranking_points ?? 0 : 0;
-      const bValue = b.submissionType === "match" ? b.record.ranking_points ?? 0 : 0;
+      const aValue =
+        a.submissionType === "match"
+          ? a.record.ranking_points ?? 0
+          : 0;
+      const bValue =
+        b.submissionType === "match"
+          ? b.record.ranking_points ?? 0
+          : 0;
       return bValue - aValue;
     }
 
     if (recordSort === "hive") {
-      const aValue = a.submissionType === "match" ? a.record.hive_tips ?? 0 : 0;
-      const bValue = b.submissionType === "match" ? b.record.hive_tips ?? 0 : 0;
+      const aValue =
+        a.submissionType === "match"
+          ? a.record.hive_tips ?? 0
+          : 0;
+      const bValue =
+        b.submissionType === "match"
+          ? b.record.hive_tips ?? 0
+          : 0;
       return bValue - aValue;
     }
 
-    const aMatch = a.submissionType === "match" ? a.record.match_number : Infinity;
-    const bMatch = b.submissionType === "match" ? b.record.match_number : Infinity;
+    const aMatch =
+      a.submissionType === "match"
+        ? a.record.match_number
+        : Infinity;
+    const bMatch =
+      b.submissionType === "match"
+        ? b.record.match_number
+        : Infinity;
 
     return aMatch - bMatch ||
       a.record.team_number - b.record.team_number;
@@ -1249,7 +1280,7 @@ const futureRelatedTeams = new Set(
   recordSort,
   recordTypeFilter
 ]);
-  function openTeamProfile(team: number) {
+ function openTeamProfile(team: number) {
   setSelectedTeamNumber(team);
   setTab("team-detail");
 }
