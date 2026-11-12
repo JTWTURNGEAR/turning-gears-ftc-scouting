@@ -2307,8 +2307,7 @@ return (
           <span className="muted tiny">Average scout ratings</span>
         </div>
         <p className="muted tiny">
-          Ratings are averages of submitted 1–5 scores. Ranking points show both
-          the total and average earned per observation.
+          Ratings are averages of submitted 1–5 scores.
         </p>
 
 <div className="filter-panel">
@@ -2340,10 +2339,7 @@ return (
   >
     <option value="team-low">Sort: Team number (low to high)</option>
     <option value="team-high">Sort: Team number (high to low)</option>
-    <option value="rp-total-low">Sort: RP total (low to high)</option>
-    <option value="rp-total-high">Sort: RP total (high to low)</option>
-    <option value="rp-average-low">Sort: RP average (low to high)</option>
-    <option value="rp-average-high">Sort: RP average (high to low)</option>
+    
   </select>
 </div>
         {teamSummaries.length === 0 ? <Empty text="Team analytics will appear after scouts submit matches."/> :
@@ -2355,8 +2351,7 @@ return (
               <span>SHOOTING</span>
               <span>MOBILITY</span>
               <span>RELIABILITY</span>
-              <span>RP TOTAL</span>
-              <span>RP AVG.</span>
+              
             </div>
             {sortedTeamSummaries.map(t => <div className="team-row analytics-row" key={t.team}>
              <button
@@ -2373,8 +2368,7 @@ return (
               <RatingPill value={t.shooting}/>
               <RatingPill value={t.mobility}/>
               <RatingPill value={t.reliability}/>
-              <RatingPill value={t.rankingTotal}/>
-              <RatingPill value={t.rankingAverage}/>
+            
             </div>)}
           </div>
         }
