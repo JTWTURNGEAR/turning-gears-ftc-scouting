@@ -2318,9 +2318,31 @@ return (
           Ratings are averages of submitted 1–5 scores. Ranking points show both
           the total and average earned per observation.
         </p>
+
 <div className="filter-panel">
+  <div className="filter-group">
+    <strong>Filter by scout group</strong>
+    <div className="checkbox-list">
+      {(["Scouting Coach", "Parent Scout", "Student Scout"] as ScoutGroup[]).map(group => (
+        <label className="check-field" key={group}>
+          <input
+            type="checkbox"
+            checked={selectedScoutGroups.includes(group)}
+            onChange={e => setSelectedScoutGroups(current =>
+              e.target.checked
+                ? [...current, group]
+                : current.filter(item => item !== group)
+            )}
+          />
+          {group}
+        </label>
+      ))}
+    </div>
+  </div>
+
   <select
     className="sort-select"
+
     value={teamSort}
     onChange={e => setTeamSort(e.target.value)}
   >
