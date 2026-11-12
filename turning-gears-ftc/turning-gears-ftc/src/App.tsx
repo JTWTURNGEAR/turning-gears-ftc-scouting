@@ -2045,135 +2045,188 @@ return (
         )}
       </section>}
 
-           {tab === "records" && <section className="panel">
-             
-        <div className="section-head">
-          <h3>Recent submissions</h3>
-          <span className="muted tiny">
-            Showing {filteredRecords.length} of {records.length} records
-          </span>
-        </div>
 
-        <div className="filter-panel">
-          <input
-            value={recordSearch}
-            onChange={e => setRecordSearch(e.target.value)}
-            placeholder="Search team number or scout name..."
-          />
+{tab === "records" && <section className="panel">
 
-          <div className="two-col">
-            <input
-              type="number"
-              min="1"
-              value={recordMatchFilter}
-              onChange={e => setRecordMatchFilter(e.target.value)}
-              placeholder="Filter by match number"
-            />
+  <div className="section-head">
+    <h3>Recent submissions</h3>
+    <span className="muted tiny">
+      Showing {filteredRecords.length} of {records.length + generalNotes.length} submissions
+    </span>
+  </div>
 
-            <select
-              value={recordAllianceFilter}
-              onChange={e => setRecordAllianceFilter(e.target.value)}
-            >
-              <option value="All">All alliances</option>
-              <option value="Red">Red alliance</option>
-              <option value="Blue">Blue alliance</option>
-            </select>
-          </div>
-          <select
-            className="sort-select"
-            value={recordSort}
-            onChange={e => setRecordSort(e.target.value)}
-          >
-            <option value="match">Sort: Match number (low to high)</option>
-            <option value="ranking">Sort: Ranking points (high to low)</option>
-            <option value="hive">Sort: Hive tips (high to low)</option>
-            <option value="team-low">Sort: Team number (low to high)</option>
-            <option value="team-high">Sort: Team number (high to low)</option>
-          </select>
-          <button
-            className="text-btn"
-            onClick={() => {
-              setRecordSearch("");
-              setRecordMatchFilter("");
-              setRecordAllianceFilter("All");
-              setRecordSort("match");
-            }}
-          >
-            <RefreshCw size={15} /> Reset filters
-          </button>
-        </div>
+  <div className="filter-panel">
+    <input
+      value={recordSearch}
+      onChange={e => setRecordSearch(e.target.value)}
+      placeholder="Search team number, scout, or notes..."
+    />
 
-        {filteredRecords.length === 0 ? (
-          <Empty text={
-            records.length === 0
-              ? "No match submissions yet."
-              : "No submissions match your filters."
-          }/>
-        ) : filteredRecords.map(r => (
-          <div className="record" key={r.id}>
+    <Field label="Submission type">
+      <select
+        value={recordTypeFilter}
+        onChange={e => setRecordTypeFilter(
+          e.target.value as "Both" | "Match Records" | "General Notes"
+        )}
+      >
+        <option value="Both">Both</option>
+        <option value="Match Records">Match Records</option>
+        <option value="General Notes">General Notes</option>
+      </select>
+    </Field>
+
+    <div className="two-col">
+      <input
+        type="number"
+        min="1"
+        value={recordMatchFilter}
+        onChange={e => setRecordMatchFilter(e.target.value)}
+        placeholder="Filter by match number"
+      />
+
+      <select
+        value={recordAllianceFilter}
+        onChange={e => setRecordAllianceFilter(e.target.value)}
+      >
+        <option value="All">All alliances</option>
+        <option value="Red">Red alliance</option>
+        <option value="Blue">Blue alliance</option>
+      </select>
+    </div>
+
+    <select
+      className="sort-select"
+      value={recordSort}
+      onChange={e => setRecordSort(e.target.value)}
+    >
+      <option value="match">Sort: Match number (low to high)</option>
+      <option value="ranking">Sort: Ranking points (high to low)</option>
+      <option value="hive">Sort: Hive tips (high to low)</option>
+      <option value="team-low">Sort: Team number (low to high)</option>
+      <option value="team-high">Sort: Team number (high to low)</option>
+    </select>
+
+    <button
+      className="text-btn"
+      onClick={() => {
+        setRecordSearch("");
+        setRecordMatchFilter("");
+        setRecordAllianceFilter("All");
+        setRecordSort("match");
+        setRecordTypeFilter("Both");
+      }}
+    >
+      <RefreshCw size={15} /> Reset filters
+    </button>
+  </div>
+
+  {filteredRecords.length === 0 ? (
+    <Empty text="No submissions match your filters." />
+  ) : (
+    filteredRecords.map(item => {
+      if (item.submissionType === "note") {
+        const n = item.record;
+
+        return (
+          <div className="record" key={`note-${n.id}`}>
             <div className="record-top">
               <button
-  className="team-number-link"
-  onClick={() => {
-    setSelectedTeamNumber(r.team_number);
-    setTab("team-detail");
-  }}
->
-  Team {r.team_number}
-</button>
-              <span className={"alliance " + r.alliance.toLowerCase()}>{r.alliance}</span>
-              <span className="muted tiny">Match {r.match_number}</span>
+                className="team-number-link"
+                onClick={() => {
+                  setSelectedTeamNumber(n.team_number);
+                  setTab("team-detail");
+                }}
+              >
+                Team {n.team_number}
+              </button>
 
-              {(isCoordinator || r.submitted_by === authUserId) && (
-                <button
-                  className="text-btn"
-                  onClick={() => editRecord(r)}
-                  disabled={busy}
-                  title="Edit submission"
-                >
-                  <Pencil size={15} /> Edit
-                </button>
-              )}
-
-              {isCoordinator && (
-                <button
-                  className="text-btn"
-                  onClick={() => deleteRecord(r.id)}
-                  disabled={busy}
-                  title="Remove submission"
-                >
-                  <Trash2 size={15} /> Remove
-                </button>
-              )}
+              <span className="alliance">GENERAL NOTE</span>
             </div>
+
+            <div className="record-meta">
+              Scouted by {n.scout_name} · {n.scout_group}
+              <br />
+              {new Date(n.created_at).toLocaleString()}
+            </div>
+
+            <p className="record-notes">{n.notes}</p>
+          </div>
+        );
+      }
+
+      const r = item.record;
+
+      return (
+        <div className="record" key={`match-${r.id}`}>
+          <div className="record-top">
+            <button
+              className="team-number-link"
+              onClick={() => {
+                setSelectedTeamNumber(r.team_number);
+                setTab("team-detail");
+              }}
+            >
+              Team {r.team_number}
+            </button>
+
+            <span className={"alliance " + r.alliance.toLowerCase()}>
+              {r.alliance}
+            </span>
+
+            <span className="muted tiny">Match {r.match_number}</span>
+
+            {(isCoordinator || r.submitted_by === authUserId) && (
+              <button
+                className="text-btn"
+                onClick={() => editRecord(r)}
+                disabled={busy}
+                title="Edit submission"
+              >
+                <Pencil size={15} /> Edit
+              </button>
+            )}
+
+            {isCoordinator && (
+              <button
+                className="text-btn"
+                onClick={() => deleteRecord(r.id)}
+                disabled={busy}
+                title="Remove submission"
+              >
+                <Trash2 size={15} /> Remove
+              </button>
+            )}
+          </div>
 
           <div className="record-meta">
-  Scouted by {r.scout_name} · {new Date(r.created_at).toLocaleString()}
-  <br/>
-  Alliance partner: {r.partner_team_number
-    ? `Team ${r.partner_team_number}`
-    : "Not recorded"}
-</div>
-
-            <div className="mini-ratings">
-              <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
-              <span>Shooting <b>{r.shooting_accuracy ?? "—"}/5</b></span>
-              <span>Mobility <b>{r.maneuverability ?? "—"}/5</b></span>
-              <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
-              <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
-              <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
-              <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
-              <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
-              <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
-              <span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
-              <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
-              <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
-            </div>
-
-            {r.notes && <p className="record-notes">{r.notes}</p>}
+            Scouted by {r.scout_name} · {r.scout_group || "Unassigned"} · {new Date(r.created_at).toLocaleString()}
+            <br />
+            Alliance partner: {r.partner_team_number
+              ? `Team ${r.partner_team_number}`
+              : "Not recorded"}
           </div>
-        ))}
-      </section>}
+
+          <div className="mini-ratings">
+            <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
+            <span>Shooting <b>{r.shooting_accuracy ?? "—"}/5</b></span>
+            <span>Mobility <b>{r.maneuverability ?? "—"}/5</b></span>
+            <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
+            <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
+            <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
+            <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
+            <span>Ranking points <b>{r.ranking_points ?? 0}</b></span>
+            <span>Red final score <b>{r.red_final_score ?? 0}</b></span>
+            <span>Blue final score <b>{r.blue_final_score ?? 0}</b></span>
+            <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
+            <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
+          </div>
+
+          {r.notes && <p className="record-notes">{r.notes}</p>}
+        </div>
+      );
+    })
+  )}
+</section>}
 
       {tab === "teams" && <section className="panel">
         <div className="section-head">
