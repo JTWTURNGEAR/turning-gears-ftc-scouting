@@ -2490,6 +2490,26 @@ return (
     Select two or three teams to compare their scouting performance side by side.
   </p>
 
+  <div className="filter-group">
+    <strong>Filter by scout group</strong>
+    <div className="checkbox-list">
+      {(["Scouting Coach", "Parent Scout", "Student Scout"] as ScoutGroup[]).map(group => (
+        <label className="check-field" key={group}>
+          <input
+            type="checkbox"
+            checked={selectedScoutGroups.includes(group)}
+            onChange={e => setSelectedScoutGroups(current =>
+              e.target.checked
+                ? [...current, group]
+                : current.filter(item => item !== group)
+            )}
+          />
+          {group}
+        </label>
+      ))}
+    </div>
+  </div>
+
   <div className="compare-selectors">
     <label className="field">
       <span>Team 1</span>
