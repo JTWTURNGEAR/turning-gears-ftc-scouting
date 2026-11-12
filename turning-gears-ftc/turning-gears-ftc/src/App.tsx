@@ -1041,12 +1041,52 @@ async function deleteRecord(id: string) {
 
 
 const teamSummaries = useMemo(() => {
-    const filteredRecords = records.filter(r =>
-      selectedScoutGroups.length === 0 ||
-      (r.scout_group !== null &&
-        selectedScoutGroups.includes(r.scout_group))
-    );
+  const filteredRecords = records.filter(r =>
+    selectedScoutGroups.length === 0 ||
+    (r.scout_group !== null &&
+      selectedScoutGroups.includes(r.scout_group))
+  );
 
+  const grouped = new Map<number, RecordRow[]>();
+
+  filteredRecords.forEach(r => {
+    grouped.set(r.team_number, [
+      ...(grouped.get(r.team_number) || []),
+      r
+    ]);
+  });
+
+  return [...grouped.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([team, rows]) => ({
+      team,
+      count: rows.length,
+      autonomous: avg(rows, ["auto_rating"]),
+      shooting: avg(rows, ["shooting_accuracy", "shooting_speed"]),
+      mobility: avg(rows, ["driving_speed", "maneuverability"]),
+      reliability: avg(rows, ["reliability"]),
+
+      // Hive tip totals
+      totalHiveTips: rows.reduce((sum, r) => sum + (r.hive_tips || 0), 0),
+      autoHiveTips: rows.reduce((sum, r) => sum + (r.auto_hive_tips || 0), 0),
+      teleopHiveTips: rows.reduce((sum, r) => sum + (r.teleop_hive_tips || 0), 0),
+
+      // Average hive tips per observation
+      averageHiveTips: avg(rows, ["hive_tips"]),
+      averageAutoHiveTips: avg(rows, ["auto_hive_tips"]),
+      averageTeleopHiveTips: avg(rows, ["teleop_hive_tips"]),
+
+      // Yes/no feature reports
+      nectarYes: rows.filter(r => r.can_shoot_nectar).length,
+      nectarNo: rows.filter(r => !r.can_shoot_nectar).length,
+
+      refilledYes: rows.filter(r => r.refilled_flower).length,
+      refilledNo: rows.filter(r => !r.refilled_flower).length,
+
+      emptiedYes: rows.filter(r => r.emptied_flower).length,
+      emptiedNo: rows.filter(r => !r.emptied_flower).length
+    }));
+}, [records, selectedScoutGroups]);
     const grouped = new Map<number, RecordRow[]>();
 
     filteredRecords.forEach(r => {
