@@ -1959,7 +1959,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         return a.team_number - b.team_number;
       })
       .map(team => (
-        <div className="scout-row" key={team.id}>
+               <div className="scout-row" key={team.id}>
           <b>{team.team_number}</b>
           <span style={{ flex: 1 }}>{team.team_name}</span>
           <span>
@@ -1967,6 +1967,15 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
               ? "Unranked"
               : `Rank ${team.event_rank}`}
           </span>
+
+          {isCoordinator && (
+            <button
+              className="text-btn"
+              onClick={() => removeEventTeam(team)}
+            >
+              Remove
+            </button>
+          )}
         </div>
       ))}
   </div>
