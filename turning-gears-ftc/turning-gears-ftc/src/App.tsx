@@ -147,6 +147,7 @@ const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [recordSort, setRecordSort] = useState("match");
   const [teamSort, setTeamSort] = useState("team-low");
   const [eventTeamSort, setEventTeamSort] = useState("team-low");
+  const [rankingsText, setRankingsText] = useState("");
   const [compareTeam1, setCompareTeam1] = useState("");
 const [compareTeam2, setCompareTeam2] = useState("");
 const [compareTeam3, setCompareTeam3] = useState("");
@@ -815,6 +816,95 @@ setMessage(
   }
 
  
+async function importOfficialRankings() {
+  if (!supabase || !activeEventId) {
+    setError("Select an event first.");
+    return;
+  }
+
+  if (!rankingsText.trim()) {
+    setError("Paste the official standings report first.");
+    return;
+  }
+
+  const lines = rankingsText.trim().split(/\r?\n/);
+  const header = lines[0].split("\t").map(v => v.trim().toLowerCase());
+
+  const rankIndex = header.indexOf("rank");
+  const teamIndex = header.indexOf("team");
+  const rpIndex = header.indexOf("rp");
+
+  if (rankIndex === -1 || teamIndex === -1 || rpIndex === -1) {
+    setError("Could not find Rank, Team, and RP columns. Check the report format.");
+    return;
+  }
+
+  const knownTeams = new Set(eventTeams.map(t => t.team_number));
+  const updates = new Map<number, {
+    event_rank: number;
+    ranking_points: number;
+  }>();
+
+  lines.slice(1).forEach(line => {
+    const columns = line.split("\t");
+
+    const rank = Number(columns[rankIndex]?.trim());
+    const teamNumber = Number(
+      columns[teamIndex]?.trim().replace(/^#/, "")
+    );
+    const rankingPoints = Number(columns[rpIndex]?.trim());
+
+    if (
+      Number.isInteger(rank) &&
+      rank > 0 &&
+      Number.isInteger(teamNumber) &&
+      teamNumber > 0 &&
+      Number.isFinite(rankingPoints) &&
+      knownTeams.has(teamNumber)
+    ) {
+      updates.set(teamNumber, {
+        event_rank: rank,
+        ranking_points: rankingPoints
+      });
+    }
+  });
+
+  if (updates.size === 0) {
+    setError("No matching event teams were found. Import the event team list first.");
+    return;
+  }
+
+  setImportBusy(true);
+  setError("");
+  setMessage("");
+
+  let updatedCount = 0;
+
+  for (const [teamNumber, values] of updates) {
+    const { error: updateError } = await supabase
+      .from("event_teams")
+      .update(values)
+      .eq("event_id", activeEventId)
+      .eq("team_number", teamNumber);
+
+    if (updateError) {
+      setError(updateError.message);
+      setImportBusy(false);
+      return;
+    }
+
+    updatedCount++;
+  }
+
+  await loadEventTeams(activeEventId);
+
+  setMessage(
+    `Official rankings imported successfully: ${updatedCount} teams updated.`
+  );
+
+  setImportBusy(false);
+}
+
 async function submitGeneralNote() {
   if (!supabase || !selectedScout || !teamId) {
     setError("Choose your scout name first.");
@@ -2044,6 +2134,23 @@ return (
           >
             {importBusy ? "Importing..." : "Import Teams & Schedule"}
           </button>
+          <div className="section-head">
+  <h3>Import Official Rankings</h3>
+</div>
+
+<p className="muted">
+  Paste the latest official event standings report here. You can repeat this
+  whenever the official rankings change.
+</p>
+
+<Field label="Official standings report">
+  <textarea
+    rows={10}
+    value={rankingsText}
+    onChange={e => setRankingsText(e.target.value)}
+    placeholder="Paste official event standings here..."
+  />
+</Field>
           <div className="section-head">
             <h3>Your events</h3>
           </div>
