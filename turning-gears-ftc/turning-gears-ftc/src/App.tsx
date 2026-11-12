@@ -308,11 +308,26 @@ useEffect(() => {
 
     setEventMatches((data || []) as EventMatch[]);
   }
-  async function loadEventTeams(eventId: string) {
+ 
+async function loadEventTeams(eventId: string) {
   if (!supabase || !eventId) {
     setEventTeams([]);
     return;
   }
+
+  const { data, error: teamError } = await supabase
+    .from("event_teams")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("team_number", { ascending: true });
+
+  if (teamError) {
+    setError(teamError.message);
+    return;
+  }
+
+  setEventTeams((data || []) as EventTeamRow[]);
+}
 
 async function removeEventTeam(team: EventTeamRow) {
   if (!supabase || !activeEventId) return;
@@ -342,19 +357,6 @@ async function removeEventTeam(team: EventTeamRow) {
   setMessage(`Team ${team.team_number} removed from this event.`);
 }
 
-  const { data, error: teamError } = await supabase
-    .from("event_teams")
-    .select("*")
-    .eq("event_id", eventId)
-    .order("team_number", { ascending: true });
-
-  if (teamError) {
-    setError(teamError.message);
-    return;
-  }
-
-  setEventTeams((data || []) as EventTeamRow[]);
-}
   async function loadTeam() {
     if (!supabase) return;
 
