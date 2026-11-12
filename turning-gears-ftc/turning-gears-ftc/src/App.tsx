@@ -91,8 +91,6 @@ teleop_hive_tips: 0,
   can_shoot_nectar: false,
   refilled_flower: false,
  emptied_flower: false,
-red_final_score: 0,
-blue_final_score: 0,
 notes: ""
 };
 
