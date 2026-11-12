@@ -1903,9 +1903,26 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           <div className="scout-row" key={team.id}>
             <strong>#{team.event_rank}</strong>
             <div style={{ flex: 1 }}>
-              <b>{team.team_number}</b>
-              <span>{team.team_name}</span>
-            </div>
+  <button
+    className="team-number-link"
+    onClick={() => {
+      setSelectedTeamNumber(team.team_number);
+      setTab("team-detail");
+    }}
+  >
+    {team.team_number}
+  </button>
+
+  <button
+    className="team-number-link"
+    onClick={() => {
+      setSelectedTeamNumber(team.team_number);
+      setTab("team-detail");
+    }}
+  >
+    {team.team_name}
+  </button>
+</div>
             <div style={{ textAlign: "right" }}>
   <div>
     <strong>{Number(team.ranking_points).toFixed(2)}</strong>
@@ -1961,24 +1978,43 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         return a.team_number - b.team_number;
       })
       .map(team => (
-               <div className="scout-row" key={team.id}>
-          <b>{team.team_number}</b>
-          <span style={{ flex: 1 }}>{team.team_name}</span>
-          <span>
-            {team.event_rank === null
-              ? "Unranked"
-              : `Rank ${team.event_rank}`}
-          </span>
+<div className="scout-row" key={team.id}>
+  <button
+    className="team-number-link"
+    onClick={() => {
+      setSelectedTeamNumber(team.team_number);
+      setTab("team-detail");
+    }}
+  >
+    {team.team_number}
+  </button>
 
-          {isCoordinator && (
-            <button
-              className="text-btn"
-              onClick={() => removeEventTeam(team)}
-            >
-              Remove
-            </button>
-          )}
-        </div>
+  <button
+    className="team-number-link"
+    style={{ flex: 1, textAlign: "left" }}
+    onClick={() => {
+      setSelectedTeamNumber(team.team_number);
+      setTab("team-detail");
+    }}
+  >
+    {team.team_name}
+  </button>
+
+  <span>
+    {team.event_rank === null
+      ? "Unranked"
+      : `Rank ${team.event_rank}`}
+  </span>
+
+  {isCoordinator && (
+    <button
+      className="text-btn"
+      onClick={() => removeEventTeam(team)}
+    >
+      Remove
+    </button>
+  )}
+</div>
       ))}
   </div>
 )}
