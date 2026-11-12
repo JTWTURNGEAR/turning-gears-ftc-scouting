@@ -1069,32 +1069,27 @@ const teamSummaries = useMemo(() => {
       ]);
     });
 
-    return [...grouped.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([team, rows]) => ({
-        team,
-        count: rows.length,
-        autonomous: avg(rows, ["auto_rating"]),
-        shooting: avg(rows, ["shooting_accuracy", "shooting_speed"]),
-        mobility: avg(rows, ["driving_speed", "maneuverability"]),
-        reliability: avg(rows, ["reliability"]),
-        rankingTotal: rows.reduce(
-          (sum, r) => sum + (r.ranking_points || 0), 0
-        ),
-        rankingAverage: rows.length
-          ? rows.reduce(
-              (sum, r) => sum + (r.ranking_points || 0), 0
-            ) / rows.length
-          : null
-      }));
-  }, [records, selectedScoutGroups]);
+   return [...grouped.entries()]
+  .sort((a, b) => a[0] - b[0])
+  .map(([team, rows]) => ({
+    team,
+    count: rows.length,
+    autonomous: avg(rows, ["auto_rating"]),
+    shooting: avg(rows, ["shooting_accuracy", "shooting_speed"]),
+    mobility: avg(rows, ["driving_speed", "maneuverability"]),
+    reliability: avg(rows, ["reliability"])
+  }));
+}, [records, selectedScoutGroups]);
 
-  const sortedTeamSummaries = useMemo(() => {
+const sortedTeamSummaries = useMemo(() => {
   return [...teamSummaries].sort((a, b) => {
     if (teamSort === "team-high") {
       return b.team - a.team;
     }
 
+    return a.team - b.team;
+  });
+}, [teamSummaries, teamSort]);
     if (teamSort === "rp-total-low") {
       return a.rankingTotal - b.rankingTotal || a.team - b.team;
     }
