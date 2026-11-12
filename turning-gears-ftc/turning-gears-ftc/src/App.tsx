@@ -1831,9 +1831,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                  <button className="action-card" onClick={() => setTab("scout")}>
             <ClipboardList/><b>Match scouting</b><span>Log a team's performance</span>
           </button>
-          <button className="action-card" onClick={() => setTab("teams")}>
-            <BarChart3/><b>Team analytics</b><span>Compare observed abilities</span>
-          </button>
+          
           <button className="action-card" onClick={() => setTab("records")}>
             <Activity/><b>Submissions</b><span>Review scout observations</span>
           </button>
@@ -3209,12 +3207,7 @@ onClick={async () => {
       setEventSection("matches");
     }}
   />
-  <NavItem
-    active={tab === "teams" || tab === "team-detail"}
-    icon={<BarChart3/>}
-    label="Teams"
-    onClick={() => setTab("teams")}
-  />
+  
   <NavItem
     active={tab === "compare"}
     icon={<Activity/>}
