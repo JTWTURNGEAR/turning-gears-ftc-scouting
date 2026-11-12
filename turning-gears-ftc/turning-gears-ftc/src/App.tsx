@@ -2784,84 +2784,18 @@ onClick={async () => {
   )}
 </section>}
 
-      {tab === "teams" && <section className="panel">
-        <div className="section-head">
-          <h3>Team performance snapshot</h3>
-          <span className="muted tiny">Average scout ratings</span>
-        </div>
-        <p className="muted tiny">
-          Ratings are averages of submitted 1–5 scores.
-        </p>
-
-<div className="filter-panel">
-  <div className="filter-group">
-    <strong>Filter by scout group</strong>
-    <div className="checkbox-list">
-      {(["Scouting Coach", "Parent Scout", "Student Scout"] as ScoutGroup[]).map(group => (
-        <label className="check-field" key={group}>
-          <input
-            type="checkbox"
-            checked={selectedScoutGroups.includes(group)}
-            onChange={e => setSelectedScoutGroups(current =>
-              e.target.checked
-                ? [...current, group]
-                : current.filter(item => item !== group)
-            )}
-          />
-          {group}
-        </label>
-      ))}
-    </div>
-  </div>
-
-  <select
-    className="sort-select"
-
-    value={teamSort}
-    onChange={e => setTeamSort(e.target.value)}
-  >
-    <option value="team-low">Sort: Team number (low to high)</option>
-    <option value="team-high">Sort: Team number (high to low)</option>
-    
-  </select>
-</div>
-        {teamSummaries.length === 0 ? <Empty text="Team analytics will appear after scouts submit matches."/> :
-          <div className="team-table">
-            <div className="team-row table-head analytics-row">
-              <span>TEAM</span>
-              <span>OBS.</span>
-              <span>AUTO</span>
-              <span>SHOOTING</span>
-              <span>MOBILITY</span>
-              <span>RELIABILITY</span>
-              
-            </div>
-            {sortedTeamSummaries.map(t => <div className="team-row analytics-row" key={t.team}>
-             <button
-  className="team-number-link"
-  onClick={() => {
-    setSelectedTeamNumber(t.team);
-    setTab("team-detail");
-  }}
->
-  #{t.team}
-</button>
-              <span>{t.count}</span>
-              <RatingPill value={t.autonomous}/>
-              <RatingPill value={t.shooting}/>
-              <RatingPill value={t.mobility}/>
-              <RatingPill value={t.reliability}/>
-            
-            </div>)}
-          </div>
-        }
-      </section>}
+      
       {tab === "team-detail" && selectedTeamNumber !== null && (
   <section className="panel">
-    <button className="text-btn" onClick={() => setTab("teams")}>
-      ← Back to teams
-    </button>
-
+   <button
+  className="text-btn"
+  onClick={() => {
+    setTab("event");
+    setEventSection("teams");
+  }}
+>
+  ← Back to event teams
+</button>
     <div className="section-heading">
       <h3>Team {selectedTeamNumber}</h3>
       <p className="muted">Individual match scouting history</p>
