@@ -106,6 +106,9 @@ export default function App() {
   const [sessionReady, setSessionReady] = useState(false);
   const [joined, setJoined] = useState(false);
   const [tab, setTab] = useState("home");
+  const [eventSection, setEventSection] = useState<
+  "matches" | "rankings" | "teams" | "manager"
+>("matches");
   const [scoutMode, setScoutMode] = useState<"match" | "notes">("match");
 const [noteTeamNumber, setNoteTeamNumber] = useState("");
 const [noteText, setNoteText] = useState("");
@@ -668,10 +671,11 @@ await loadEventTeams(loadedEvents[0].id);
 
   setEvents(previous => previous.filter(ev => ev.id !== eventId));
 
-  if (activeEventId === eventId) {
-    setActiveEventId("");
-    setEventMatches([]);
-  }
+ if (activeEventId === eventId) {
+  setActiveEventId("");
+  setEventMatches([]);
+  setEventTeams([]);
+}
 
   setMessage("Event removed successfully.");
   setBusy(false);
@@ -1697,6 +1701,60 @@ tab === "event-manager" ? "Event Manager" :
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
       </>}
+      {tab === "event" && (
+  <section className="panel">
+    <div className="section-head">
+      <h3>Event Center</h3>
+      <span>{events.find(ev => ev.id === activeEventId)?.event_name || "No event selected"}</span>
+    </div>
+
+    <div className="segmented">
+      <button
+        className={eventSection === "matches" ? "selected" : ""}
+        onClick={() => setEventSection("matches")}
+      >
+        Matches
+      </button>
+
+      <button
+        className={eventSection === "rankings" ? "selected" : ""}
+        onClick={() => setEventSection("rankings")}
+      >
+        Rankings
+      </button>
+
+      <button
+        className={eventSection === "teams" ? "selected" : ""}
+        onClick={() => setEventSection("teams")}
+      >
+        Teams
+      </button>
+
+      {isCoordinator && (
+        <button
+          className={eventSection === "manager" ? "selected" : ""}
+          onClick={() => setEventSection("manager")}
+        >
+          Event Manager
+        </button>
+      )}
+    </div>
+
+
+
+    {eventSection === "rankings" && (
+      <p className="muted">Official event rankings will appear here.</p>
+    )}
+
+    {eventSection === "teams" && (
+      <p className="muted">Event teams will appear here.</p>
+    )}
+
+    {eventSection === "manager" && isCoordinator && (
+      <p className="muted">Event management tools will appear here.</p>
+    )}
+  </section>
+)}
       {tab === "schedule" && (
         <section className="panel">
           <div className="section-head">
@@ -2893,6 +2951,10 @@ onClick={async () => {
       <NavItem active={tab === "compare"} icon={<Activity/>} label="Compare" onClick={() => setTab("compare")}/>
       <NavItem active={tab === "records"} icon={<Wrench/>} label="Records" onClick={() => setTab("records")}/>
       <NavItem active={tab === "roster"} icon={<Users/>} label="Roster" onClick={() => setTab("roster")}/>
+      <NavItem active={tab === "event" || tab === "schedule" || tab === "event-manager"} icon={<CalendarDays/>} label="Event" onClick={() => {
+  setTab("event");
+  setEventSection("matches");
+}}/>
     </nav>
   </div>;
 }
