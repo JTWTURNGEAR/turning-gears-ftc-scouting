@@ -1365,7 +1365,6 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       <p className="tiny muted">Your team coordinator provides these codes. Scouts do not need individual accounts.</p>
     </section>
   </main>;
-
   return <div className="app-shell">
     <header className="topbar">
       <div className="brand">
@@ -2621,7 +2620,7 @@ return (
     </label>
   </div>
 
-  {
+
 {comparisonTeams.length === 0 ? (
   <Empty text="Choose an available team to view its scouting statistics."/>
 
