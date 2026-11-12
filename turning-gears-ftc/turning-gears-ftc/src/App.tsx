@@ -2611,6 +2611,39 @@ return (
             <span>Reliability</span>
             <RatingPill value={t.reliability}/>
           </div>
+          <div className="comparison-divider">
+  Hive Tip Breakdown
+</div>
+
+<div className="comparison-stat">
+  <span>Total Hive Tips</span>
+  <strong>{t.totalHiveTips}</strong>
+</div>
+
+<div className="comparison-stat">
+  <span>Auto Hive Tips</span>
+  <strong>{t.autoHiveTips}</strong>
+</div>
+
+<div className="comparison-stat">
+  <span>TeleOp Hive Tips</span>
+  <strong>{t.teleopHiveTips}</strong>
+</div>
+
+<div className="comparison-stat">
+  <span>Avg. Hive Tips / Match</span>
+  <strong>{t.averageHiveTips?.toFixed(1) ?? "—"}</strong>
+</div>
+
+<div className="comparison-stat">
+  <span>Avg. Auto Hive Tips / Match</span>
+  <strong>{t.averageAutoHiveTips?.toFixed(1) ?? "—"}</strong>
+</div>
+
+<div className="comparison-stat">
+  <span>Avg. TeleOp Hive Tips / Match</span>
+  <strong>{t.averageTeleopHiveTips?.toFixed(1) ?? "—"}</strong>
+</div>
 
         </div>
       ))}
