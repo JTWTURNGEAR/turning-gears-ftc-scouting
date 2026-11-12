@@ -3131,17 +3131,55 @@ onClick={async () => {
       </section>}
     </main>
 
-    <nav className="bottom-nav">
-     <NavItem active={tab === "home"} icon={<House/>} label="Home" onClick={() => setTab("home")}/>
-      <NavItem active={tab === "scout"} icon={<ClipboardList/>} label="Scout" onClick={() => setTab("scout")}/>
-        <NavItem active={tab === "event" || tab === "schedule" || tab === "event-manager"} icon={<CalendarDays/>} label="Event" onClick={() => {
-  setTab("event")}/>
-      <NavItem active={tab === "teams" || tab === "team-detail"} icon={<BarChart3/>} label="Teams" onClick={() => setTab("teams")}/>
-      <NavItem active={tab === "compare"} icon={<Activity/>} label="Compare" onClick={() => setTab("compare")}/>
-      <NavItem active={tab === "records"} icon={<Wrench/>} label="Records" onClick={() => setTab("records")}/>
-      <NavItem active={tab === "roster"} icon={<Users/>} label="Roster" onClick={() => setTab("roster");
-}}/>
-    </nav>
+    
+<nav className="bottom-nav">
+  <NavItem
+    active={tab === "home"}
+    icon={<House/>}
+    label="Home"
+    onClick={() => setTab("home")}
+  />
+  <NavItem
+    active={tab === "scout"}
+    icon={<ClipboardList/>}
+    label="Scout"
+    onClick={() => setTab("scout")}
+  />
+  <NavItem
+    active={tab === "event" || tab === "schedule" || tab === "event-manager"}
+    icon={<CalendarDays/>}
+    label="Event"
+    onClick={() => {
+      setTab("event");
+      setEventSection("matches");
+    }}
+  />
+  <NavItem
+    active={tab === "teams" || tab === "team-detail"}
+    icon={<BarChart3/>}
+    label="Teams"
+    onClick={() => setTab("teams")}
+  />
+  <NavItem
+    active={tab === "compare"}
+    icon={<Activity/>}
+    label="Compare"
+    onClick={() => setTab("compare")}
+  />
+  <NavItem
+    active={tab === "records"}
+    icon={<Wrench/>}
+    label="Records"
+    onClick={() => setTab("records")}
+  />
+  <NavItem
+    active={tab === "roster"}
+    icon={<Users/>}
+    label="Roster"
+    onClick={() => setTab("roster")}
+  />
+</nav>
+
   </div>;
 }
 
