@@ -133,6 +133,7 @@ const [editingScoutName, setEditingScoutName] = useState("");
   const [recordTypeFilter, setRecordTypeFilter] = useState<
   "Both" | "Match Records" | "General Notes"
 >("Both");
+  const [selectedScoutGroups, setSelectedScoutGroups] = useState<ScoutGroup[]>([]);
 const [recordMatchFilter, setRecordMatchFilter] = useState("");
 const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [recordSort, setRecordSort] = useState("match");
@@ -1200,7 +1201,17 @@ const filteredRecords = useMemo(() => {
     ...noteRecords
   ];
 
-  const filtered = combined.filter(item => {
+ 
+const filtered = combined.filter(item => {
+    const scoutGroup = item.record.scout_group;
+
+    const matchesGroup =
+      selectedScoutGroups.length === 0 ||
+      (scoutGroup !== null &&
+        selectedScoutGroups.includes(scoutGroup));
+
+    if (!matchesGroup) return false;
+
     if (item.submissionType === "note") {
       const n = item.record;
 
@@ -1279,6 +1290,7 @@ const filteredRecords = useMemo(() => {
   recordAllianceFilter,
   recordSort,
   recordTypeFilter
+  selectedScoutGroups
 ]);
  function openTeamProfile(team: number) {
   setSelectedTeamNumber(team);
