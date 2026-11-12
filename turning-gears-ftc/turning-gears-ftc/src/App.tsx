@@ -1601,8 +1601,9 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   tab === "records" ? "Submissions" :
   tab === "teams" ? "Team analytics" :
   tab === "team-detail" ? `Team ${selectedTeamNumber} profile` :
+  tab === "event" ? "Event Center" :
   tab === "schedule" ? "Event Schedule" :
-tab === "event-manager" ? "Event Manager" :
+  tab === "event-manager" ? "Event Manager" :
   tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
         </div>
         <div className="live"><span/> SHARED DATA</div>
