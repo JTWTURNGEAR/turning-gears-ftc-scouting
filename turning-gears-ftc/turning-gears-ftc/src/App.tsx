@@ -2583,7 +2583,35 @@ return (
           <button className="primary" onClick={addScout}
             disabled={busy || !newScout.trim()}><Plus size={18}/> Add</button>
         </div>
-        {scouts.map(s => <div className="scout-row" key={s.id}>
+   
+        <div className="filter-group">
+          <strong>Filter by scout group</strong>
+          <div className="checkbox-list">
+            {(["Scouting Coach", "Parent Scout", "Student Scout"] as ScoutGroup[]).map(group => (
+              <label className="check-field" key={group}>
+                <input
+                  type="checkbox"
+                  checked={selectedScoutGroups.includes(group)}
+                  onChange={e => setSelectedScoutGroups(current =>
+                    e.target.checked
+                      ? [...current, group]
+                      : current.filter(item => item !== group)
+                  )}
+                />
+                {group}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {scouts
+          .filter(s =>
+            selectedScoutGroups.length === 0 ||
+            (s.scout_group !== null &&
+              selectedScoutGroups.includes(s.scout_group))
+          )
+          .map(s => <div className="scout-row" key={s.id}>
+
           <span className="avatar">{s.name.slice(0, 1).toUpperCase()}</span>
           <b>{s.name}</b>
           {isCoordinator &&
