@@ -1052,11 +1052,21 @@ async function deleteRecord(id: string) {
   setBusy(false);
 }
 
+
 const teamSummaries = useMemo(() => {
+    const filteredRecords = records.filter(r =>
+      selectedScoutGroups.length === 0 ||
+      (r.scout_group !== null &&
+        selectedScoutGroups.includes(r.scout_group))
+    );
+
     const grouped = new Map<number, RecordRow[]>();
 
-    records.forEach(r => {
-      grouped.set(r.team_number, [...(grouped.get(r.team_number) || []), r]);
+    filteredRecords.forEach(r => {
+      grouped.set(r.team_number, [
+        ...(grouped.get(r.team_number) || []),
+        r
+      ]);
     });
 
     return [...grouped.entries()]
@@ -1068,12 +1078,17 @@ const teamSummaries = useMemo(() => {
         shooting: avg(rows, ["shooting_accuracy", "shooting_speed"]),
         mobility: avg(rows, ["driving_speed", "maneuverability"]),
         reliability: avg(rows, ["reliability"]),
-        rankingTotal: rows.reduce((sum, r) => sum + (r.ranking_points || 0), 0),
+        rankingTotal: rows.reduce(
+          (sum, r) => sum + (r.ranking_points || 0), 0
+        ),
         rankingAverage: rows.length
-          ? rows.reduce((sum, r) => sum + (r.ranking_points || 0), 0) / rows.length
+          ? rows.reduce(
+              (sum, r) => sum + (r.ranking_points || 0), 0
+            ) / rows.length
           : null
       }));
-  }, [records]);
+  }, [records, selectedScoutGroups]);
+
   const sortedTeamSummaries = useMemo(() => {
   return [...teamSummaries].sort((a, b) => {
     if (teamSort === "team-high") {
