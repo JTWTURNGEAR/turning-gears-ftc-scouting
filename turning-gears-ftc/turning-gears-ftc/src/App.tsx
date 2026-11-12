@@ -2128,7 +2128,6 @@ return (
       onChange={e => setRecordSort(e.target.value)}
     >
       <option value="match">Sort: Match number (low to high)</option>
-      <option value="ranking">Sort: Ranking points (high to low)</option>
       <option value="hive">Sort: Hive tips (high to low)</option>
       <option value="team-low">Sort: Team number (low to high)</option>
       <option value="team-high">Sort: Team number (high to low)</option>
