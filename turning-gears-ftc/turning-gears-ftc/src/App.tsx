@@ -1760,7 +1760,10 @@ tab === "event-manager" ? "Event Manager" :
         <div className="section-head"><h3>Quick actions</h3></div>
                <div className="action-grid">
           {isCoordinator && (
-            <button className="action-card" onClick={() => setTab("event-manager")}>
+            <button className="action-card" onClick={() => {
+  setTab("event");
+  setEventSection("manager");
+}}>
               <CalendarDays/>
               <b>Event Manager</b>
               <span>Create and manage event schedules</span>
@@ -1769,7 +1772,10 @@ tab === "event-manager" ? "Event Manager" :
 
           <button
             className="action-card"
-            onClick={() => setTab("schedule")}
+           onClick={() => {
+  setTab("event");
+  setEventSection("matches");
+}}
           >
             <CalendarDays />
             <b>Event Schedule</b>
@@ -2151,6 +2157,13 @@ return (
     placeholder="Paste official event standings here..."
   />
 </Field>
+          <button
+  className="primary full"
+  onClick={importOfficialRankings}
+  disabled={importBusy || !rankingsText.trim() || !activeEventId}
+>
+  {importBusy ? "Importing..." : "Import Official Rankings"}
+</button>
           <div className="section-head">
             <h3>Your events</h3>
           </div>
