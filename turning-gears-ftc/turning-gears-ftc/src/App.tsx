@@ -992,29 +992,27 @@ async function editRecord(record: RecordRow) {
   setEditingRecordId(record.id);
   setEditingScoutName(record.scout_name);
 
-  setForm({
-    team_number: String(record.team_number),
-    partner_team_number: record.partner_team_number
-      ? String(record.partner_team_number)
-      : "",
-    match_number: String(record.match_number),
-    alliance: record.alliance,
-    auto_rating: record.auto_rating ?? 3,
-    shooting_accuracy: record.shooting_accuracy ?? 3,
-    shooting_speed: record.shooting_speed ?? 3,
-    driving_speed: record.driving_speed ?? 3,
-    maneuverability: record.maneuverability ?? 3,
-    reliability: record.reliability ?? 3,
-    hive_tips: record.hive_tips ?? 0,
-    auto_hive_tips: record.auto_hive_tips ?? 0,
-teleop_hive_tips: record.teleop_hive_tips ?? 0,
-    can_shoot_nectar: record.can_shoot_nectar ?? false,
-    refilled_flower: record.refilled_flower ?? false,
-     ranking_points: record.ranking_points ?? 0,
-    red_final_score: record.red_final_score ?? 0,
-    blue_final_score: record.blue_final_score ?? 0,
-    notes: record.notes ?? ""
-  });
+ setForm({
+  team_number: String(record.team_number),
+  partner_team_number: record.partner_team_number
+    ? String(record.partner_team_number)
+    : "",
+  match_number: String(record.match_number),
+  alliance: record.alliance,
+  auto_rating: record.auto_rating ?? 3,
+  shooting_accuracy: record.shooting_accuracy ?? 3,
+  shooting_speed: record.shooting_speed ?? 3,
+  driving_speed: record.driving_speed ?? 3,
+  maneuverability: record.maneuverability ?? 3,
+  reliability: record.reliability ?? 3,
+  hive_tips: record.hive_tips ?? 0,
+  auto_hive_tips: record.auto_hive_tips ?? 0,
+  teleop_hive_tips: record.teleop_hive_tips ?? 0,
+  can_shoot_nectar: record.can_shoot_nectar ?? false,
+  refilled_flower: record.refilled_flower ?? false,
+  emptied_flower: record.emptied_flower ?? false,
+  notes: record.notes ?? ""
+});
 
   setMessage("Editing submission for Team " + record.team_number);
   setError("");
