@@ -1066,17 +1066,14 @@ const teamSummaries = useMemo(() => {
       mobility: avg(rows, ["driving_speed", "maneuverability"]),
       reliability: avg(rows, ["reliability"]),
 
-      // Hive tip totals
       totalHiveTips: rows.reduce((sum, r) => sum + (r.hive_tips || 0), 0),
       autoHiveTips: rows.reduce((sum, r) => sum + (r.auto_hive_tips || 0), 0),
       teleopHiveTips: rows.reduce((sum, r) => sum + (r.teleop_hive_tips || 0), 0),
 
-      // Average hive tips per observation
       averageHiveTips: avg(rows, ["hive_tips"]),
       averageAutoHiveTips: avg(rows, ["auto_hive_tips"]),
       averageTeleopHiveTips: avg(rows, ["teleop_hive_tips"]),
 
-      // Yes/no feature reports
       nectarYes: rows.filter(r => r.can_shoot_nectar).length,
       nectarNo: rows.filter(r => !r.can_shoot_nectar).length,
 
@@ -1087,7 +1084,7 @@ const teamSummaries = useMemo(() => {
       emptiedNo: rows.filter(r => !r.emptied_flower).length
     }));
 }, [records, selectedScoutGroups]);
-    const grouped = new Map<number, RecordRow[]>();
+  const grouped = new Map<number, RecordRow[]>();
 
     filteredRecords.forEach(r => {
       grouped.set(r.team_number, [
