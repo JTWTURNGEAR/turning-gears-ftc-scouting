@@ -1176,58 +1176,69 @@ const futureRelatedTeams = new Set(
   const search = recordSearch.trim().toLowerCase();
 
   const matchRecords = recordTypeFilter !== "General Notes"
-    ? records.map(r => ({ ...r, submissionType: "match" as const }))
+    ? records.map(r => ({
+        submissionType: "match" as const,
+        record: r
+      }))
     : [];
 
   const noteRecords = recordTypeFilter !== "Match Records"
-    ? generalNotes.map(n => ({ ...n, submissionType: "note" as const }))
+    ? generalNotes.map(n => ({
+        submissionType: "note" as const,
+        record: n
+      }))
     : [];
 
   const combined = [...matchRecords, ...noteRecords];
 
-  const filtered = combined.filter(r => {
+  const filtered = combined.filter(item => {
+    const r = item.record;
+
     const matchesSearch =
       !search ||
       String(r.team_number).includes(search) ||
       r.scout_name.toLowerCase().includes(search) ||
-      (r.submissionType === "note" && r.notes.toLowerCase().includes(search));
+      (item.submissionType === "note" && r.notes.toLowerCase().includes(search));
 
-    const matchesMatch =
-      r.submissionType === "note" ||
-      !recordMatchFilter ||
-      String(r.match_number) === recordMatchFilter;
+    if (item.submissionType === "note") {
+      return matchesSearch;
+    }
 
-    const matchesAlliance =
-      r.submissionType === "note" ||
-      recordAllianceFilter === "All" ||
-      r.alliance === recordAllianceFilter;
-
-    return matchesSearch && matchesMatch && matchesAlliance;
+    return (
+      matchesSearch &&
+      (!recordMatchFilter ||
+        String(r.match_number) === recordMatchFilter) &&
+      (recordAllianceFilter === "All" ||
+        r.alliance === recordAllianceFilter)
+    );
   });
 
   return [...filtered].sort((a, b) => {
-    if (recordSort === "ranking") {
-      return (b.submissionType === "match" ? b.ranking_points ?? 0 : 0) -
-        (a.submissionType === "match" ? a.ranking_points ?? 0 : 0);
-    }
-
-    if (recordSort === "hive") {
-      return (b.submissionType === "match" ? b.hive_tips ?? 0 : 0) -
-        (a.submissionType === "match" ? a.hive_tips ?? 0 : 0);
-    }
-
     if (recordSort === "team-low") {
-      return a.team_number - b.team_number;
+      return a.record.team_number - b.record.team_number;
     }
 
     if (recordSort === "team-high") {
-      return b.team_number - a.team_number;
+      return b.record.team_number - a.record.team_number;
     }
 
-    const aMatch = a.submissionType === "match" ? a.match_number : Infinity;
-    const bMatch = b.submissionType === "match" ? b.match_number : Infinity;
+    if (recordSort === "ranking") {
+      const aValue = a.submissionType === "match" ? a.record.ranking_points ?? 0 : 0;
+      const bValue = b.submissionType === "match" ? b.record.ranking_points ?? 0 : 0;
+      return bValue - aValue;
+    }
 
-    return aMatch - bMatch || a.team_number - b.team_number;
+    if (recordSort === "hive") {
+      const aValue = a.submissionType === "match" ? a.record.hive_tips ?? 0 : 0;
+      const bValue = b.submissionType === "match" ? b.record.hive_tips ?? 0 : 0;
+      return bValue - aValue;
+    }
+
+    const aMatch = a.submissionType === "match" ? a.record.match_number : Infinity;
+    const bMatch = b.submissionType === "match" ? b.record.match_number : Infinity;
+
+    return aMatch - bMatch ||
+      a.record.team_number - b.record.team_number;
   });
 }, [
   records,
