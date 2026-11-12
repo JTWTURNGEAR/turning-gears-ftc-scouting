@@ -2644,7 +2644,36 @@ return (
   <span>Avg. TeleOp Hive Tips / Match</span>
   <strong>{t.averageTeleopHiveTips?.toFixed(1) ?? "—"}</strong>
 </div>
+<div className="comparison-divider">
+  Flower & Nectar Features
+</div>
 
+<div className="comparison-stat">
+  <span>Can Shoot Nectar</span>
+  <strong>
+    <span style={{ color: "#22c55e" }}>✓ {t.nectarYes}/{t.count}</span>
+    {" "}
+    <span style={{ color: "#ef4444" }}>✕ {t.nectarNo}/{t.count}</span>
+  </strong>
+</div>
+
+<div className="comparison-stat">
+  <span>Refilled Flower</span>
+  <strong>
+    <span style={{ color: "#22c55e" }}>✓ {t.refilledYes}/{t.count}</span>
+    {" "}
+    <span style={{ color: "#ef4444" }}>✕ {t.refilledNo}/{t.count}</span>
+  </strong>
+</div>
+
+<div className="comparison-stat">
+  <span>Emptied Flower</span>
+  <strong>
+    <span style={{ color: "#22c55e" }}>✓ {t.emptiedYes}/{t.count}</span>
+    {" "}
+    <span style={{ color: "#ef4444" }}>✕ {t.emptiedNo}/{t.count}</span>
+  </strong>
+</div>
         </div>
       ))}
     </div>
