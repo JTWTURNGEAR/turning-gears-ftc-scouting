@@ -2386,15 +2386,6 @@ return (
       <span>Reliability</span>
     </div>
 
-    <div className="stat">
-      <strong>{selectedTeamSummary.rankingTotal}</strong>
-      <span>RP total</span>
-    </div>
-
-    <div className="stat">
-      <strong>{selectedTeamSummary.rankingAverage?.toFixed(1) ?? "—"}</strong>
-      <span>RP average</span>
-    </div>
   </div>
 )}
     <h3 className="section-title">Match-by-match history</h3>
@@ -2607,15 +2598,6 @@ return (
             <RatingPill value={t.reliability}/>
           </div>
 
-          <div className="comparison-stat">
-            <span>RP Total</span>
-            <RatingPill value={t.rankingTotal}/>
-          </div>
-
-          <div className="comparison-stat">
-            <span>RP Average</span>
-            <RatingPill value={t.rankingAverage}/>
-          </div>
         </div>
       ))}
     </div>
