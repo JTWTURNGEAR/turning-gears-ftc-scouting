@@ -2621,8 +2621,10 @@ return (
     </label>
   </div>
 
-  {comparisonTeams.length < 2 ? (
-    <Empty text="Choose at least two different teams to start comparing."/>
+  {
+{comparisonTeams.length === 0 ? (
+  <Empty text="Choose an available team to view its scouting statistics."/>
+
   ) : (
     <div className="comparison-grid">
       {comparisonTeams.map(t => (
