@@ -2015,59 +2015,45 @@ return (
   </Field>
 </div>
 
-<Field label="Ranking points earned (0–6)">
-  <input
-    type="number"
-    min="0"
-    max="6"
-    step="1"
-    value={form.ranking_points}
-    onChange={e => setForm({
-      ...form,
-      ranking_points: Number(e.target.value)
-    })}
-  />
-</Field>
 
-                <div className="two-col">
-          <Field label="Red alliance final score">
-            <input
-              type="number"
-              min="0"
-              value={form.red_final_score}
-              onChange={e => setForm({
-                ...form,
-                red_final_score: Number(e.target.value)
-              })}
-              placeholder="Red score"
-            />
-          </Field>
+<div className="checkbox-list">
+  <label className="check-field">
+    <input
+      type="checkbox"
+      checked={form.can_shoot_nectar}
+      onChange={e => setForm({
+        ...form,
+        can_shoot_nectar: e.target.checked
+      })}
+    />
+    <span>Can shoot nectar</span>
+  </label>
 
-          <Field label="Blue alliance final score">
-            <input
-              type="number"
-              min="0"
-              value={form.blue_final_score}
-              onChange={e => setForm({
-                ...form,
-                blue_final_score: Number(e.target.value)
-              })}
-              placeholder="Blue score"
-            />
-          </Field>
-        </div>
-        <div className="checkbox-list">
-          <label className="check-field">
-            <input type="checkbox" checked={form.can_shoot_nectar}
-              onChange={e => setForm({...form, can_shoot_nectar: e.target.checked})}/>
-            <span>Can shoot nectar</span>
-          </label>
-          <label className="check-field">
-            <input type="checkbox" checked={form.refilled_flower}
-              onChange={e => setForm({...form, refilled_flower: e.target.checked})}/>
-            <span>Refilled flower</span>
-          </label>
-        </div>
+  <label className="check-field">
+    <input
+      type="checkbox"
+      checked={form.refilled_flower}
+      onChange={e => setForm({
+        ...form,
+        refilled_flower: e.target.checked
+      })}
+    />
+    <span>Refilled flower</span>
+  </label>
+
+  <label className="check-field">
+    <input
+      type="checkbox"
+      checked={form.emptied_flower}
+      onChange={e => setForm({
+        ...form,
+        emptied_flower: e.target.checked
+      })}
+    />
+    <span>Emptied flower</span>
+  </label>
+</div>
+
 
         <Field label="Notes / observations">
           <textarea rows={3} value={form.notes}
