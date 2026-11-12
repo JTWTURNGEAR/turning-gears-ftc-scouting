@@ -379,7 +379,8 @@ useEffect(() => {
 
     if (loadedEvents.length > 0) {
       setActiveEventId(loadedEvents[0].id);
-      await loadEventMatches(loadedEvents[0].id);
+await loadEventMatches(loadedEvents[0].id);
+await loadEventTeams(loadedEvents[0].id);
     }
     setRecords((recordData || []) as RecordRow[]);
     setGeneralNotes((noteData || []) as GeneralNoteRow[]);
@@ -559,6 +560,7 @@ useEffect(() => {
     } else {
       setEvents(previous => [data as EventRow, ...previous]);
       setActiveEventId(data.id);
+      await loadEventTeams(data.id);
       setEventName("");
       setEventDate("");
       setMessage("Event created successfully.");
@@ -759,9 +761,13 @@ useEffect(() => {
         if (matchError) throw matchError;
       }
 
-      setMessage(
-        `Import successful: ${importedTeams.length} teams and ${importedMatches.length} matches processed.`
-      );
+      if (importedTeams.length > 0) {
+  await loadEventTeams(activeEventId);
+}
+
+setMessage(
+  `Import successful: ${importedTeams.length} teams and ${importedMatches.length} matches processed.`
+);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong during import."
@@ -1934,10 +1940,11 @@ return (
     <button
       className="action-card"
       style={{ flex: 1 }}
-      onClick={() => {
-        setActiveEventId(ev.id);
-        loadEventMatches(ev.id);
-      }}
+onClick={async () => {
+  setActiveEventId(ev.id);
+  await loadEventMatches(ev.id);
+  await loadEventTeams(ev.id);
+}}
     >
       <b>{ev.event_name}</b>
       <span>{ev.event_date || "Date not set"}</span>
