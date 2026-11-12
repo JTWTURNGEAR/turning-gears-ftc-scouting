@@ -178,6 +178,85 @@ useEffect(() => {
   };
 }, [activeEventId, joined]);
   useEffect(() => {
+  const client = supabase;
+
+  if (!client || !joined) return;
+
+  const channel = client
+    .channel("team-data-live")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "match_records"
+      },
+      () => {
+        loadTeam();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "general_notes"
+      },
+      () => {
+        loadTeam();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "scouts"
+      },
+      () => {
+        loadTeam();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "events"
+      },
+      () => {
+        loadTeam();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "event_teams"
+      },
+      () => {
+        loadTeam();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "team_members"
+      },
+      () => {
+        loadTeam();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    client.removeChannel(channel);
+  };
+}, [joined]);
+  useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session) {
