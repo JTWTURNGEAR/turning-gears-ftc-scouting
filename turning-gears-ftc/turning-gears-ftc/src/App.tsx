@@ -690,9 +690,27 @@ useEffect(() => {
     }
   }
 
-  async function submitRecord() {
+ 
+async function submitRecord() {
   if (!supabase || (!editingRecordId && !selectedScout)) {
     setError("Choose your scout name first.");
+    return;
+  }
+
+  const existingRecord = editingRecordId
+    ? records.find(r => r.id === editingRecordId)
+    : undefined;
+
+  const selectedScoutRow = scouts.find(
+    s => s.name === (editingRecordId ? editingScoutName : selectedScout)
+  );
+
+  const scoutGroup = editingRecordId
+    ? existingRecord?.scout_group ?? null
+    : selectedScoutRow?.scout_group ?? null;
+
+  if (!editingRecordId && !scoutGroup) {
+    setError("Your scout name needs a group assigned before submitting.");
     return;
   }
 
@@ -710,7 +728,8 @@ useEffect(() => {
     setError("Hive tips must be a whole number from 0 to 10.");
     return;
   }
-      if (
+
+  if (
     !Number.isInteger(form.auto_hive_tips) ||
     form.auto_hive_tips < 0 ||
     !Number.isInteger(form.teleop_hive_tips) ||
@@ -743,23 +762,24 @@ useEffect(() => {
     return;
   }
 
- const partnerTeam = form.partner_team_number.trim() === ""
-  ? null
-  : Number(form.partner_team_number);
+  const partnerTeam = form.partner_team_number.trim() === ""
+    ? null
+    : Number(form.partner_team_number);
 
-if (partnerTeam !== null &&
-    (!Number.isInteger(partnerTeam) || partnerTeam < 1)) {
-  setError("Enter a valid alliance partner team number.");
-  setBusy(false);
-  return;
-}
+  if (partnerTeam !== null &&
+      (!Number.isInteger(partnerTeam) || partnerTeam < 1)) {
+    setError("Enter a valid alliance partner team number.");
+    setBusy(false);
+    return;
+  }
 
-const recordData = {
+  const recordData = {
     team_number: team,
     partner_team_number: partnerTeam,
     match_number: match,
     alliance: form.alliance,
     scout_name: editingRecordId ? editingScoutName : selectedScout,
+    scout_group: scoutGroup,
     auto_rating: form.auto_rating,
     shooting_accuracy: form.shooting_accuracy,
     shooting_speed: form.shooting_speed,
@@ -767,17 +787,17 @@ const recordData = {
     maneuverability: form.maneuverability,
     reliability: form.reliability,
     hive_tips: form.hive_tips,
-  auto_hive_tips: form.auto_hive_tips,
-teleop_hive_tips: form.teleop_hive_tips,
+    auto_hive_tips: form.auto_hive_tips,
+    teleop_hive_tips: form.teleop_hive_tips,
     can_shoot_nectar: form.can_shoot_nectar,
     refilled_flower: form.refilled_flower,
-      ranking_points: form.ranking_points,
+    ranking_points: form.ranking_points,
     red_final_score: form.red_final_score,
     blue_final_score: form.blue_final_score,
     notes: form.notes.trim()
-};
+  };
 
-const saveResult = editingRecordId
+  const saveResult = editingRecordId
     ? await supabase.from("match_records")
         .update(recordData)
         .eq("id", editingRecordId)
@@ -788,6 +808,7 @@ const saveResult = editingRecordId
           team_id: teamId,
           submitted_by: authData.user.id
         });
+
   if (saveResult.error) {
     setError(saveResult.error.message);
   } else {
@@ -804,6 +825,7 @@ const saveResult = editingRecordId
 
   setBusy(false);
 }
+
 
  
 async function addScout() {
