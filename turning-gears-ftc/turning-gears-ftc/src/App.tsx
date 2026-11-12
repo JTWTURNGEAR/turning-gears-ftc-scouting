@@ -118,6 +118,7 @@ export default function App() {
   const [teamCode, setTeamCode] = useState("");
   const [coordinatorCode, setCoordinatorCode] = useState("");
   const [newScout, setNewScout] = useState("");
+  const [newScoutGroup, setNewScoutGroup] = useState<ScoutGroup | "">("");
   const [isCoordinator, setIsCoordinator] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
 const [editingScoutName, setEditingScoutName] = useState("");
@@ -804,52 +805,67 @@ const saveResult = editingRecordId
   setBusy(false);
 }
 
-  async function addScout() {
-    const cleanName = newScout.trim().replace(/\s+/g, " ");
-    if (!supabase || !cleanName || !teamId) return;
+ 
+async function addScout() {
+  const cleanName = newScout.trim().replace(/\s+/g, " ");
 
-    if (cleanName.length > 40) {
-      setError("Scout names must be 40 characters or fewer.");
-      return;
-    }
+  if (!supabase || !cleanName || !teamId) return;
 
-    setBusy(true);
-    setError("");
-    setMessage("");
-
-    const existing = scouts.find(
-      s => s.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase()
-    );
-
-    if (existing) {
-      setSelectedScout(existing.name);
-      localStorage.setItem("tg-selected-scout", existing.name);
-      setNewScout("");
-      setMessage("That name is already on the list. We selected it for you.");
-      setBusy(false);
-      return;
-    }
-
-    const { data: inserted, error: insertError } = await supabase
-      .from("scouts")
-      .insert({ team_id: teamId, name: cleanName })
-      .select("id,name,active")
-      .single();
-
-    if (insertError) {
-      setError(insertError.code === "23505"
-        ? "That name is already on the list. Select it instead."
-        : insertError.message);
-    } else {
-      setNewScout("");
-      setSelectedScout(inserted.name);
-      localStorage.setItem("tg-selected-scout", inserted.name);
-      setMessage(`Welcome, ${inserted.name}! Your name is now on the team list.`);
-      await loadTeam();
-    }
-
-    setBusy(false);
+  if (!newScoutGroup) {
+    setError("Please select a scout group.");
+    return;
   }
+
+  if (cleanName.length > 40) {
+    setError("Scout names must be 40 characters or fewer.");
+    return;
+  }
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  const existing = scouts.find(
+    s => s.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase()
+  );
+
+  if (existing) {
+    setSelectedScout(existing.name);
+    localStorage.setItem("tg-selected-scout", existing.name);
+    setNewScout("");
+    setMessage("That name is already on the list. We selected it for you.");
+    setBusy(false);
+    return;
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("scouts")
+    .insert({
+      team_id: teamId,
+      name: cleanName,
+      scout_group: newScoutGroup
+    })
+    .select("id,name,active,scout_group")
+    .single();
+
+  if (insertError) {
+    setError(
+      insertError.code === "23505"
+        ? "That name is already on the list. Select it instead."
+        : insertError.message
+    );
+  } else {
+    setNewScout("");
+    setNewScoutGroup("");
+    setSelectedScout(inserted.name);
+    localStorage.setItem("tg-selected-scout", inserted.name);
+    setMessage(`Welcome, ${inserted.name}! Your name is now on the team list.`);
+    await loadTeam();
+  }
+
+  setBusy(false);
+}
+
 
   function chooseScout(name: string) {
     setSelectedScout(name);
@@ -1208,12 +1224,27 @@ tab === "event-manager" ? "Event Manager" :
             <option value="">Select scout name</option>
             {scouts.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
           </select>
-          <div className="add-row scout-self-add">
-            <input value={newScout} onChange={e => setNewScout(e.target.value)}
-              placeholder="New scout? Enter your name" maxLength={40}/>
-            <button className="primary" onClick={addScout}
-              disabled={busy || !newScout.trim()}><Plus size={18}/> Add name</button>
-          </div>
+          
+<div className="add-row scout-self-add">
+  <input value={newScout} onChange={e => setNewScout(e.target.value)}
+    placeholder="New scout? Enter your name" maxLength={40}/>
+
+  <select
+    value={newScoutGroup}
+    onChange={e => setNewScoutGroup(e.target.value as ScoutGroup | "")}
+  >
+    <option value="">Select scout group</option>
+    <option value="Scouting Coach">Scouting Coach</option>
+    <option value="Parent Scout">Parent Scout</option>
+    <option value="Student Scout">Student Scout</option>
+  </select>
+
+  <button className="primary" onClick={addScout}
+    disabled={busy || !newScout.trim() || !newScoutGroup}>
+    <Plus size={18}/> Add name
+  </button>
+</div>
+
         </section>
         <section className="panel live-match-panel">
           <div className="section-head">
