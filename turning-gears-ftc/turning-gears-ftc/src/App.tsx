@@ -2135,10 +2135,32 @@ return (
         <option value="Red">Red alliance</option>
         <option value="Blue">Blue alliance</option>
       </select>
+   
+    </div>
+
+    <div className="filter-group">
+      <strong>Scout groups</strong>
+      <div className="checkbox-list">
+        {(["Scouting Coach", "Parent Scout", "Student Scout"] as ScoutGroup[]).map(group => (
+          <label className="check-field" key={group}>
+            <input
+              type="checkbox"
+              checked={selectedScoutGroups.includes(group)}
+              onChange={e => setSelectedScoutGroups(current =>
+                e.target.checked
+                  ? [...current, group]
+                  : current.filter(item => item !== group)
+              )}
+            />
+            {group}
+          </label>
+        ))}
+      </div>
     </div>
 
     <select
       className="sort-select"
+
       value={recordSort}
       onChange={e => setRecordSort(e.target.value)}
     >
