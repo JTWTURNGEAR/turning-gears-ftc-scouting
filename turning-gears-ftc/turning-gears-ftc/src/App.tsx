@@ -146,6 +146,7 @@ const [recordMatchFilter, setRecordMatchFilter] = useState("");
 const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [recordSort, setRecordSort] = useState("match");
   const [teamSort, setTeamSort] = useState("team-low");
+  const [eventTeamSort, setEventTeamSort] = useState("team-low");
   const [compareTeam1, setCompareTeam1] = useState("");
 const [compareTeam2, setCompareTeam2] = useState("");
 const [compareTeam3, setCompareTeam3] = useState("");
@@ -1743,19 +1744,84 @@ tab === "event-manager" ? "Event Manager" :
 
 
     {eventSection === "rankings" && (
-      <p className="muted">Official event rankings will appear here.</p>
-    )}
+  <div>
+    <div className="section-head">
+      <h3>Official Event Rankings</h3>
+      <span>{eventTeams.filter(t => t.event_rank !== null).length} ranked teams</span>
+    </div>
 
-    {eventSection === "teams" && (
-      <p className="muted">Event teams will appear here.</p>
+    {eventTeams.filter(t => t.event_rank !== null).length === 0 ? (
+      <Empty text="No official rankings have been imported yet." />
+    ) : (
+      [...eventTeams]
+        .filter(t => t.event_rank !== null)
+        .sort((a, b) => a.event_rank! - b.event_rank!)
+        .map(team => (
+          <div className="scout-row" key={team.id}>
+            <strong>#{team.event_rank}</strong>
+            <div style={{ flex: 1 }}>
+              <b>{team.team_number}</b>
+              <span>{team.team_name}</span>
+            </div>
+            <strong>{Number(team.ranking_points).toFixed(2)} RP</strong>
+          </div>
+        ))
     )}
+  </div>
+)}
 
-    {eventSection === "manager" && isCoordinator && (
-      <p className="muted">Event management tools will appear here.</p>
-    )}
+   {eventSection === "teams" && (
+  <div>
+    <div className="section-head">
+      <h3>Event Teams</h3>
+      <span>{eventTeams.length} teams</span>
+    </div>
+
+    <Field label="Sort teams">
+      <select
+        value={eventTeamSort}
+        onChange={e => setEventTeamSort(e.target.value)}
+      >
+        <option value="team-low">Team number: Low to high</option>
+        <option value="team-high">Team number: High to low</option>
+        <option value="name-az">Team name: A–Z</option>
+        <option value="name-za">Team name: Z–A</option>
+        <option value="rank">Current event rank</option>
+      </select>
+    </Field>
+
+    {[...eventTeams]
+      .sort((a, b) => {
+        if (eventTeamSort === "team-high") {
+          return b.team_number - a.team_number;
+        }
+        if (eventTeamSort === "name-az") {
+          return a.team_name.localeCompare(b.team_name);
+        }
+        if (eventTeamSort === "name-za") {
+          return b.team_name.localeCompare(a.team_name);
+        }
+        if (eventTeamSort === "rank") {
+          return (a.event_rank ?? Infinity) - (b.event_rank ?? Infinity);
+        }
+        return a.team_number - b.team_number;
+      })
+      .map(team => (
+        <div className="scout-row" key={team.id}>
+          <b>{team.team_number}</b>
+          <span style={{ flex: 1 }}>{team.team_name}</span>
+          <span>
+            {team.event_rank === null
+              ? "Unranked"
+              : `Rank ${team.event_rank}`}
+          </span>
+        </div>
+      ))}
+  </div>
+)}
   </section>
 )}
-      {tab === "schedule" && (
+     {tab === "event" && eventSection === "matches" && (
         <section className="panel">
           <div className="section-head">
             <h3>Match Schedule</h3>
@@ -1909,7 +1975,7 @@ return (
           )}
         </section>
       )}
-      {tab === "event-manager" && isCoordinator && (
+     {tab === "event" && eventSection === "manager" && isCoordinator && (
         <section className="panel">
           <div className="section-head">
             <h3>Create an event</h3>
