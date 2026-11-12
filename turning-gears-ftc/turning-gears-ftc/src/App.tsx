@@ -1090,27 +1090,7 @@ const sortedTeamSummaries = useMemo(() => {
     return a.team - b.team;
   });
 }, [teamSummaries, teamSort]);
-    if (teamSort === "rp-total-low") {
-      return a.rankingTotal - b.rankingTotal || a.team - b.team;
-    }
-
-    if (teamSort === "rp-total-high") {
-      return b.rankingTotal - a.rankingTotal || a.team - b.team;
-    }
-
-    if (teamSort === "rp-average-low") {
-      return (a.rankingAverage ?? 0) - (b.rankingAverage ?? 0)
-        || a.team - b.team;
-    }
-
-    if (teamSort === "rp-average-high") {
-      return (b.rankingAverage ?? 0) - (a.rankingAverage ?? 0)
-        || a.team - b.team;
-    }
-
-    return a.team - b.team;
-  });
-}, [teamSummaries, teamSort]);
+  
   const comparisonTeams = [
   compareTeam1,
   compareTeam2,
