@@ -2009,9 +2009,10 @@ return (
         setTab("records");
         setMessage("Editing cancelled.");
       }}
-    >
+       >
       Cancel editing
-      </button>
+    </button>
+  )}
 </div>
           </>
         )}
