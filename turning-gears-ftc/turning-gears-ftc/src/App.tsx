@@ -1289,7 +1289,7 @@ const filtered = combined.filter(item => {
   recordMatchFilter,
   recordAllianceFilter,
   recordSort,
-  recordTypeFilter
+  recordTypeFilter,
   selectedScoutGroups
 ]);
  function openTeamProfile(team: number) {
