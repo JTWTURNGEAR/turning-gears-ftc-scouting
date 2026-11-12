@@ -60,7 +60,6 @@ type RecordRow = {
   can_shoot_nectar: boolean;
   refilled_flower: boolean;
   emptied_flower: boolean;
-  ranking_points: number;
   red_final_score: number;
   blue_final_score: number;
   notes: string | null;
@@ -94,7 +93,6 @@ teleop_hive_tips: 0,
   can_shoot_nectar: false,
   refilled_flower: false,
  emptied_flower: false,
-  ranking_points: 0,
 red_final_score: 0,
 blue_final_score: 0,
 notes: ""
@@ -821,11 +819,6 @@ async function submitRecord() {
     return;
   }
 
-  if (!Number.isInteger(form.ranking_points) ||
-      form.ranking_points < 0 || form.ranking_points > 6) {
-    setError("Ranking points must be a whole number from 0 to 6.");
-    return;
-  }
 
   setBusy(true);
   setError("");
@@ -1241,18 +1234,6 @@ const filtered = combined.filter(item => {
 
     if (recordSort === "team-high") {
       return b.record.team_number - a.record.team_number;
-    }
-
-    if (recordSort === "ranking") {
-      const aValue =
-        a.submissionType === "match"
-          ? a.record.ranking_points ?? 0
-          : 0;
-      const bValue =
-        b.submissionType === "match"
-          ? b.record.ranking_points ?? 0
-          : 0;
-      return bValue - aValue;
     }
 
     if (recordSort === "hive") {
