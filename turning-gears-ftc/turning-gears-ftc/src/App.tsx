@@ -60,8 +60,6 @@ type RecordRow = {
   can_shoot_nectar: boolean;
   refilled_flower: boolean;
   emptied_flower: boolean;
-  red_final_score: number;
-  blue_final_score: number;
   notes: string | null;
 };
 type GeneralNoteRow = {
