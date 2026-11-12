@@ -22,6 +22,14 @@ type EventRow = {
   event_name: string;
   event_date: string | null;
 };
+type EventTeamRow = {
+  id: string;
+  event_id: string;
+  team_number: number;
+  team_name: string;
+  event_rank: number | null;
+  ranking_points: number;
+};
 type EventMatch = {
   id: string;
   event_id: string;
@@ -111,6 +119,7 @@ const [noteText, setNoteText] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [activeEventId, setActiveEventId] = useState("");
   const [eventMatches, setEventMatches] = useState<EventMatch[]>([]);
+  const [eventTeams, setEventTeams] = useState<EventTeamRow[]>([]);
     const [teamListText, setTeamListText] = useState("");
   const [scheduleText, setScheduleText] = useState("");
   const [importBusy, setImportBusy] = useState(false);
@@ -293,6 +302,25 @@ useEffect(() => {
 
     setEventMatches((data || []) as EventMatch[]);
   }
+  async function loadEventTeams(eventId: string) {
+  if (!supabase || !eventId) {
+    setEventTeams([]);
+    return;
+  }
+
+  const { data, error: teamError } = await supabase
+    .from("event_teams")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("team_number", { ascending: true });
+
+  if (teamError) {
+    setError(teamError.message);
+    return;
+  }
+
+  setEventTeams((data || []) as EventTeamRow[]);
+}
   async function loadTeam() {
     if (!supabase) return;
 
