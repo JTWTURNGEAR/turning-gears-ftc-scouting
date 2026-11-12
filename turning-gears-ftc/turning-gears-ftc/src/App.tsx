@@ -314,6 +314,34 @@ useEffect(() => {
     return;
   }
 
+async function removeEventTeam(team: EventTeamRow) {
+  if (!supabase || !activeEventId) return;
+
+  const confirmed = window.confirm(
+    `Are you sure you want to remove team ${team.team_number} (${team.team_name}) from this event?`
+  );
+
+  if (!confirmed) return;
+
+  setError("");
+  setMessage("");
+
+  const { error: deleteError } = await supabase
+    .from("event_teams")
+    .delete()
+    .eq("id", team.id)
+    .eq("event_id", activeEventId);
+
+  if (deleteError) {
+    setError(deleteError.message);
+    return;
+  }
+
+  await loadEventTeams(activeEventId);
+
+  setMessage(`Team ${team.team_number} removed from this event.`);
+}
+
   const { data, error: teamError } = await supabase
     .from("event_teams")
     .select("*")
