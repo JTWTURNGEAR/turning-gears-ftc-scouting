@@ -3091,7 +3091,7 @@ onClick={async () => {
           <summary>
             {selected ? (
               <>
-                <strong>#{selected.team}</strong>
+               <strong>#{selected.team_number}</strong>
                 <small>
                   {eventTeams.find(
                     et => et.team_number === selected.team
@@ -3108,7 +3108,7 @@ onClick={async () => {
               <button
                 type="button"
                key={t.team_number}
-                disabled={selector.otherTeams.includes String(t.team_number))}
+                disabled={selector.otherTeams.includes(String(t.team_number))}
                 onClick={e => {
                   selector.setValue(String(t.team_number));
                   e.currentTarget.closest("details")?.removeAttribute("open");
@@ -3135,10 +3135,10 @@ onClick={async () => {
   ) : (
     <div className="comparison-grid">
       {comparisonTeams.map(t => (
-        <div className="comparison-card" key={t.team_number}
+        <div className="comparison-card" key={t.team}>
           <div className="comparison-card-head">
             <span className="eyebrow">TEAM</span>
-            <h3>#{t.team_number}</h3>
+           <h3>#{t.team}</h3>
             <span className="muted tiny">
               {t.count} observations
             </span>
