@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, House, Users, ClipboardList, Wrench, BarChart3, Plus,
+  Activity, House, Users, ClipboardList, Wrench, BarChart3, Plus, BookOpen,
   RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil, CalendarDays
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
@@ -2091,7 +2091,9 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   tab === "event" ? "Event Center" :
   tab === "schedule" ? "Event Schedule" :
   tab === "event-manager" ? "Event Manager" :
-  tab === "compare" ? "Team comparison" : "Scout roster"}</h2>
+  tab === "compare" ? "Team comparison" :
+  tab === "research" ? "Historical Research" :
+  "Scout roster"}</h2>
         </div>
         <div className="live"><span/> SHARED DATA</div>
       </div>
@@ -2313,7 +2315,47 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   </button>
 </section>
         </>}
-  
+  {tab === "research" && (
+  <section className="panel">
+    <div className="section-head">
+      <h3>Historical Research</h3>
+      <span>Archived Events</span>
+    </div>
+
+    <p className="muted">
+      Browse scouting information preserved from completed events.
+      Research filters will be independent of Active Scouting.
+    </p>
+
+    {events.filter(ev => ev.is_archived).length === 0 ? (
+      <Empty text="No archived events yet. Archive a completed event in Event Manager to begin building your Research database." />
+    ) : (
+      events
+        .filter(ev => ev.is_archived)
+        .map(ev => {
+          const matchCount = records.filter(
+            r => r.event_id === ev.id
+          ).length;
+
+          const noteCount = generalNotes.filter(
+            n => n.event_id === ev.id
+          ).length;
+
+          return (
+            <div className="scout-row" key={ev.id}>
+              <div style={{ flex: 1 }}>
+                <strong>{ev.event_name}</strong>
+                <div className="muted tiny">
+                  {matchCount} match records · {noteCount} general notes
+                </div>
+              </div>
+              <span className="muted tiny">Archived</span>
+            </div>
+          );
+        })
+    )}
+  </section>
+)}
       {tab === "event" && (
   <section className="panel">
     <div className="section-head">
@@ -3938,11 +3980,17 @@ onClick={async () => {
     label="Records"
     onClick={() => setTab("records")}
   />
-  <NavItem
+   <NavItem
     active={tab === "roster"}
     icon={<Users/>}
     label="Roster"
     onClick={() => setTab("roster")}
+  />
+  <NavItem
+    active={tab === "research"}
+    icon={<BookOpen/>}
+    label="Research"
+    onClick={() => setTab("research")}
   />
 </nav>
 
