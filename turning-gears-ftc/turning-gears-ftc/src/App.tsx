@@ -62,7 +62,6 @@ type RecordRow = {
   shooting_speed: number | null;
   driving_speed: number | null;
   maneuverability: number | null;
-  reliability: number | null;
   hive_tips: number;
   auto_hive_tips: number;
   teleop_hive_tips: number;
@@ -93,7 +92,6 @@ const emptyForm = {
   shooting_speed: 3,
   driving_speed: 3,
   maneuverability: 3,
-  reliability: 3,
  hive_tips: 0 as number | "",
 auto_hive_tips: 0 as number | "",
 teleop_hive_tips: 0 as number | "",
@@ -1122,7 +1120,6 @@ if (autoHiveTips + teleopHiveTips > totalHiveTips) {
   shooting_speed: form.shooting_speed,
   driving_speed: form.driving_speed,
   maneuverability: form.maneuverability,
-  reliability: form.reliability,
   hive_tips: form.hive_tips,
   auto_hive_tips: form.auto_hive_tips,
   teleop_hive_tips: form.teleop_hive_tips,
@@ -1264,7 +1261,6 @@ async function editRecord(record: RecordRow) {
   shooting_speed: record.shooting_speed ?? 3,
   driving_speed: record.driving_speed ?? 3,
   maneuverability: record.maneuverability ?? 3,
-  reliability: record.reliability ?? 3,
   hive_tips: record.hive_tips ?? 0,
   auto_hive_tips: record.auto_hive_tips ?? 0,
   teleop_hive_tips: record.teleop_hive_tips ?? 0,
@@ -1377,7 +1373,7 @@ const teamSummaries = useMemo(() => {
       autonomous: avg(rows, ["auto_rating"]),
       shooting: avg(rows, ["shooting_accuracy", "shooting_speed"]),
       mobility: avg(rows, ["driving_speed", "maneuverability"]),
-      reliability: avg(rows, ["reliability"]),
+      
 
       totalHiveTips: rows.reduce((sum, r) => sum + (r.hive_tips || 0), 0),
       autoHiveTips: rows.reduce((sum, r) => sum + (r.auto_hive_tips || 0), 0),
@@ -2512,8 +2508,7 @@ onClick={async () => {
             onChange={v => setForm({...form, driving_speed: v})}/>
           <Rating label="Maneuverability" value={form.maneuverability}
             onChange={v => setForm({...form, maneuverability: v})}/>
-          <Rating label="Mechanical reliability" value={form.reliability}
-            onChange={v => setForm({...form, reliability: v})}/>
+         
         </div>
 
         
@@ -2881,7 +2876,7 @@ onClick={async () => {
             <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
             <span>Shooting <b>{r.shooting_accuracy ?? "—"}/5</b></span>
             <span>Mobility <b>{r.maneuverability ?? "—"}/5</b></span>
-            <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
+    
             <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
             <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
@@ -2936,10 +2931,6 @@ onClick={async () => {
       <span>Mobility</span>
     </div>
 
-    <div className="stat">
-      <strong>{selectedTeamSummary.reliability?.toFixed(1) ?? "—"}</strong>
-      <span>Reliability</span>
-    </div>
 
   </div>
 )}
@@ -2968,7 +2959,6 @@ onClick={async () => {
             <span>Shooting speed <b>{r.shooting_speed ?? "—"}/5</b></span>
             <span>Driving speed <b>{r.driving_speed ?? "—"}/5</b></span>
             <span>Maneuverability <b>{r.maneuverability ?? "—"}/5</b></span>
-            <span>Reliability <b>{r.reliability ?? "—"}/5</b></span>
             <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
             <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
@@ -3200,10 +3190,6 @@ onClick={async () => {
             <RatingPill value={t.mobility}/>
           </div>
 
-          <div className="comparison-stat">
-            <span>Reliability</span>
-            <RatingPill value={t.reliability}/>
-          </div>
           <div className="comparison-divider">
   Hive Tip Breakdown
 </div>
