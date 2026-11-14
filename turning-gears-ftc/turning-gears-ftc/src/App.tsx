@@ -275,6 +275,18 @@ useEffect(() => {
       },
       () => {
         loadTeam();
+          }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "event_teams",
+        filter: `event_id=eq.${activeEventId}`
+      },
+      () => {
+        loadEventTeams(activeEventId);
       }
     )
     .subscribe();
