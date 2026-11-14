@@ -2356,7 +2356,12 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
               <button
                 className="secondary"
                 onClick={async () => {
-                  setResearchEventId(ev.id);
+  if (!supabase) {
+    alert("Database connection is not available.");
+    return;
+  }
+
+  setResearchEventId(ev.id);
                   setResearchTeamNumber(null);
 
                   const { data, error } = await supabase
