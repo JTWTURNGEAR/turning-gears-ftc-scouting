@@ -2229,8 +2229,8 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       setSelectedTeamNumber(team.team_number);
       setTab("team-detail");
     }}
-  >
-    {team.team_name}
+   >
+    {team.team_name} ({team.matches_played} Matches Played)
   </button>
 </div>
             <div style={{ textAlign: "right" }}>
@@ -2307,7 +2307,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       setTab("team-detail");
     }}
   >
-    {team.team_name} ({team.matches_played} Matches Played)
+    {team.team_name}
   </button>
 
   <span>
