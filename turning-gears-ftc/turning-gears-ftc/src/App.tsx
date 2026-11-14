@@ -111,7 +111,6 @@ export default function App() {
   const [joined, setJoined] = useState(false);
   function returnToLogin() {
   setJoined(false);
-  setTeamCode("");
   setCoordinatorCode("");
   setIsCoordinator(false);
   setMessage("");
@@ -141,7 +140,6 @@ const [noteText, setNoteText] = useState("");
   const [records, setRecords] = useState<RecordRow[]>([]);
   const [generalNotes, setGeneralNotes] = useState<GeneralNoteRow[]>([]);
   const [form, setForm] = useState(emptyForm);
-  const [teamCode, setTeamCode] = useState("");
   const [coordinatorCode, setCoordinatorCode] = useState("");
   const [newScout, setNewScout] = useState("");
   const [newScoutGroup, setNewScoutGroup] = useState<ScoutGroup | "">("");
@@ -1034,37 +1032,36 @@ setMessage(
     setImportBusy(false);
   }
   // Your next existing function continues here
-  async function enterTeam() {
-    if (!supabase) return;
-    setBusy(true);
-    setError("");
-    setMessage("");
+ async function enterTeam() {
+  if (!supabase) return;
+  setBusy(true);
+  setError("");
+  setMessage("");
 
-    try {
-      const { error: authError } = await supabase.auth.signInAnonymously();
-      if (authError) throw authError;
+  try {
+    const { error: authError } = await supabase.auth.signInAnonymously();
+    if (authError) throw authError;
 
-      const { data: joinData, error: joinError } =
-        await supabase.functions.invoke("join-team", {
-          body: {
-            accessCode: teamCode.trim(),
-            coordinatorCode: coordinatorCode.trim() || null
-          }
-        });
+    const { data: joinData, error: joinError } =
+      await supabase.functions.invoke("join-team", {
+        body: {
+          coordinatorCode: coordinatorCode.trim() || null
+        }
+      });
 
-      if (joinError) throw joinError;
-      if (joinData?.error) throw new Error(joinData.error);
+    if (joinError) throw joinError;
+    if (joinData?.error) throw new Error(joinData.error);
 
-      setJoined(true);
-      setIsCoordinator(joinData?.role === "coordinator");
-      await loadTeam();
-      setMessage("Connected to your team.");
-    } catch (e: any) {
-      setError(e.message || "Could not join the team. Check the access code and setup.");
-    } finally {
-      setBusy(false);
-    }
+    setJoined(true);
+    setIsCoordinator(joinData?.role === "coordinator");
+    await loadTeam();
+    setMessage("Connected to your team.");
+  } catch (e: any) {
+    setError(e.message || "Could not join the team. Please try again.");
+  } finally {
+    setBusy(false);
   }
+}
 
  
 
@@ -1907,16 +1904,20 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     <h1>TURNING GEARS<br/><span>SCOUTING</span></h1>
     <p className="muted">Join your team's shared scouting workspace.</p>
     <section className="panel gate-panel">
-      <label>Team access code</label>
-      <input value={teamCode} onChange={e => setTeamCode(e.target.value)}
-        placeholder="Enter team code" type="password"/>
-      <label>Coordinator code <small>(optional)</small></label>
-      <input value={coordinatorCode} onChange={e => setCoordinatorCode(e.target.value)}
-        placeholder="Only for roster managers" type="password"/>
-      <button className="primary full" onClick={enterTeam}
-        disabled={busy || !teamCode.trim()}>
-        {busy ? "Connecting…" : "Join team"}
-      </button>
+  <label>Coordinator code <small>(optional)</small></label>
+  <input
+    value={coordinatorCode}
+    onChange={e => setCoordinatorCode(e.target.value)}
+    placeholder="Enter only if you are a coordinator"
+    type="password"
+  />
+  <button
+    className="primary full"
+    onClick={enterTeam}
+    disabled={busy}
+  >
+    {busy ? "Connecting…" : "Join Team"}
+  </button>
       {error && <p className="error">{error}</p>}
       <p className="tiny muted">Your team coordinator provides these codes. Scouts do not need individual accounts.</p>
     </section>
