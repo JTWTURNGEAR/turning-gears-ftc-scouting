@@ -3057,65 +3057,77 @@ onClick={async () => {
     </div>
   </div>
 
-  <div className="compare-selectors">
-    <label className="field">
-      <span>Team 1</span>
-      <select
-        value={compareTeam1}
-        onChange={e => setCompareTeam1(e.target.value)}
-      >
-        <option value="">Choose team</option>
-        {teamSummaries.map(t => (
-          <option
-            key={t.team}
-            value={String(t.team)}
-            disabled={[compareTeam2, compareTeam3].includes(String(t.team))}
-          >
-            Team {t.team}
-          </option>
-        ))}
-      </select>
-    </label>
+  
+<div className="compare-selectors">
+  {[
+    {
+      label: "Team 1",
+      value: compareTeam1,
+      setValue: setCompareTeam1,
+      otherTeams: [compareTeam2, compareTeam3]
+    },
+    {
+      label: "Team 2",
+      value: compareTeam2,
+      setValue: setCompareTeam2,
+      otherTeams: [compareTeam1, compareTeam3]
+    },
+    {
+      label: "Team 3 (optional)",
+      value: compareTeam3,
+      setValue: setCompareTeam3,
+      otherTeams: [compareTeam1, compareTeam2]
+    }
+  ].map(selector => {
+    const selected = teamSummaries.find(
+      t => String(t.team) === selector.value
+    );
 
-    <label className="field">
-      <span>Team 2</span>
-      <select
-        value={compareTeam2}
-        onChange={e => setCompareTeam2(e.target.value)}
-      >
-        <option value="">Choose team</option>
-        {teamSummaries.map(t => (
-          <option
-            key={t.team}
-            value={String(t.team)}
-            disabled={[compareTeam1, compareTeam3].includes(String(t.team))}
-          >
-            Team {t.team}
-          </option>
-        ))}
-      </select>
-    </label>
+    return (
+      <label className="field" key={selector.label}>
+        <span>{selector.label}</span>
 
-    <label className="field">
-      <span>Team 3 (optional)</span>
-      <select
-        value={compareTeam3}
-        onChange={e => setCompareTeam3(e.target.value)}
-      >
-        <option value="">Choose team</option>
-        {teamSummaries.map(t => (
-          <option
-            key={t.team}
-            value={String(t.team)}
-            disabled={[compareTeam1, compareTeam2].includes(String(t.team))}
-          >
-            Team {t.team}
-          </option>
-        ))}
-      </select>
-    </label>
-  </div>
+        <details className="compare-team-picker">
+          <summary>
+            {selected ? (
+              <>
+                <strong>#{selected.team}</strong>
+                <small>
+                  {eventTeams.find(
+                    et => et.team_number === selected.team
+                  )?.team_name || "Name unavailable"}
+                </small>
+              </>
+            ) : (
+              "Choose team"
+            )}
+          </summary>
 
+          <div className="compare-team-options">
+            {teamSummaries.map(t => (
+              <button
+                type="button"
+                key={t.team}
+                disabled={selector.otherTeams.includes(String(t.team))}
+                onClick={e => {
+                  selector.setValue(String(t.team));
+                  e.currentTarget.closest("details")?.removeAttribute("open");
+                }}
+              >
+                <strong>#{t.team}</strong>
+                <small>
+                  {eventTeams.find(
+                    et => et.team_number === t.team
+                  )?.team_name || "Name unavailable"}
+                </small>
+              </button>
+            ))}
+          </div>
+        </details>
+      </label>
+    );
+  })}
+</div>
 
 {comparisonTeams.length === 0 ? (
   <Empty text="Choose an available team to view its scouting statistics."/>
