@@ -1176,3 +1176,28 @@ button { cursor: pointer; }
   border-color: #4b9bea;
   font-weight: 700;
 }
+.scout-qr-panel {
+  text-align: center;
+}
+
+.scout-qr-panel .section-head {
+  justify-content: center;
+}
+
+.scout-qr-code {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.scout-qr-code img {
+  width: 210px;
+  height: 210px;
+  padding: 10px;
+  background: white;
+  border-radius: 12px;
+}
+
+.scout-qr-panel p {
+  margin-top: 8px;
+}
