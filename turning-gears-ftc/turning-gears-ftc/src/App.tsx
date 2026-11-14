@@ -2183,10 +2183,23 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   />
 </Field>
 
-    <button
-      className="primary full"
-      onClick={applyScheduleAdjustment}
-      disabled={busy || !adjustmentStartMatchId || adjustmentMinutes === 0}
+   
+<button
+  className="primary full"
+  onClick={applyScheduleAdjustment}
+  disabled={busy || !adjustmentStartMatchId || adjustmentMinutes === 0}
+>
+  {busy ? "Adjusting..." : "Apply Schedule Adjustment"}
+</button>
+
+<button
+  className="primary full"
+  onClick={setSelectedMatchToNow}
+  disabled={busy || !adjustmentStartMatchId}
+>
+  {busy ? "Updating..." : "Set Selected Match and Later to Now"}
+</button>
+
     >
       {busy ? "Adjusting..." : "Apply Schedule Adjustment"}
     </button>
