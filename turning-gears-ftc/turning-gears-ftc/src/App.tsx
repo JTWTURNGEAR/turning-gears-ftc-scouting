@@ -1008,8 +1008,6 @@ if (importedMatches.length > 0) {
 }
 
 setMessage(
-
-setMessage(
   `Import successful: ${importedTeams.length} teams and ${importedMatches.length} matches processed.`
 );
     } catch (err) {
