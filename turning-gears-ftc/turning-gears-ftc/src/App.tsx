@@ -1872,6 +1872,18 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
 
   <p className="muted">https://turning-gears-ftc-scouting.vercel.app/</p>
 </section>
+
+<section className="panel">
+  <div className="section-head">
+    <h3>Account Access</h3>
+  </div>
+
+  <p>Need coordinator access or want to switch access codes?</p>
+
+  <button className="text-btn" onClick={returnToLogin}>
+    Return to Login / Switch Access
+  </button>
+</section>
         </>}
   
       {tab === "event" && (
