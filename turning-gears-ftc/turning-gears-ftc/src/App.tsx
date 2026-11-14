@@ -3569,6 +3569,26 @@ onClick={async () => {
     }
   </div>
 )}
+          <button
+  type="button"
+  className={
+    excludedDefenceTeams.includes(t.team)
+      ? "defence-active"
+      : "secondary full"
+  }
+  onClick={() => {
+    const next = excludedDefenceTeams.includes(t.team)
+      ? excludedDefenceTeams.filter(team => team !== t.team)
+      : [...excludedDefenceTeams, t.team];
+
+    setExcludedDefenceTeams(next);
+    localStorage.setItem("excludedDefenceTeams", JSON.stringify(next));
+  }}
+>
+  {excludedDefenceTeams.includes(t.team)
+    ? "Include Defence Data in Comparisons"
+    : "Exclude Defence Data from Comparisons"}
+</button>
           <div className="comparison-stat">
             <span>Average RP</span>
             <strong>
