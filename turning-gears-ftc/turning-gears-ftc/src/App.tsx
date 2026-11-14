@@ -160,6 +160,7 @@ const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [compareTeam1, setCompareTeam1] = useState("");
 const [compareTeam2, setCompareTeam2] = useState("");
 const [compareTeam3, setCompareTeam3] = useState("");
+  const [compareTeamFilter, setCompareTeamFilter] = useState<"all" | "scouted">("all");
   const [selectedTeamNumber, setSelectedTeamNumber] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -3057,7 +3058,23 @@ onClick={async () => {
     </div>
   </div>
 
-  
+  <div className="compare-team-filter">
+  <span>Show teams:</span>
+  <button
+    type="button"
+    className={compareTeamFilter === "all" ? "active" : ""}
+    onClick={() => setCompareTeamFilter("all")}
+  >
+    All Event Teams
+  </button>
+  <button
+    type="button"
+    className={compareTeamFilter === "scouted" ? "active" : ""}
+    onClick={() => setCompareTeamFilter("scouted")}
+  >
+    Teams We Scouted
+  </button>
+</div>
 <div className="compare-selectors">
   {[
     {
@@ -3104,7 +3121,12 @@ onClick={async () => {
           </summary>
 
           <div className="compare-team-options">
-          {eventTeams.map(t => (
+          {(compareTeamFilter === "all"
+  ? eventTeams
+  : eventTeams.filter(t =>
+      teamSummaries.some(summary => summary.team === t.team_number)
+    )
+).map(t => (
               <button
                 type="button"
                key={t.team_number}
