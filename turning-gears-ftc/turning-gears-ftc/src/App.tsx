@@ -1413,7 +1413,7 @@ const sortedTeamSummaries = useMemo(() => {
 ]
   .filter(Boolean)
   .map(teamNumber =>
-    teamSummaries.find(t => String(t.team_number) === teamNumber)
+    teamSummaries.find(t => String(t.team) === teamNumber)
   )
   .filter((team): team is (typeof teamSummaries)[number] => Boolean(team));
  
@@ -3094,7 +3094,7 @@ onClick={async () => {
                <strong>#{selected.team_number}</strong>
                 <small>
                   {eventTeams.find(
-                    et => et.team_number === selected.team
+                    et => et.team_number === selected.team_number
                   )?.team_name || "Name unavailable"}
                 </small>
               </>
@@ -3117,7 +3117,7 @@ onClick={async () => {
                 <strong>#{t.team_number}</strong>
                 <small>
                   {eventTeams.find(
-                    et => et.team_number === t.team
+                    et => et.team_number === t.team_number
                   )?.team_name || "Name unavailable"}
                 </small>
               </button>
