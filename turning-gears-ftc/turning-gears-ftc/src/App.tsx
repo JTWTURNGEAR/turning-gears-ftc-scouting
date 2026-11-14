@@ -2327,7 +2327,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
 
     <p className="muted">
       Browse scouting information preserved from completed events.
-      Research filters will be independent of Active Scouting.
+      Research filters are independent of Active Scouting.
     </p>
 
     {events.filter(ev => ev.is_archived).length === 0 ? (
@@ -2352,31 +2352,33 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                   {matchCount} match records · {noteCount} general notes
                 </div>
               </div>
-             <button
-  className="secondary"
-  onClick={async () => {
-  setResearchEventId(ev.id);
 
-  const { data, error } = await supabase
-    .from("event_teams")
-    .select("*")
-    .eq("event_id", ev.id)
-    .order("team_number");
+              <button
+                className="secondary"
+                onClick={async () => {
+                  setResearchEventId(ev.id);
+                  setResearchTeamNumber(null);
 
-  if (error) {
-    alert("Could not load historical teams: " + error.message);
-    return;
-  }
+                  const { data, error } = await supabase
+                    .from("event_teams")
+                    .select("*")
+                    .eq("event_id", ev.id)
+                    .order("team_number");
 
-  setResearchTeams((data || []) as EventTeamRow[]);
-}}
->
-  {researchEventId === ev.id ? "Selected" : "Open Research"}
-</button>
+                  if (error) {
+                    alert("Could not load historical teams: " + error.message);
+                    return;
+                  }
+
+                  setResearchTeams((data || []) as EventTeamRow[]);
+                }}
+              >
+                {researchEventId === ev.id ? "Selected" : "Open Research"}
+              </button>
             </div>
           );
         })
-       )}
+    )}
 
     {researchEventId && (
       <div className="panel">
@@ -2385,97 +2387,102 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             events.find(ev => ev.id === researchEventId)?.event_name
           }
         </h3>
-                <p className="muted">
+
+        <p className="muted">
           Select a team to explore its historical scouting data.
         </p>
 
-<div className="team-grid">
-  {researchTeams.length === 0 ? (
-    <Empty text="No team data found for this event." />
-  ) : (
-    researchTeams.map(team => (
-      <button
-        className="scout-row secondary"
-        key={team.id}
-        onClick={() => setResearchTeamNumber(team.team_number)}
-        style={{
-          width: "100%",
-          textAlign: "left",
-          border: researchTeamNumber === team.team_number
-            ? "2px solid var(--accent)"
-            : undefined
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <strong>#{team.team_number}</strong>
-          <div className="muted tiny">
-            {team.team_name || "Team name unavailable"}
-          </div>
+        <div className="team-grid">
+          {researchTeams.length === 0 ? (
+            <Empty text="No team data found for this event." />
+          ) : (
+            researchTeams.map(team => (
+              <button
+                className="scout-row secondary"
+                key={team.id}
+                onClick={() => setResearchTeamNumber(team.team_number)}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  border: researchTeamNumber === team.team_number
+                    ? "2px solid var(--accent)"
+                    : undefined
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <strong>#{team.team_number}</strong>
+                  <div className="muted tiny">
+                    {team.team_name || "Team name unavailable"}
+                  </div>
+                </div>
+                {researchTeamNumber === team.team_number
+                  ? "Selected"
+                  : "View Team"}
+              </button>
+            ))
+          )}
         </div>
-        {researchTeamNumber === team.team_number ? "Selected" : "View Team"}
-      </button>
-    ))
-  )}
-</div>
 
-{researchTeamNumber !== null && (
-  <div className="panel">
-    <h3>Team #{researchTeamNumber} — Historical Records</h3>
+        {researchTeamNumber !== null && (
+          <div className="panel">
+            <h3>Team #{researchTeamNumber} — Historical Records</h3>
 
-    {records.filter(r =>
-      r.event_id === researchEventId &&
-      r.team_number === researchTeamNumber
-    ).length === 0 ? (
-      <Empty text="No match records found for this team at this event." />
-    ) : (
-      records
-        .filter(r =>
-          r.event_id === researchEventId &&
-          r.team_number === researchTeamNumber
-        )
-        .sort((a, b) => a.match_number - b.match_number)
-        .map(record => (
-          <div className="scout-row" key={record.id}>
-            <div style={{ flex: 1 }}>
-              <strong>Match {record.match_number}</strong>
-              <div className="muted tiny">
-                {record.alliance} alliance · Scouted by {record.scout_name}
-              </div>
-              <div className="muted tiny">
-                Auto: {record.auto_rating} · Shooting accuracy: {record.shooting_accuracy}
-              </div>
-              {record.notes && <p>{record.notes}</p>}
+            {records.filter(r =>
+              r.event_id === researchEventId &&
+              r.team_number === researchTeamNumber
+            ).length === 0 ? (
+              <Empty text="No match records found for this team at this event." />
+            ) : (
+              records
+                .filter(r =>
+                  r.event_id === researchEventId &&
+                  r.team_number === researchTeamNumber
+                )
+                .sort((a, b) => a.match_number - b.match_number)
+                .map(record => (
+                  <div className="scout-row" key={record.id}>
+                    <div style={{ flex: 1 }}>
+                      <strong>Match {record.match_number}</strong>
+                      <div className="muted tiny">
+                        {record.alliance} alliance · Scouted by {record.scout_name}
                       </div>
-          </div>
-        ))
-    )}
+                      <div className="muted tiny">
+                        Auto: {record.auto_rating} · Shooting accuracy: {record.shooting_accuracy}
+                      </div>
+                      {record.notes && <p>{record.notes}</p>}
+                    </div>
+                  </div>
+                ))
+            )}
 
-    <h3>General Notes</h3>
+            <h3>General Notes</h3>
 
-    {generalNotes.filter(n =>
-      n.event_id === researchEventId &&
-      n.team_number === researchTeamNumber
-    ).length === 0 ? (
-      <Empty text="No general notes found for this team at this event." />
-    ) : (
-      generalNotes
-        .filter(n =>
-          n.event_id === researchEventId &&
-          n.team_number === researchTeamNumber
-        )
-        .map(note => (
-          <div className="scout-row" key={note.id}>
-            <div>
-              <strong>{note.scout_name}</strong>
-              <p>{note.notes}</p>
-              <div className="muted tiny">
-                {new Date(note.created_at).toLocaleDateString()}
-              </div>
-            </div>
+            {generalNotes.filter(n =>
+              n.event_id === researchEventId &&
+              n.team_number === researchTeamNumber
+            ).length === 0 ? (
+              <Empty text="No general notes found for this team at this event." />
+            ) : (
+              generalNotes
+                .filter(n =>
+                  n.event_id === researchEventId &&
+                  n.team_number === researchTeamNumber
+                )
+                .map(note => (
+                  <div className="scout-row" key={note.id}>
+                    <div>
+                      <strong>{note.scout_name}</strong>
+                      <p>{note.notes}</p>
+                      <div className="muted tiny">
+                        {new Date(note.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+            )}
           </div>
-        ))
-    )}
-       </div>
+        )}
+      </div>
     )}
   </section>
 )}
