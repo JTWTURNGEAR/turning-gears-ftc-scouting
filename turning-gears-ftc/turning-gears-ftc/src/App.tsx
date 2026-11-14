@@ -877,7 +877,7 @@ async function importOfficialRankings() {
     return;
   }
 
-  const knownTeams = new Set(eventTeams.map(t => t.team_number));
+  const knownTeams = new Set(eventTeams.map(t => Number(t.team_number)));
 
   const updates = new Map<number, {
     event_rank: number;
