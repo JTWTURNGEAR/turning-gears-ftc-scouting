@@ -1856,6 +1856,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         </div>
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
+        </>}
   
       {tab === "event" && (
   <section className="panel">
