@@ -476,13 +476,14 @@ await loadEventTeams(loadedEvents[0].id);
 } 
   
  
+
 function parseSchedule(text: string, year?: number, eventDate?: string) {
   const lines = text
     .split(/\r?\n/)
     .map(line => line.trim())
     .filter(Boolean);
 
-  const matches: {
+  type ParsedMatch = {
     match_type: string;
     match_number: number;
     red_team_1: number;
@@ -492,11 +493,38 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
     imported_time?: string;
     red_score?: number;
     blue_score?: number;
-  }[] = [];
+  };
 
-  // Orange Alliance format: Q-1, Q-2, etc.
+  const matches: ParsedMatch[] = [];
+
   const orangeMatchHeader = /^(Q|SF|F|P)-(\d+)$/i;
 
+  const getEventDate = (hour: number, minute: number) => {
+    const now = new Date();
+
+    const eventYear = eventDate
+      ? Number(eventDate.slice(0, 4))
+      : year || now.getFullYear();
+
+    const eventMonth = eventDate
+      ? Number(eventDate.slice(5, 7)) - 1
+      : now.getMonth();
+
+    const eventDay = eventDate
+      ? Number(eventDate.slice(8, 10))
+      : now.getDate();
+
+    return new Date(
+      eventYear,
+      eventMonth,
+      eventDay,
+      hour,
+      minute
+    ).toISOString();
+  };
+
+  // Orange Alliance format.
+  // Ignore all text outside recognized match sections.
   for (let i = 0; i < lines.length; i++) {
     const header = lines[i].match(orangeMatchHeader);
     if (!header) continue;
@@ -543,49 +571,24 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
         if (ampm === "PM" && hour !== 12) hour += 12;
         if (ampm === "AM" && hour === 12) hour = 0;
 
-       const now = new Date();
-
-const eventYear = eventDate
-  ? Number(eventDate.slice(0, 4))
-  : year || now.getFullYear();
-
-const eventMonth = eventDate
-  ? Number(eventDate.slice(5, 7)) - 1
-  : now.getMonth();
-
-const eventDay = eventDate
-  ? Number(eventDate.slice(8, 10))
-  : now.getDate();
-
-const date = new Date(
-  eventYear,
-  eventMonth,
-  eventDay,
-  hour,
-  minute
-);
-
-        importedTime = date.toISOString();
+        importedTime = getEventDate(hour, minute);
       }
     }
 
     const teams = block
       .filter(line => /^\d+$/.test(line))
-      .map(Number);
+      .map(Number)
+      .filter(team => team > 0);
 
     if (teams.length < 4) continue;
 
-    const match = {
+    matches.push({
       match_type: matchType,
       match_number: matchNumber,
       red_team_1: teams[0],
       red_team_2: teams[1],
       blue_team_1: teams[2],
-      blue_team_2: teams[3]
-    };
-
-    matches.push({
-      ...match,
+      blue_team_2: teams[3],
       ...(importedTime ? { imported_time: importedTime } : {}),
       ...(redScore !== undefined && blueScore !== undefined
         ? { red_score: redScore, blue_score: blueScore }
@@ -593,11 +596,11 @@ const date = new Date(
     });
   }
 
-  // If Orange Alliance matches were found, return them.
   if (matches.length > 0) return matches;
 
   // Original schedule format, retained for compatibility.
-  const headers = /^(Qualification|Playoff|Semifinal|Final)\s+(\d+)$/i;
+  const headers =
+    /^(Qualification|Playoff|Semifinal|Final)\s+(\d+)$/i;
 
   for (let i = 0; i < lines.length; i++) {
     const header = lines[i].match(headers);
@@ -635,15 +638,14 @@ const date = new Date(
         if (ampm === "PM" && hour !== 12) hour += 12;
         if (ampm === "AM" && hour === 12) hour = 0;
 
-        const date = new Date(
+        importedTime = new Date(
           year || new Date().getFullYear(),
           month,
           day,
           hour,
           minute
-        );
+        ).toISOString();
 
-        importedTime = date.toISOString();
         break;
       }
     }
@@ -654,17 +656,7 @@ const date = new Date(
 
     if (numbers.length < 4) continue;
 
-    const match: {
-      match_type: string;
-      match_number: number;
-      red_team_1: number;
-      red_team_2: number;
-      blue_team_1: number;
-      blue_team_2: number;
-      imported_time?: string;
-      red_score?: number;
-      blue_score?: number;
-    } = {
+    const match: ParsedMatch = {
       match_type: matchType,
       match_number: matchNumber,
       red_team_1: numbers[0],
