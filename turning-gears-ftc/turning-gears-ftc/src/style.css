@@ -373,6 +373,16 @@ button { cursor: pointer; }
 .error, .warning { font-size: 11px; color: #ffad91; }
 
 .record { padding: 14px 0; border-bottom: 1px solid #352317; }
+.defence-warning {
+  background: rgba(255, 135, 40, 0.13);
+  border: 1px solid #ff8728;
+  color: #ffad62;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  margin: 10px 0;
+}
 .record:last-child { border: 0; }
 .record-top { display: flex; align-items: center; gap: 10px; }
 .record-top b { font-size: 14px; }
