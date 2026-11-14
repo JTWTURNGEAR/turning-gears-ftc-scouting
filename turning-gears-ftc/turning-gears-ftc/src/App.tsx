@@ -2475,10 +2475,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           </div>
         ))
     )}
-  </div>
-)}
-        </p>
-      </div>
+       </div>
     )}
   </section>
 )}
