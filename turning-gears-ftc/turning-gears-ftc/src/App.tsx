@@ -2828,13 +2828,6 @@ onClick={async () => {
     onChange={e => setForm({...form, match_number: e.target.value})}
     placeholder="e.g. 8"/>
 </Field>
-<button
-  type="button"
-  className={playedDefence ? "defence-active" : "secondary full"}
-  onClick={() => setPlayedDefence(!playedDefence)}
->
-  {playedDefence ? "✓ Played Defence" : "Played Defence"}
-</button>
         <Field label="Alliance">
           <div className="segmented">
             <button className={form.alliance === "Red" ? "selected red" : ""}
@@ -2984,7 +2977,13 @@ onClick={async () => {
             onChange={e => setForm({...form, notes: e.target.value})}
             placeholder="What worked well? Any failures, inconsistency, or partner interaction?"/>
         </Field>
-
+<button
+  type="button"
+  className={playedDefence ? "defence-active" : "secondary full"}
+  onClick={() => setPlayedDefence(!playedDefence)}
+>
+  {playedDefence ? "✓ Played Defence" : "Played Defence"}
+</button>
         {!selectedScout &&
           <p className="warning">Choose your scout name on the Dashboard before submitting.</p>}
         {error && (
