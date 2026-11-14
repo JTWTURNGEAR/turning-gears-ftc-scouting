@@ -560,8 +560,8 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
       }
 
       const timeMatch = line.match(
-        /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
-      );
+  /(\d{1,2}):(\d{2})\s*(AM|PM)/i
+);
 
       if (timeMatch) {
         let hour = Number(timeMatch[1]);
