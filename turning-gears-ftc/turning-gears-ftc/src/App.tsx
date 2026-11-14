@@ -1413,7 +1413,7 @@ const sortedTeamSummaries = useMemo(() => {
 ]
   .filter(Boolean)
   .map(teamNumber =>
-    teamSummaries.find(t => String(t.team) === teamNumber)
+    teamSummaries.find(t => String(t.team_number) === teamNumber)
   )
   .filter((team): team is (typeof teamSummaries)[number] => Boolean(team));
  
@@ -3079,9 +3079,9 @@ onClick={async () => {
       otherTeams: [compareTeam1, compareTeam2]
     }
   ].map(selector => {
-    const selected = teamSummaries.find(
-      t => String(t.team) === selector.value
-    );
+    const selected = eventTeams.find(
+  t => String(t.team_number) === selector.value
+);
 
     return (
       <label className="field" key={selector.label}>
@@ -3104,17 +3104,17 @@ onClick={async () => {
           </summary>
 
           <div className="compare-team-options">
-            {teamSummaries.map(t => (
+          {eventTeams.map(t => (
               <button
                 type="button"
-                key={t.team}
-                disabled={selector.otherTeams.includes(String(t.team))}
+               key={t.team_number}
+                disabled={selector.otherTeams.includes String(t.team_number))}
                 onClick={e => {
-                  selector.setValue(String(t.team));
+                  selector.setValue(String(t.team_number));
                   e.currentTarget.closest("details")?.removeAttribute("open");
                 }}
               >
-                <strong>#{t.team}</strong>
+                <strong>#{t.team_number}</strong>
                 <small>
                   {eventTeams.find(
                     et => et.team_number === t.team
@@ -3135,10 +3135,10 @@ onClick={async () => {
   ) : (
     <div className="comparison-grid">
       {comparisonTeams.map(t => (
-        <div className="comparison-card" key={t.team}>
+        <div className="comparison-card" key={t.team_number}
           <div className="comparison-card-head">
             <span className="eyebrow">TEAM</span>
-            <h3>#{t.team}</h3>
+            <h3>#{t.team_number}</h3>
             <span className="muted tiny">
               {t.count} observations
             </span>
