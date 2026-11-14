@@ -663,6 +663,85 @@ await loadEventTeams(loadedEvents[0].id);
   );
   setBusy(false);
 }
+  
+async function setSelectedMatchToNow() {
+  if (!supabase || !isCoordinator || !activeEventId) return;
+
+  const startIndex = eventMatches.findIndex(
+    match => match.id === adjustmentStartMatchId
+  );
+
+  if (startIndex < 0) {
+    setError("Choose a starting match first.");
+    return;
+  }
+
+  const startingMatch = eventMatches[startIndex];
+
+  const startingTime = startingMatch.manual_time_override
+    ? new Date(startingMatch.manual_time_override).getTime()
+    : startingMatch.imported_time
+      ? new Date(startingMatch.imported_time).getTime() +
+        (startingMatch.manual_offset_minutes || 0) * 60000
+      : null;
+
+  if (startingTime === null || !Number.isFinite(startingTime)) {
+    setError("The selected match does not have a scheduled time.");
+    return;
+  }
+
+  const now = Math.round(Date.now() / 60000) * 60000;
+  const shiftMinutes = Math.round((now - startingTime) / 60000);
+  const matchesToAdjust = eventMatches.slice(startIndex);
+
+  const confirmed = window.confirm(
+    `Set ${startingMatch.match_type} ${startingMatch.match_number} to the current time and shift all ${matchesToAdjust.length} selected and later matches by ${shiftMinutes} minutes?`
+  );
+
+  if (!confirmed) return;
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  for (const match of matchesToAdjust) {
+    const update: {
+      manual_offset_minutes?: number;
+      manual_time_override?: string;
+    } = {};
+
+    if (match.manual_time_override) {
+      update.manual_time_override = new Date(
+        new Date(match.manual_time_override).getTime() +
+        shiftMinutes * 60000
+      ).toISOString();
+    } else {
+      update.manual_offset_minutes =
+        (match.manual_offset_minutes || 0) + shiftMinutes;
+    }
+
+    const { error: updateError } = await supabase
+      .from("event_matches")
+      .update(update)
+      .eq("id", match.id);
+
+    if (updateError) {
+      setError(`Schedule update stopped: ${updateError.message}`);
+      setBusy(false);
+      await loadEventMatches(activeEventId);
+      return;
+    }
+  }
+
+  await loadEventMatches(activeEventId);
+
+  setMessage(
+    `${matchesToAdjust.length} matches shifted. The selected match is now set to the current time.`
+  );
+
+  setBusy(false);
+}
+
   async function deleteEvent(eventId: string) {
   if (!supabase || !teamId || !isCoordinator) return;
 
