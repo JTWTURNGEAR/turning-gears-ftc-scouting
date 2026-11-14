@@ -1856,6 +1856,22 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         </div>
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
+        <section className="panel scout-qr-panel">
+  <div className="section-head">
+    <h3>📱 Join Our Scouting Website</h3>
+  </div>
+
+  <p>New scout? Scan this QR code with your phone camera to open the scouting app.</p>
+
+  <div className="scout-qr-code">
+    <img
+      src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fturning-gears-ftc-scouting.vercel.app%2F"
+      alt="QR code linking to the TURNING GEARS FTC Scouting website"
+    />
+  </div>
+
+  <p className="muted">https://turning-gears-ftc-scouting.vercel.app/</p>
+</section>
         </>}
   
       {tab === "event" && (
