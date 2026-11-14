@@ -1074,3 +1074,78 @@ button { cursor: pointer; }
   font-size: 0.85rem;
   opacity: 0.85;
 }
+
+/* Compare tab team selectors */
+.compare-team-picker {
+  position: relative;
+  width: 100%;
+}
+
+.compare-team-picker summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 48px;
+  padding: 9px 12px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: #20242c;
+  color: white;
+  cursor: pointer;
+  list-style: none;
+}
+
+.compare-team-picker summary::-webkit-details-marker {
+  display: none;
+}
+
+.compare-team-picker summary::after {
+  content: "▼";
+  position: absolute;
+  right: 12px;
+  top: 17px;
+  font-size: 10px;
+}
+
+.compare-team-picker small {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.compare-team-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: #20242c;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.compare-team-options button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid #3b414b;
+  background: transparent;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.compare-team-options button:hover:not(:disabled) {
+  background: #343c4a;
+}
+
+.compare-team-options button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
