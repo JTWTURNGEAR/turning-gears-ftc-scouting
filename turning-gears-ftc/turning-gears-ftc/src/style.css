@@ -339,7 +339,16 @@ button { cursor: pointer; }
   border-color: #ff8728;
   font-weight: 800;
 }
-
+.defence-active {
+  background: rgba(255, 135, 40, 0.18);
+  border: 1px solid #ff8728;
+  color: #ffad62;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 800;
+  width: 100%;
+  margin-top: 5px;
+}
 .primary {
   background: linear-gradient(135deg, #ff9b3d, #ed5d16);
   color: #170c05;
