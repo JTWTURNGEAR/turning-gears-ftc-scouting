@@ -94,9 +94,9 @@ const emptyForm = {
   driving_speed: 3,
   maneuverability: 3,
   reliability: 3,
- hive_tips: 0,
-auto_hive_tips: 0,
-teleop_hive_tips: 0,
+ hive_tips: 0 as number | "",
+auto_hive_tips: 0 as number | "",
+teleop_hive_tips: 0 as number | "",
   can_shoot_nectar: false,
   refilled_flower: false,
  emptied_flower: false,
@@ -164,7 +164,7 @@ const [compareTeam3, setCompareTeam3] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [adjustmentStartMatchId, setAdjustmentStartMatchId] = useState("");
-const [adjustmentMinutes, setAdjustmentMinutes] = useState(5);
+const [adjustmentMinutes, setAdjustmentMinutes] = useState<number | ""> (5);
   const [error, setError] = useState("");
     const [clockNow, setClockNow] = useState(() => Date.now());
 
@@ -619,7 +619,11 @@ await loadEventTeams(loadedEvents[0].id);
     match => match.id === adjustmentStartMatchId
   );
 
-  if (startIndex < 0 || adjustmentMinutes === 0) {
+ if (
+  startIndex < 0 ||
+  adjustmentMinutes === "" ||
+  adjustmentMinutes === 0
+) {
     setError("Select a starting match and a non-zero time adjustment.");
     return;
   }
@@ -641,7 +645,7 @@ await loadEventTeams(loadedEvents[0].id);
       .from("event_matches")
       .update({
         manual_offset_minutes:
-          (match.manual_offset_minutes || 0) + adjustmentMinutes
+  (match.manual_offset_minutes || 0) + Number(adjustmentMinutes)
       })
       .eq("id", match.id);
 
@@ -2066,12 +2070,19 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     </Field>
 
     <Field label="Minutes to add or subtract">
-      <input
-        type="number"
-        value={adjustmentMinutes}
-        onChange={e => setAdjustmentMinutes(Number(e.target.value))}
-      />
-    </Field>
+  <input
+    type="number"
+    value={adjustmentMinutes}
+    onFocus={() => {
+      if (adjustmentMinutes === 5) setAdjustmentMinutes("");
+    }}
+    onChange={e =>
+      setAdjustmentMinutes(
+        e.target.value === "" ? "" : Number(e.target.value)
+      )
+    }
+  />
+</Field>
 
     <button
       className="primary full"
@@ -2508,41 +2519,77 @@ onClick={async () => {
     max="10"
     step="1"
     value={form.hive_tips}
-    onChange={e => setForm({
-      ...form,
-      hive_tips: Number(e.target.value)
-    })}
+    onFocus={() => {
+      if (form.hive_tips === 0) {
+        setForm({ ...form, hive_tips: "" });
+      }
+    }}
+    onChange={e =>
+      setForm({
+        ...form,
+        hive_tips: e.target.value === "" ? "" : Number(e.target.value)
+      })
+    }
+    onBlur={() => {
+      if (form.hive_tips === "") {
+        setForm({ ...form, hive_tips: 0 });
+      }
+    }}
   />
 </Field>
 
 <div className="two-col">
-  <Field label="Auto Hive Tips">
-    <input
-      type="number"
-      min="0"
-      max="10"
-      step="1"
-      value={form.auto_hive_tips}
-      onChange={e => setForm({
+<Field label="Auto Hive Tips">
+  <input
+    type="number"
+    min="0"
+    max="10"
+    step="1"
+    value={form.auto_hive_tips}
+    onFocus={() => {
+      if (form.auto_hive_tips === 0) {
+        setForm({ ...form, auto_hive_tips: "" });
+      }
+    }}
+    onChange={e =>
+      setForm({
         ...form,
-        auto_hive_tips: Number(e.target.value)
-      })}
-    />
-  </Field>
+        auto_hive_tips: e.target.value === "" ? "" : Number(e.target.value)
+      })
+    }
+    onBlur={() => {
+      if (form.auto_hive_tips === "") {
+        setForm({ ...form, auto_hive_tips: 0 });
+      }
+    }}
+  />
+</Field>
 
-  <Field label="TeleOp Hive Tips">
-    <input
-      type="number"
-      min="0"
-      max="10"
-      step="1"
-      value={form.teleop_hive_tips}
-      onChange={e => setForm({
+ <Field label="TeleOp Hive Tips">
+  <input
+    type="number"
+    min="0"
+    max="10"
+    step="1"
+    value={form.teleop_hive_tips}
+    onFocus={() => {
+      if (form.teleop_hive_tips === 0) {
+        setForm({ ...form, teleop_hive_tips: "" });
+      }
+    }}
+    onChange={e =>
+      setForm({
         ...form,
-        teleop_hive_tips: Number(e.target.value)
-      })}
-    />
-  </Field>
+        teleop_hive_tips: e.target.value === "" ? "" : Number(e.target.value)
+      })
+    }
+    onBlur={() => {
+      if (form.teleop_hive_tips === "") {
+        setForm({ ...form, teleop_hive_tips: 0 });
+      }
+    }}
+  />
+</Field>
 </div>
 
 
