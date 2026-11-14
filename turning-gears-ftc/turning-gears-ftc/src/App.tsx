@@ -1856,65 +1856,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         </div>
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
-   
-              {!currentMatch && !nextMatch && (
-                <Empty text="No upcoming matches. All imported matches may be completed or missing times." />
-              )}
-            </>
-          )}
-        </section>
-        <div className="stats-grid">
-          <Stat label="SUBMISSIONS" value={records.length} icon={<ClipboardList/>}/>
-          <Stat label="TEAMS SCOUTED" value={teamSummaries.length} icon={<Activity/>}/>
-          <Stat label="SCOUTS" value={scouts.length} icon={<Users/>}/>
-        </div>
-
-        <div className="section-head"><h3>Quick actions</h3></div>
-               <div className="action-grid">
-          {isCoordinator && (
-            <button className="action-card" onClick={() => {
-  setTab("event");
-  setEventSection("manager");
-}}>
-              <CalendarDays/>
-              <b>Event Manager</b>
-              <span>Create and manage event schedules</span>
-            </button>
-          )}
-
-          <button
-            className="action-card"
-           onClick={() => {
-  setTab("event");
-  setEventSection("matches");
-}}
-          >
-            <CalendarDays />
-            <b>Event Schedule</b>
-            <span>View matches, alliances, and scores</span>
-          </button>
-                 <button className="action-card" onClick={() => setTab("scout")}>
-            <ClipboardList/><b>Match scouting</b><span>Log a team's performance</span>
-          </button>
-          
-          <button className="action-card" onClick={() => setTab("records")}>
-            <Activity/><b>Submissions</b><span>Review scout observations</span>
-          </button>
-          <button className="action-card" onClick={() => setTab("roster")}>
-            <Users/><b>Scout roster</b>
-            <span>{isCoordinator ? "Manage scout names" : "View scout names"}</span>
-          </button>
-        </div>
-
-        <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
-      </>}
-      {tab === "event" && (
-  <section className="panel">
-    <div className="section-head">
-      <h3>Event Center</h3>
-      <span>{events.find(ev => ev.id === activeEventId)?.event_name || "No event selected"}</span>
-    </div> 
-      </>}
+  
       {tab === "event" && (
   <section className="panel">
     <div className="section-head">
