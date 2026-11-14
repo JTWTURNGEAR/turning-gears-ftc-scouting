@@ -21,6 +21,7 @@ type EventRow = {
   id: string;
   event_name: string;
   event_date: string | null;
+  is_archived: boolean;
 };
 type EventTeamRow = {
   id: string;
@@ -54,6 +55,7 @@ type EventMatch = {
 };
 type RecordRow = {
   id: string;
+    event_id: string | null;
   submitted_by: string;
   team_number: number;
   partner_team_number: number | null;
@@ -78,6 +80,7 @@ type RecordRow = {
 };
 type GeneralNoteRow = {
   id: string;
+    event_id: string | null;
   submitted_by: string;
   team_number: number;
   scout_name: string;
@@ -423,9 +426,9 @@ async function removeEventTeam(team: EventTeamRow) {
     .maybeSingle(),
 
   supabase.from("events")
-    .select("id,event_name,event_date")
-    .order("created_at", { ascending: false })
-]);
+  .select("id,event_name,event_date,is_archived")
+  .order("created_at", { ascending: false })
+    ]);
 
     setIsCoordinator(memberData?.role === "coordinator");
     setTeamId(memberData?.team_id || "");
@@ -443,12 +446,18 @@ async function removeEventTeam(team: EventTeamRow) {
     setScouts(scoutData || []);
     const loadedEvents = (eventData || []) as EventRow[];
     setEvents(loadedEvents);
+const activeEvents = loadedEvents.filter(ev => !ev.is_archived);
 
-    if (loadedEvents.length > 0) {
-      setActiveEventId(loadedEvents[0].id);
-await loadEventMatches(loadedEvents[0].id);
-await loadEventTeams(loadedEvents[0].id);
-    }
+if (activeEvents.length > 0) {
+  setActiveEventId(activeEvents[0].id);
+
+  await loadEventMatches(activeEvents[0].id);
+await loadEventTeams(activeEvents[0].id);
+} else {
+  setActiveEventId("");
+  setEventMatches([]);
+  setEventTeams([]);
+}
     setRecords((recordData || []) as RecordRow[]);
     setGeneralNotes((noteData || []) as GeneralNoteRow[]);
     setJoined(true);
@@ -713,7 +722,7 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
         event_name: eventName.trim(),
         event_date: eventDate || null
       })
-      .select("id,event_name,event_date")
+     .select("id,event_name,event_date,is_archived")
       .single();
 
     if (createError) {
@@ -871,7 +880,123 @@ async function setSelectedMatchToNow() {
 
   setBusy(false);
 }
+async function archiveEvent(eventId: string) {
+  if (!supabase || !teamId || !isCoordinator) return;
 
+  const event = events.find(ev => ev.id === eventId);
+  if (!event || event.is_archived) return;
+
+  const confirmed = window.confirm(
+    `Archive "${event.event_name}"? All event data will be preserved in Research.`
+  );
+
+  if (!confirmed) return;
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  try {
+    const { data: eventCheck, error: eventError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("id", eventId)
+      .eq("team_id", teamId)
+      .maybeSingle();
+
+    if (eventError) throw eventError;
+    if (!eventCheck) {
+      throw new Error("Event verification failed. Nothing was archived.");
+    }
+
+    const checks = await Promise.all([
+      supabase.from("event_teams")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId),
+
+      supabase.from("event_matches")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId),
+
+      supabase.from("match_records")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId)
+        .eq("team_id", teamId),
+
+      supabase.from("general_notes")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId)
+        .eq("team_id", teamId)
+    ]);
+
+    const failedCheck = checks.find(result => result.error);
+
+    if (failedCheck?.error) throw failedCheck.error;
+
+    const { error: archiveError } = await supabase
+      .from("events")
+      .update({ is_archived: true })
+      .eq("id", eventId)
+      .eq("team_id", teamId);
+
+    if (archiveError) throw archiveError;
+
+    await loadTeam();
+
+    setMessage(
+      `"${event.event_name}" was archived successfully. Its data has been preserved.`
+    );
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Could not archive the event. No data was deleted."
+    );
+  }
+
+  setBusy(false);
+}
+  async function restoreEvent(eventId: string) {
+  if (!supabase || !teamId || !isCoordinator) return;
+
+  const event = events.find(ev => ev.id === eventId);
+  if (!event || !event.is_archived) return;
+
+  setBusy(true);
+  setError("");
+  setMessage("");
+
+  const { data, error: restoreError } = await supabase
+    .from("events")
+    .update({ is_archived: false })
+    .eq("id", eventId)
+    .eq("team_id", teamId)
+    .select("id")
+    .maybeSingle();
+
+  if (restoreError || !data) {
+    setError(
+      restoreError?.message || "Could not restore this event."
+    );
+    setBusy(false);
+    return;
+  }
+
+  setEvents(previous =>
+    previous.map(ev =>
+      ev.id === eventId
+        ? { ...ev, is_archived: false }
+        : ev
+    )
+  );
+
+  setActiveEventId(eventId);
+  await loadEventMatches(eventId);
+  await loadEventTeams(eventId);
+
+  setMessage(`"${event.event_name}" has been restored to Active Scouting.`);
+  setBusy(false);
+}
   async function deleteEvent(eventId: string) {
   if (!supabase || !teamId || !isCoordinator) return;
 
@@ -1293,13 +1418,14 @@ async function submitGeneralNote() {
   const { error: noteError } = await supabase
     .from("general_notes")
     .insert({
-      team_id: teamId,
-      submitted_by: authData.user.id,
-      scout_name: selectedScout,
-      scout_group: selectedScoutRow.scout_group,
-      team_number: team,
-      notes: cleanNotes
-    });
+  team_id: teamId,
+  event_id: activeEventId || null,
+  submitted_by: authData.user.id,
+  scout_name: selectedScout,
+  scout_group: selectedScoutRow.scout_group,
+  team_number: team,
+  notes: cleanNotes
+});
 
   if (noteError) {
     setError(noteError.message);
@@ -1424,10 +1550,11 @@ alliance: form.alliance,
         .eq("team_id", teamId)
     : await supabase.from("match_records")
         .insert({
-          ...recordData,
-          team_id: teamId,
-          submitted_by: authData.user.id
-        });
+  ...recordData,
+  team_id: teamId,
+  event_id: activeEventId || null,
+  submitted_by: authData.user.id
+});
 
   if (saveResult.error) {
     setError(saveResult.error.message);
@@ -1639,11 +1766,14 @@ async function deleteRecord(
 }
 
 const teamSummaries = useMemo(() => {
-  const filteredRecords = records.filter(r =>
+ const filteredRecords = records.filter(r =>
+  r.event_id === activeEventId &&
+  (
     selectedScoutGroups.length === 0 ||
     (r.scout_group !== null &&
       selectedScoutGroups.includes(r.scout_group))
-  );
+  )
+);
   const analysisRecords = filteredRecords.filter(r =>
     !r.played_defence || !excludedDefenceTeams.includes(r.team_number)
   );
@@ -1683,7 +1813,7 @@ const teamSummaries = useMemo(() => {
       emptiedYes: rows.filter(r => r.emptied_flower).length,
       emptiedNo: rows.filter(r => !r.emptied_flower).length
     }));
-}, [records, selectedScoutGroups, excludedDefenceTeams]);
+}, [records, selectedScoutGroups, excludedDefenceTeams, activeEventId]);
 const sortedTeamSummaries = useMemo(() => {
   return [...teamSummaries].sort((a, b) => {
     if (teamSort === "team-high") {
@@ -1707,6 +1837,7 @@ const sortedTeamSummaries = useMemo(() => {
  
 const selectedTeamRecords = records
   .filter(r =>
+    r.event_id === activeEventId &&
     r.team_number === selectedTeamNumber &&
     (
       selectedScoutGroups.length === 0 ||
@@ -1805,6 +1936,7 @@ const filteredRecords = useMemo(() => {
 
  
 const filtered = combined.filter(item => {
+      if (item.record.event_id !== activeEventId) return false;
     const scoutGroup = item.record.scout_group;
 
     const matchesGroup =
@@ -1880,7 +2012,8 @@ const filtered = combined.filter(item => {
   recordAllianceFilter,
   recordSort,
   recordTypeFilter,
-  selectedScoutGroups
+   selectedScoutGroups,
+  activeEventId
 ]);
  function openTeamProfile(team: number) {
   setSelectedTeamNumber(team);
@@ -2657,6 +2790,7 @@ return (
     <button
       className="action-card"
       style={{ flex: 1 }}
+      disabled={ev.is_archived}
 onClick={async () => {
   setActiveEventId(ev.id);
   await loadEventMatches(ev.id);
@@ -2666,11 +2800,26 @@ onClick={async () => {
       <b>{ev.event_name}</b>
       <span>{ev.event_date || "Date not set"}</span>
       <span>
-        {activeEventId === ev.id ? "Selected" : "Select event"}
+       {ev.is_archived
+  ? "Archived — restore to activate"
+  : activeEventId === ev.id
+    ? "Selected"
+    : "Select event"}
       </span>
     </button>
 
     {isCoordinator && (
+    <>
+    <button
+  onClick={() =>
+    ev.is_archived
+      ? restoreEvent(ev.id)
+      : archiveEvent(ev.id)
+  }
+  disabled={busy}
+>
+  {ev.is_archived ? "Restore" : "Archive"}
+</button>
       <button
         type="button"
         onClick={() => deleteEvent(ev.id)}
@@ -2687,7 +2836,8 @@ onClick={async () => {
       >
         Remove
       </button>
-    )}
+</>
+)}
   </div>
 ))
           )}
