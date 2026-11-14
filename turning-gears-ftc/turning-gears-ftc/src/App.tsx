@@ -3438,12 +3438,19 @@ onClick={async () => {
           </summary>
 
           <div className="compare-team-options">
-          {(compareTeamFilter === "all"
-  ? eventTeams
-  : eventTeams.filter(t =>
-      teamSummaries.some(summary => summary.team === t.team_number)
-    )
-).map(t => (
+         {(
+  compareTeamFilter === "all"
+    ? eventTeams
+    : eventTeams.filter(t =>
+        teamSummaries.some(summary => summary.team === t.team_number)
+      )
+)
+  .slice()
+  .sort((a, b) =>
+    (a.event_rank ?? Infinity) - (b.event_rank ?? Infinity) ||
+    a.team_number - b.team_number
+  )
+  .map(t => (
               <button
                 type="button"
                key={t.team_number}
