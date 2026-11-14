@@ -1060,26 +1060,30 @@ async function submitRecord() {
     return;
   }
 
-  if (!Number.isInteger(form.hive_tips) ||
-      form.hive_tips < 0 || form.hive_tips > 10) {
-    setError("Hive tips must be a whole number from 0 to 10.");
-    return;
-  }
+ const totalHiveTips = Number(form.hive_tips);
+const autoHiveTips = Number(form.auto_hive_tips);
+const teleopHiveTips = Number(form.teleop_hive_tips);
 
-  if (
-    !Number.isInteger(form.auto_hive_tips) ||
-    form.auto_hive_tips < 0 ||
-    !Number.isInteger(form.teleop_hive_tips) ||
-    form.teleop_hive_tips < 0
-  ) {
-    setError("Auto and TeleOp hive tips must be whole numbers of 0 or more.");
-    return;
-  }
+if (!Number.isInteger(totalHiveTips) ||
+    totalHiveTips < 0 || totalHiveTips > 10) {
+  setError("Hive tips must be a whole number from 0 to 10.");
+  return;
+}
 
-  if (form.auto_hive_tips + form.teleop_hive_tips > form.hive_tips) {
-    setError("Auto and TeleOp hive tips cannot add up to more than Total Hive Tips.");
-    return;
-  }
+if (
+  !Number.isInteger(autoHiveTips) ||
+  autoHiveTips < 0 ||
+  !Number.isInteger(teleopHiveTips) ||
+  teleopHiveTips < 0
+) {
+  setError("Auto and TeleOp hive tips must be whole numbers of 0 or more.");
+  return;
+}
+
+if (autoHiveTips + teleopHiveTips > totalHiveTips) {
+  setError("Auto and TeleOp hive tips cannot add up to more than Total Hive Tips.");
+  return;
+}
 
 
   setBusy(true);
