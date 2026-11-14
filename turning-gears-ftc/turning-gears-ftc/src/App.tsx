@@ -1045,6 +1045,7 @@ setMessage(
 
  
 
+
 async function importOfficialRankings() {
   if (!supabase || !activeEventId) {
     setError("Select an event first.");
@@ -1056,98 +1057,135 @@ async function importOfficialRankings() {
     return;
   }
 
-  const lines = rankingsText.trim().split(/\r?\n/);
-  const header = lines[0].split("\t").map(v => v.trim().toLowerCase());
+  const lines = rankingsText
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
 
-  const rankIndex = header.indexOf("rank");
-  const teamIndex = header.indexOf("team");
-  const rpIndex = header.indexOf("rp");
-  const matchesPlayedIndex = header.indexOf("matches played");
+  // Find the actual rankings header anywhere in the pasted page.
+  const headerIndex = lines.findIndex(line => {
+    const columns = line.split("\t").map(v => v.trim().toLowerCase());
 
-  if (
-    rankIndex === -1 ||
-    teamIndex === -1 ||
-    rpIndex === -1 ||
-    matchesPlayedIndex === -1
-  ) {
-    setError("Could not find Rank, Team, RP, and Matches Played columns. Check the report format.");
-    return;
+    return (
+      columns.includes("rank") &&
+      columns.includes("team") &&
+      columns.includes("rp") &&
+      columns.includes("matches played")
+    );
+  });
+
+  const knownTeams = new Set(
+    eventTeams.map(t => Number(t.team_number))
+  );
+
+  const updates = new Map<number, {
+    event_rank: number;
+    ranking_points: number;
+    tie_breaker_points: number;
+    highest_score: number | null;
+    matches_played: number;
+    opr: number | null;
+    np_opr: number | null;
+  }>();
+
+  if (headerIndex !== -1) {
+    const header = lines[headerIndex]
+      .split("\t")
+      .map(v => v.trim().toLowerCase());
+
+    const rankIndex = header.indexOf("rank");
+    const teamIndex = header.indexOf("team");
+    const rpIndex = header.indexOf("rp");
+    const tbpIndex = header.indexOf("tbp");
+    const highestScoreIndex = header.indexOf("highest score");
+    const matchesPlayedIndex = header.indexOf("matches played");
+    const oprIndex = header.indexOf("opr");
+    const npOprIndex = header.indexOf("np-opr");
+
+    const getNumber = (value: string | undefined): number | null => {
+      if (!value?.trim()) return null;
+
+      const parsed = Number(value.trim().replace(/,/g, ""));
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    lines.slice(headerIndex + 1).forEach(line => {
+      const columns = line.split("\t");
+
+      const rank = getNumber(columns[rankIndex]);
+      const teamNumber = getNumber(
+        columns[teamIndex]?.replace(/^#/, "")
+      );
+      const rankingPoints = getNumber(columns[rpIndex]);
+      const tieBreakerPoints =
+        tbpIndex >= 0 ? getNumber(columns[tbpIndex]) : 0;
+      const highestScore =
+        highestScoreIndex >= 0
+          ? getNumber(columns[highestScoreIndex])
+          : null;
+      const matchesPlayed = getNumber(columns[matchesPlayedIndex]);
+      const opr = oprIndex >= 0 ? getNumber(columns[oprIndex]) : null;
+      const npOpr =
+        npOprIndex >= 0 ? getNumber(columns[npOprIndex]) : null;
+
+      if (
+        rank !== null &&
+        Number.isInteger(rank) &&
+        rank > 0 &&
+        teamNumber !== null &&
+        Number.isInteger(teamNumber) &&
+        teamNumber > 0 &&
+        rankingPoints !== null &&
+        tieBreakerPoints !== null &&
+        (highestScoreIndex < 0 || highestScore !== null) &&
+        matchesPlayed !== null &&
+        Number.isInteger(matchesPlayed) &&
+        matchesPlayed >= 0 &&
+        (oprIndex < 0 || opr !== null) &&
+        (npOprIndex < 0 || npOpr !== null) &&
+        knownTeams.has(teamNumber)
+      ) {
+        updates.set(teamNumber, {
+          event_rank: rank,
+          ranking_points: rankingPoints,
+          tie_breaker_points: tieBreakerPoints,
+          highest_score: highestScore,
+          matches_played: matchesPlayed,
+          opr,
+          np_opr: npOpr
+        });
+      }
+    });
+  } else {
+    // Fallback for rankings copied as plain text instead of tab-separated columns.
+    const rankingRow =
+      /^(\d+)\s+#?(\d+)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+)\s+(\d+)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)$/;
+
+    lines.forEach(line => {
+      const row = line.match(rankingRow);
+      if (!row) return;
+
+      const rank = Number(row[1]);
+      const teamNumber = Number(row[2]);
+
+      if (!knownTeams.has(teamNumber)) return;
+
+      updates.set(teamNumber, {
+        event_rank: rank,
+        ranking_points: Number(row[3]),
+        tie_breaker_points: Number(row[4]),
+        highest_score: Number(row[5]),
+        matches_played: Number(row[6]),
+        opr: Number(row[7]),
+        np_opr: Number(row[8])
+      });
+    });
   }
 
-  const knownTeams = new Set(eventTeams.map(t => Number(t.team_number)));
-
- const tbpIndex = header.indexOf("tbp");
-const highestScoreIndex = header.indexOf("highest score");
-const oprIndex = header.indexOf("opr");
-const npOprIndex = header.indexOf("np-opr");
-
-const updates = new Map<number, {
-  event_rank: number;
-  ranking_points: number;
-  tie_breaker_points: number;
-  highest_score: number | null;
-  matches_played: number;
-  opr: number | null;
-  np_opr: number | null;
-}>();
-
-  lines.slice(1).forEach(line => {
-    const columns = line.split("\t");
-
-    const rank = Number(columns[rankIndex]?.trim());
-    const teamNumber = Number(
-      columns[teamIndex]?.trim().replace(/^#/, "")
-    );
-    const rankingPoints = Number(columns[rpIndex]?.trim());
-
-const tieBreakerPoints = tbpIndex >= 0
-  ? Number(columns[tbpIndex]?.trim())
-  : 0;
-
-const highestScore = highestScoreIndex >= 0
-  ? Number(columns[highestScoreIndex]?.trim())
-  : null;
-
-const matchesPlayed = Number(
-  columns[matchesPlayedIndex]?.trim()
-);
-
-const opr = oprIndex >= 0
-  ? Number(columns[oprIndex]?.trim())
-  : null;
-
-const npOpr = npOprIndex >= 0
-  ? Number(columns[npOprIndex]?.trim())
-  : null;
-
-   if (
-  Number.isInteger(rank) &&
-  rank > 0 &&
-  Number.isInteger(teamNumber) &&
-  teamNumber > 0 &&
-  Number.isFinite(rankingPoints) &&
-  Number.isFinite(tieBreakerPoints) &&
-  (highestScore === null || Number.isFinite(highestScore)) &&
-  Number.isInteger(matchesPlayed) &&
-  matchesPlayed >= 0 &&
-  (opr === null || Number.isFinite(opr)) &&
-  (npOpr === null || Number.isFinite(npOpr)) &&
-  knownTeams.has(teamNumber)
-) {
-  updates.set(teamNumber, {
-    event_rank: rank,
-    ranking_points: rankingPoints,
-    tie_breaker_points: tieBreakerPoints,
-    highest_score: highestScore,
-    matches_played: matchesPlayed,
-    opr: opr,
-    np_opr: npOpr
-  });
-}
-  });
-
   if (updates.size === 0) {
-    setError("No matching event teams were found. Import the event team list first.");
+    setError(
+      "No matching rankings were found. Make sure the event teams are imported and copy the complete rankings table."
+    );
     return;
   }
 
