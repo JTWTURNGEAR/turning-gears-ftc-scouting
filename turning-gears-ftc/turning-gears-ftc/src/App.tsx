@@ -975,12 +975,14 @@ async function setSelectedMatchToNow() {
             `${match.match_type}-${match.match_number}`
           );
 
-          return {
-            event_id: activeEventId,
-            ...match,
-            imported_time:
-              match.imported_time ?? existing?.imported_time ?? null,
-            red_score:
+         return {
+  event_id: activeEventId,
+  ...match,
+  imported_time:
+    match.imported_time ?? existing?.imported_time ?? null,
+  manual_offset_minutes: 0,
+  manual_time_override: null,
+  red_score:
               match.red_score ?? existing?.red_score ?? null,
             blue_score:
               match.blue_score ?? existing?.blue_score ?? null,
