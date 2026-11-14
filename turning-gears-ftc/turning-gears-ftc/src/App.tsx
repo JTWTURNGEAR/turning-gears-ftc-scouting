@@ -106,6 +106,14 @@ notes: ""
 export default function App() {
   const [sessionReady, setSessionReady] = useState(false);
   const [joined, setJoined] = useState(false);
+  function returnToLogin() {
+  setJoined(false);
+  setTeamCode("");
+  setCoordinatorCode("");
+  setIsCoordinator(false);
+  setMessage("");
+  setError("");
+}
   const [tab, setTab] = useState("home");
   const [eventSection, setEventSection] = useState<
   "matches" | "rankings" | "teams" | "manager"
@@ -1692,7 +1700,18 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
 </div>
 
         </section>
-        <section className="panel live-match-panel">
+
+<section className="panel">
+  <div className="section-head">
+    <h3>Account Access</h3>
+  </div>
+  <p>Need coordinator access or want to switch access codes?</p>
+  <button className="text-btn" onClick={returnToLogin}>
+    Return to Login / Switch Access
+  </button>
+</section>
+
+<section className="panel live-match-panel">
           <div className="section-head">
             <h3>🏁 Live Match Tracker</h3>
             <span className="live">SCHEDULE BASED</span>
