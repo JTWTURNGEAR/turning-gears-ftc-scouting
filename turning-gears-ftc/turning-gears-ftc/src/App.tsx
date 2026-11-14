@@ -147,6 +147,13 @@ const [noteText, setNoteText] = useState("");
   const [isCoordinator, setIsCoordinator] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [playedDefence, setPlayedDefence] = useState(false);
+  const [excludedDefenceTeams, setExcludedDefenceTeams] = useState<number[]>(() => {
+  try {
+    return JSON.parse(localStorage.getItem("excludedDefenceTeams") || "[]");
+  } catch {
+    return [];
+  }
+});
 const [editingScoutName, setEditingScoutName] = useState("");
   const [authUserId, setAuthUserId] = useState("");
   const [recordSearch, setRecordSearch] = useState("");
@@ -1430,6 +1437,7 @@ alliance: form.alliance,
       : "Match scouting saved for the whole team.");
 
     setForm(emptyForm);
+    setPlayedDefence(false);
     setEditingRecordId(null);
     setEditingScoutName("");
     await loadTeam();
@@ -1636,10 +1644,12 @@ const teamSummaries = useMemo(() => {
     (r.scout_group !== null &&
       selectedScoutGroups.includes(r.scout_group))
   );
-
+  const analysisRecords = filteredRecords.filter(r =>
+    !r.played_defence || !excludedDefenceTeams.includes(r.team_number)
+  );
   const grouped = new Map<number, RecordRow[]>();
 
-  filteredRecords.forEach(r => {
+ analysisRecords.forEach(r => {
     grouped.set(r.team_number, [
       ...(grouped.get(r.team_number) || []),
       r
@@ -1673,7 +1683,7 @@ const teamSummaries = useMemo(() => {
       emptiedYes: rows.filter(r => r.emptied_flower).length,
       emptiedNo: rows.filter(r => !r.emptied_flower).length
     }));
-}, [records, selectedScoutGroups]);
+}, [records, selectedScoutGroups, excludedDefenceTeams]);
 const sortedTeamSummaries = useMemo(() => {
   return [...teamSummaries].sort((a, b) => {
     if (teamSort === "team-high") {
@@ -3209,7 +3219,11 @@ onClick={async () => {
               ? `Team ${r.partner_team_number}`
               : "Not recorded"}
           </div>
-
+{r.played_defence && (
+  <div className="defence-warning">
+    ⚠ PLAYED DEFENCE — Match {r.match_number}
+  </div>
+)}
           <div className="mini-ratings">
             <span>Auto <b>{r.auto_rating ?? "—"}/5</b></span>
             <span>Shooting <b>{r.shooting_accuracy ?? "—"}/5</b></span>
@@ -3246,7 +3260,26 @@ onClick={async () => {
       <h3>Team {selectedTeamNumber}</h3>
       <p className="muted">Individual match scouting history</p>
     </div>
+    <button
+      type="button"
+      className={
+        excludedDefenceTeams.includes(selectedTeamNumber)
+          ? "defence-active"
+          : "secondary full"
+      }
+      onClick={() => {
+        const next = excludedDefenceTeams.includes(selectedTeamNumber)
+          ? excludedDefenceTeams.filter(team => team !== selectedTeamNumber)
+          : [...excludedDefenceTeams, selectedTeamNumber];
 
+        setExcludedDefenceTeams(next);
+        localStorage.setItem("excludedDefenceTeams", JSON.stringify(next));
+      }}
+    >
+      {excludedDefenceTeams.includes(selectedTeamNumber)
+        ? "Include Defence Data in Comparisons"
+        : "Exclude Defence Data from Comparisons"}
+    </button>
    {selectedTeamSummary && (
   <div className="stats-grid">
     <div className="stat">
@@ -3273,7 +3306,17 @@ onClick={async () => {
   </div>
 )}
     <h3 className="section-title">Match-by-match history</h3>
-
+{selectedTeamRecords.some(r => r.played_defence) && (
+  <div className="defence-warning">
+    ⚠ PLAYED DEFENCE — Match numbers: {
+      selectedTeamRecords
+        .filter(r => r.played_defence)
+        .map(r => r.match_number)
+        .sort((a, b) => a - b)
+        .join(", ")
+    }
+  </div>
+)}
     {selectedTeamRecords.length === 0 ? (
       <p className="muted">No scouting records found for this team.</p>
     ) : (
