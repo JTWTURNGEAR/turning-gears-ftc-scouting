@@ -29,8 +29,13 @@ type EventTeamRow = {
   team_name: string;
   event_rank: number | null;
   ranking_points: number;
+  tie_breaker_points: number;
+  highest_score: number | null;
   matches_played: number;
+  opr: number | null;
+  np_opr: number | null;
 };
+
 type EventMatch = {
   id: string;
   event_id: string;
