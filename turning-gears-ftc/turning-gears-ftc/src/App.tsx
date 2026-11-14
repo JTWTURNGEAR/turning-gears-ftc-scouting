@@ -2183,15 +2183,6 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   />
 </Field>
 
-   
-<button
-  className="primary full"
-  onClick={applyScheduleAdjustment}
-  disabled={busy || !adjustmentStartMatchId || adjustmentMinutes === 0}
->
-  {busy ? "Adjusting..." : "Apply Schedule Adjustment"}
-</button>
-
 
 <button
   className="primary full"
@@ -2216,7 +2207,20 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           ) : eventMatches.length === 0 ? (
             <Empty text="No matches have been imported for this event yet." />
           ) : (
-            eventMatches.map(match => {
+          [...eventMatches]
+  .sort((a, b) => {
+    const aIsQual = a.match_type.toLowerCase().includes("qual");
+    const bIsQual = b.match_type.toLowerCase().includes("qual");
+
+    if (aIsQual && !bIsQual) return -1;
+    if (!aIsQual && bIsQual) return 1;
+
+    return (
+      a.match_type.localeCompare(b.match_type) ||
+      a.match_number - b.match_number
+    );
+  })
+  .map(match => {
               const matchTime = match.manual_time_override
                 ? new Date(match.manual_time_override)
                 : match.imported_time
