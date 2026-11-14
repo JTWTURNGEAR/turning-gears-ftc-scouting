@@ -742,13 +742,23 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
   setMessage("");
 
   for (const match of matchesToAdjust) {
-    const { error: updateError } = await supabase
-      .from("event_matches")
-      .update({
+  const update = match.manual_time_override
+    ? {
+        manual_time_override: new Date(
+          new Date(match.manual_time_override).getTime() +
+          Number(adjustmentMinutes) * 60000
+        ).toISOString()
+      }
+    : {
         manual_offset_minutes:
-  (match.manual_offset_minutes || 0) + Number(adjustmentMinutes)
-      })
-      .eq("id", match.id);
+          (match.manual_offset_minutes || 0) +
+          Number(adjustmentMinutes)
+      };
+
+  const { error: updateError } = await supabase
+    .from("event_matches")
+    .update(update)
+    .eq("id", match.id);
 
     if (updateError) {
       setError(`Schedule adjustment stopped: ${updateError.message}`);
