@@ -974,11 +974,20 @@ async function importOfficialRankings() {
 
   const knownTeams = new Set(eventTeams.map(t => Number(t.team_number)));
 
-  const updates = new Map<number, {
-    event_rank: number;
-    ranking_points: number;
-    matches_played: number;
-  }>();
+ const tbpIndex = header.indexOf("tbp");
+const highestScoreIndex = header.indexOf("highest score");
+const oprIndex = header.indexOf("opr");
+const npOprIndex = header.indexOf("np-opr");
+
+const updates = new Map<number, {
+  event_rank: number;
+  ranking_points: number;
+  tie_breaker_points: number;
+  highest_score: number | null;
+  matches_played: number;
+  opr: number | null;
+  np_opr: number | null;
+}>();
 
   lines.slice(1).forEach(line => {
     const columns = line.split("\t");
@@ -988,26 +997,51 @@ async function importOfficialRankings() {
       columns[teamIndex]?.trim().replace(/^#/, "")
     );
     const rankingPoints = Number(columns[rpIndex]?.trim());
-    const matchesPlayed = Number(
-      columns[matchesPlayedIndex]?.trim()
-    );
 
-    if (
-      Number.isInteger(rank) &&
-      rank > 0 &&
-      Number.isInteger(teamNumber) &&
-      teamNumber > 0 &&
-      Number.isFinite(rankingPoints) &&
-      Number.isInteger(matchesPlayed) &&
-      matchesPlayed >= 0 &&
-      knownTeams.has(teamNumber)
-    ) {
-      updates.set(teamNumber, {
-        event_rank: rank,
-        ranking_points: rankingPoints,
-        matches_played: matchesPlayed
-      });
-    }
+const tieBreakerPoints = tbpIndex >= 0
+  ? Number(columns[tbpIndex]?.trim())
+  : 0;
+
+const highestScore = highestScoreIndex >= 0
+  ? Number(columns[highestScoreIndex]?.trim())
+  : null;
+
+const matchesPlayed = Number(
+  columns[matchesPlayedIndex]?.trim()
+);
+
+const opr = oprIndex >= 0
+  ? Number(columns[oprIndex]?.trim())
+  : null;
+
+const npOpr = npOprIndex >= 0
+  ? Number(columns[npOprIndex]?.trim())
+  : null;
+
+   if (
+  Number.isInteger(rank) &&
+  rank > 0 &&
+  Number.isInteger(teamNumber) &&
+  teamNumber > 0 &&
+  Number.isFinite(rankingPoints) &&
+  Number.isFinite(tieBreakerPoints) &&
+  (highestScore === null || Number.isFinite(highestScore)) &&
+  Number.isInteger(matchesPlayed) &&
+  matchesPlayed >= 0 &&
+  (opr === null || Number.isFinite(opr)) &&
+  (npOpr === null || Number.isFinite(npOpr)) &&
+  knownTeams.has(teamNumber)
+) {
+  updates.set(teamNumber, {
+    event_rank: rank,
+    ranking_points: rankingPoints,
+    tie_breaker_points: tieBreakerPoints,
+    highest_score: highestScore,
+    matches_played: matchesPlayed,
+    opr: opr,
+    np_opr: npOpr
+  });
+}
   });
 
   if (updates.size === 0) {
