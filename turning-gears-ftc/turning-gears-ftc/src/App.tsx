@@ -575,10 +575,9 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
       }
     }
 
-    const teams = block
-      .filter(line => /^\d+$/.test(line))
-      .map(Number)
-      .filter(team => team > 0);
+  const teams = block.flatMap(line =>
+  (line.match(/\b\d{4,5}\b/g) || []).map(Number)
+);
 
     if (teams.length < 4) continue;
 
