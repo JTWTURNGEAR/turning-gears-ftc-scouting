@@ -3500,6 +3500,33 @@ onClick={async () => {
               {t.count} observations
             </span>
           </div>
+          {records.some(r =>
+  r.team_number === t.team &&
+  r.played_defence &&
+  (
+    selectedScoutGroups.length === 0 ||
+    (r.scout_group !== null &&
+      selectedScoutGroups.includes(r.scout_group))
+  )
+) && (
+  <div className="defence-warning">
+    ⚠ PLAYED DEFENCE — Match numbers: {
+      records
+        .filter(r =>
+          r.team_number === t.team &&
+          r.played_defence &&
+          (
+            selectedScoutGroups.length === 0 ||
+            (r.scout_group !== null &&
+              selectedScoutGroups.includes(r.scout_group))
+          )
+        )
+        .map(r => r.match_number)
+        .sort((a, b) => a - b)
+        .join(", ")
+    }
+  </div>
+)}
           <div className="comparison-stat">
             <span>Average RP</span>
             <strong>
