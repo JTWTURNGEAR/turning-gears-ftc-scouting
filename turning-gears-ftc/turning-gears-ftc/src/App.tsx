@@ -475,7 +475,8 @@ await loadEventTeams(loadedEvents[0].id);
     } => team !== null);
 } 
   
-  function parseSchedule(text: string, year?: number) {
+ 
+function parseSchedule(text: string, year?: number, eventDate?: string) {
   const lines = text
     .split(/\r?\n/)
     .map(line => line.trim())
@@ -493,6 +494,109 @@ await loadEventTeams(loadedEvents[0].id);
     blue_score?: number;
   }[] = [];
 
+  // Orange Alliance format: Q-1, Q-2, etc.
+  const orangeMatchHeader = /^(Q|SF|F|P)-(\d+)$/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const header = lines[i].match(orangeMatchHeader);
+    if (!header) continue;
+
+    const matchType =
+      header[1].toUpperCase() === "Q" ? "Qualification" :
+      header[1].toUpperCase() === "SF" ? "Semifinal" :
+      header[1].toUpperCase() === "F" ? "Final" :
+      "Playoff";
+
+    const matchNumber = Number(header[2]);
+
+    const nextHeader = lines.findIndex(
+      (line, index) =>
+        index > i && orangeMatchHeader.test(line)
+    );
+
+    const block = lines.slice(
+      i + 1,
+      nextHeader === -1 ? lines.length : nextHeader
+    );
+
+    let redScore: number | undefined;
+    let blueScore: number | undefined;
+    let importedTime: string | undefined;
+
+    for (const line of block) {
+      const scoreMatch = line.match(/^(\d+)\s*-\s*(\d+)$/);
+
+      if (scoreMatch) {
+        redScore = Number(scoreMatch[1]);
+        blueScore = Number(scoreMatch[2]);
+      }
+
+      const timeMatch = line.match(
+        /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+      );
+
+      if (timeMatch) {
+        let hour = Number(timeMatch[1]);
+        const minute = Number(timeMatch[2]);
+        const ampm = timeMatch[3].toUpperCase();
+
+        if (ampm === "PM" && hour !== 12) hour += 12;
+        if (ampm === "AM" && hour === 12) hour = 0;
+
+       const now = new Date();
+
+const eventYear = eventDate
+  ? Number(eventDate.slice(0, 4))
+  : year || now.getFullYear();
+
+const eventMonth = eventDate
+  ? Number(eventDate.slice(5, 7)) - 1
+  : now.getMonth();
+
+const eventDay = eventDate
+  ? Number(eventDate.slice(8, 10))
+  : now.getDate();
+
+const date = new Date(
+  eventYear,
+  eventMonth,
+  eventDay,
+  hour,
+  minute
+);
+
+        importedTime = date.toISOString();
+      }
+    }
+
+    const teams = block
+      .filter(line => /^\d+$/.test(line))
+      .map(Number);
+
+    if (teams.length < 4) continue;
+
+    const match = {
+      match_type: matchType,
+      match_number: matchNumber,
+      red_team_1: teams[0],
+      red_team_2: teams[1],
+      blue_team_1: teams[2],
+      blue_team_2: teams[3]
+    };
+
+    matches.push({
+      ...match,
+      ...(importedTime ? { imported_time: importedTime } : {}),
+      ...(redScore !== undefined && blueScore !== undefined
+        ? { red_score: redScore, blue_score: blueScore }
+        : {})
+    });
+  }
+
+  // If Orange Alliance matches were found, return them.
+  if (matches.length > 0) return matches;
+
+  // Original schedule format, retained for compatibility.
   const headers = /^(Qualification|Playoff|Semifinal|Final)\s+(\d+)$/i;
 
   for (let i = 0; i < lines.length; i++) {
@@ -581,6 +685,7 @@ await loadEventTeams(loadedEvents[0].id);
 
   return matches;
 }
+
   async function createEvent() {
     if (!supabase || !teamId || !eventName.trim()) {
       setError("Enter an event name first.");
@@ -816,11 +921,12 @@ async function setSelectedMatchToNow() {
 
     const importedTeams = parseTeamList(teamListText);
     const importedMatches = parseSchedule(
-      scheduleText,
-      Number(
-        events.find(ev => ev.id === activeEventId)?.event_date?.slice(0, 4)
-      ) || new Date().getFullYear()
-    );
+  scheduleText,
+  Number(
+    events.find(ev => ev.id === activeEventId)?.event_date?.slice(0, 4)
+  ) || new Date().getFullYear(),
+  events.find(ev => ev.id === activeEventId)?.event_date || undefined
+);
 
     if (importedTeams.length === 0 && importedMatches.length === 0) {
       setError("No valid teams or matches found. Check the pasted information.");
@@ -893,9 +999,15 @@ async function setSelectedMatchToNow() {
         if (matchError) throw matchError;
       }
 
-      if (importedTeams.length > 0) {
+     if (importedTeams.length > 0) {
   await loadEventTeams(activeEventId);
 }
+
+if (importedMatches.length > 0) {
+  await loadEventMatches(activeEventId);
+}
+
+setMessage(
 
 setMessage(
   `Import successful: ${importedTeams.length} teams and ${importedMatches.length} matches processed.`
