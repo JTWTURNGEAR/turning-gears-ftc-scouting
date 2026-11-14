@@ -1715,7 +1715,24 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     Return to Login / Switch Access
   </button>
 </section>
+<section className="panel scout-qr-panel">
+  <div className="section-head">
+    <h3>📱 Join Our Scouting Website</h3>
+  </div>
 
+  <p>New scout? Scan this QR code with your phone camera to open the scouting app.</p>
+
+  <div className="scout-qr-code">
+    <img
+      src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fturning-gears-ftc-scouting.vercel.app%2F"
+      alt="QR code linking to the TURNING GEARS FTC Scouting website"
+    />
+  </div>
+
+  <p className="muted">
+    https://turning-gears-ftc-scouting.vercel.app/
+  </p>
+</section>
 <section className="panel live-match-panel">
           <div className="section-head">
             <h3>🏁 Live Match Tracker</h3>
