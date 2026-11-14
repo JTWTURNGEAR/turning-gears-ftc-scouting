@@ -2964,6 +2964,10 @@ return (
       style={{ flex: 1 }}
       disabled={ev.is_archived}
 onClick={async () => {
+  if (!supabase) {
+    alert("Database connection is not available.");
+    return;
+  }
   setActiveEventId(ev.id);
   await loadEventMatches(ev.id);
   await loadEventTeams(ev.id);
