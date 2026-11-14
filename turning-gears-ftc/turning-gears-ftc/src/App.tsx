@@ -2211,7 +2211,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         .sort((a, b) => a.event_rank! - b.event_rank!)
         .map(team => (
           <div className="scout-row" key={team.id}>
-            <strong>#{team.team_number} ({team.matches_played})</strong>
+            <strong>#{team.team_number})</strong>
             <div style={{ flex: 1 }}>
   <button
     className="team-number-link"
@@ -2307,7 +2307,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       setTab("team-detail");
     }}
   >
-    {team.team_name}
+    {team.team_name} ({team.matches_played} Matches Played)
   </button>
 
   <span>
