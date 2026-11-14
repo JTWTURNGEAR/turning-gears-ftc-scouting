@@ -58,6 +58,7 @@ type RecordRow = {
   team_number: number;
   partner_team_number: number | null;
   match_number: number;
+  played_defence: boolean;
   alliance: string;
   scout_name: string;
   scout_group: ScoutGroup | null;
@@ -145,6 +146,7 @@ const [noteText, setNoteText] = useState("");
   const [newScoutGroup, setNewScoutGroup] = useState<ScoutGroup | "">("");
   const [isCoordinator, setIsCoordinator] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [playedDefence, setPlayedDefence] = useState(false);
 const [editingScoutName, setEditingScoutName] = useState("");
   const [authUserId, setAuthUserId] = useState("");
   const [recordSearch, setRecordSearch] = useState("");
@@ -1390,7 +1392,8 @@ if (autoHiveTips + teleopHiveTips > totalHiveTips) {
   team_number: team,
   partner_team_number: partnerTeam,
   match_number: match,
-  alliance: form.alliance,
+played_defence: playedDefence,
+alliance: form.alliance,
   scout_name: editingRecordId ? editingScoutName : selectedScout,
   scout_group: scoutGroup,
   auto_rating: form.auto_rating,
@@ -1526,7 +1529,7 @@ async function editRecord(record: RecordRow) {
 
   setEditingRecordId(record.id);
   setEditingScoutName(record.scout_name);
-
+setPlayedDefence(record.played_defence ?? false);
  setForm({
   team_number: String(record.team_number),
   partner_team_number: record.partner_team_number
@@ -2815,7 +2818,13 @@ onClick={async () => {
     onChange={e => setForm({...form, match_number: e.target.value})}
     placeholder="e.g. 8"/>
 </Field>
-
+<button
+  type="button"
+  className={playedDefence ? "defence-active" : "secondary full"}
+  onClick={() => setPlayedDefence(!playedDefence)}
+>
+  {playedDefence ? "✓ Played Defence" : "Played Defence"}
+</button>
         <Field label="Alliance">
           <div className="segmented">
             <button className={form.alliance === "Red" ? "selected red" : ""}
@@ -2990,6 +2999,7 @@ onClick={async () => {
         setEditingRecordId(null);
         setEditingScoutName("");
         setForm(emptyForm);
+        setPlayedDefence(false);
         setTab("records");
         setMessage("Editing cancelled.");
       }}
