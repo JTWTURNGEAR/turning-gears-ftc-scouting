@@ -2341,6 +2341,50 @@ onClick={async () => {
         </section>
       )}
       {tab === "scout" && <section className="panel form-panel">
+        {scoutMode === "match" && (currentMatch || nextMatch) && (
+  <div className="live-match-card scouting-current-match">
+    <span className="eyebrow">
+      {currentMatch ? "CURRENT MATCH" : "UP NEXT"}
+    </span>
+
+    <h2>
+      {(currentMatch || nextMatch)!.match_type}{" "}
+      {(currentMatch || nextMatch)!.match_number}
+    </h2>
+
+    <div className="alliance-display">
+      <div className="alliance-group">
+        <b className="red-label">🔴 RED ALLIANCE</b>
+        {[
+          (currentMatch || nextMatch)!.red_team_1,
+          (currentMatch || nextMatch)!.red_team_2
+        ].map(team => (
+          <div className="scouting-banner-team" key={team}>
+            <strong>#{team}</strong>
+            <span>
+              ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="alliance-group">
+        <b className="blue-label">🔵 BLUE ALLIANCE</b>
+        {[
+          (currentMatch || nextMatch)!.blue_team_1,
+          (currentMatch || nextMatch)!.blue_team_2
+        ].map(team => (
+          <div className="scouting-banner-team" key={team}>
+            <strong>#{team}</strong>
+            <span>
+              ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
         
         <div className="form-intro">
           <span className="eyebrow">SCOUTING MODE</span>
