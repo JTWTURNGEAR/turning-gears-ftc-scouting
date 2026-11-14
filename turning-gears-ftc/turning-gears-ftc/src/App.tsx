@@ -1705,34 +1705,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
 </div>
 
         </section>
-
-<section className="panel">
-  <div className="section-head">
-    <h3>Account Access</h3>
-  </div>
-  <p>Need coordinator access or want to switch access codes?</p>
-  <button className="text-btn" onClick={returnToLogin}>
-    Return to Login / Switch Access
-  </button>
-</section>
-<section className="panel scout-qr-panel">
-  <div className="section-head">
-    <h3>📱 Join Our Scouting Website</h3>
-  </div>
-
-  <p>New scout? Scan this QR code with your phone camera to open the scouting app.</p>
-
-  <div className="scout-qr-code">
-    <img
-      src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fturning-gears-ftc-scouting.vercel.app%2F"
-      alt="QR code linking to the TURNING GEARS FTC Scouting website"
-    />
-  </div>
-
-  <p className="muted">
-    https://turning-gears-ftc-scouting.vercel.app/
-  </p>
-</section>
+        
 <section className="panel live-match-panel">
           <div className="section-head">
             <h3>🏁 Live Match Tracker</h3>
@@ -1883,6 +1856,64 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         </div>
 
         <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
+   
+              {!currentMatch && !nextMatch && (
+                <Empty text="No upcoming matches. All imported matches may be completed or missing times." />
+              )}
+            </>
+          )}
+        </section>
+        <div className="stats-grid">
+          <Stat label="SUBMISSIONS" value={records.length} icon={<ClipboardList/>}/>
+          <Stat label="TEAMS SCOUTED" value={teamSummaries.length} icon={<Activity/>}/>
+          <Stat label="SCOUTS" value={scouts.length} icon={<Users/>}/>
+        </div>
+
+        <div className="section-head"><h3>Quick actions</h3></div>
+               <div className="action-grid">
+          {isCoordinator && (
+            <button className="action-card" onClick={() => {
+  setTab("event");
+  setEventSection("manager");
+}}>
+              <CalendarDays/>
+              <b>Event Manager</b>
+              <span>Create and manage event schedules</span>
+            </button>
+          )}
+
+          <button
+            className="action-card"
+           onClick={() => {
+  setTab("event");
+  setEventSection("matches");
+}}
+          >
+            <CalendarDays />
+            <b>Event Schedule</b>
+            <span>View matches, alliances, and scores</span>
+          </button>
+                 <button className="action-card" onClick={() => setTab("scout")}>
+            <ClipboardList/><b>Match scouting</b><span>Log a team's performance</span>
+          </button>
+          
+          <button className="action-card" onClick={() => setTab("records")}>
+            <Activity/><b>Submissions</b><span>Review scout observations</span>
+          </button>
+          <button className="action-card" onClick={() => setTab("roster")}>
+            <Users/><b>Scout roster</b>
+            <span>{isCoordinator ? "Manage scout names" : "View scout names"}</span>
+          </button>
+        </div>
+
+        <p className="footnote">Match scouting and shared team records are active. Pit scouting, schedule import, and alliance tools are next.</p>
+      </>}
+      {tab === "event" && (
+  <section className="panel">
+    <div className="section-head">
+      <h3>Event Center</h3>
+      <span>{events.find(ev => ev.id === activeEventId)?.event_name || "No event selected"}</span>
+    </div> 
       </>}
       {tab === "event" && (
   <section className="panel">
@@ -1890,7 +1921,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       <h3>Event Center</h3>
       <span>{events.find(ev => ev.id === activeEventId)?.event_name || "No event selected"}</span>
     </div>
-
+    
     <div className="segmented">
       <button
         className={eventSection === "matches" ? "selected" : ""}
