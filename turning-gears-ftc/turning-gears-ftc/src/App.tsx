@@ -2214,7 +2214,8 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
            <strong>#{team.event_rank}</strong>
             <div style={{ flex: 1 }}>
   <button
-    className="team-number-link"
+  className="team-number-link"
+  style={{ marginLeft: "8px" }}
     onClick={() => {
       setSelectedTeamNumber(team.team_number);
       setTab("team-detail");
