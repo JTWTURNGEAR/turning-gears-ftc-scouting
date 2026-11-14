@@ -2351,11 +2351,14 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         onChange={e => setAdjustmentStartMatchId(e.target.value)}
       >
         <option value="">Choose a match...</option>
-        {eventMatches.map(match => (
-          <option key={match.id} value={match.id}>
-            {match.match_type} {match.match_number}
-          </option>
-        ))}
+       {[...eventMatches]
+  .filter(match => match.match_type.toLowerCase().includes("qual"))
+  .sort((a, b) => a.match_number - b.match_number)
+  .map(match => (
+    <option key={match.id} value={match.id}>
+      {match.match_type} {match.match_number}
+    </option>
+  ))}
       </select>
     </Field>
 
