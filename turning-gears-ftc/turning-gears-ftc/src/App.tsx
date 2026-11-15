@@ -3974,16 +3974,35 @@ onClick={async () => {
       {(currentMatch || nextMatch)!.match_type}{" "}
       {(currentMatch || nextMatch)!.match_number}
     </h2>
-
+<div className="scouting-click-instruction">
+  CLICK ANY TEAM BOX TO AUTO-FILL THE SCOUTING FORM
+</div>
     <div className="alliance-display">
       <div className="alliance-group">
         <b className="red-label">🔴 RED ALLIANCE</b>
         {[
-          (currentMatch || nextMatch)!.red_team_1,
-          (currentMatch || nextMatch)!.red_team_2
-        ].map(team => (
-         <div
+  (currentMatch || nextMatch)!.red_team_1,
+  (currentMatch || nextMatch)!.red_team_2
+].map((team, index) => (
+      <div
+  role="button"
+  tabIndex={0}
+  onClick={() => setForm({
+    ...form,
+    team_number: String(team),
+    partner_team_number: String(
+      index === 0
+        ? (currentMatch || nextMatch)!.red_team_2
+        : (currentMatch || nextMatch)!.red_team_1
+    ),
+    match_number: String((currentMatch || nextMatch)!.match_number),
+    alliance: "Red"
+  })}
   className={`scouting-banner-team ${
+    futureRelatedTeams.has(team) ? "related-team" : ""
+  }`}
+  key={team}
+>
     futureRelatedTeams.has(team) ? "related-team" : ""
   }`}
   key={team}
@@ -3998,12 +4017,29 @@ onClick={async () => {
 
       <div className="alliance-group">
         <b className="blue-label">🔵 BLUE ALLIANCE</b>
-        {[
-          (currentMatch || nextMatch)!.blue_team_1,
-          (currentMatch || nextMatch)!.blue_team_2
-        ].map(team => (
-        <div
+       {[
+  (currentMatch || nextMatch)!.blue_team_1,
+  (currentMatch || nextMatch)!.blue_team_2
+].map((team, index) => (
+      <div
+  role="button"
+  tabIndex={0}
+  onClick={() => setForm({
+    ...form,
+    team_number: String(team),
+    partner_team_number: String(
+      index === 0
+        ? (currentMatch || nextMatch)!.blue_team_2
+        : (currentMatch || nextMatch)!.blue_team_1
+    ),
+    match_number: String((currentMatch || nextMatch)!.match_number),
+    alliance: "Blue"
+  })}
   className={`scouting-banner-team ${
+    futureRelatedTeams.has(team) ? "related-team" : ""
+  }`}
+  key={team}
+>
     futureRelatedTeams.has(team) ? "related-team" : ""
   }`}
   key={team}
