@@ -1443,3 +1443,30 @@ button { cursor: pointer; }
     font-size: 0.8rem;
   }
 }
+
+/* Research team action buttons */
+.research-shell .team-grid button {
+  background: linear-gradient(145deg, #2b1c12, #1b130e) !important;
+  color: #ffad62 !important;
+  border: 1px solid #704321 !important;
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+.research-shell .team-grid button:hover {
+  background: #3a2415 !important;
+  border-color: #ff8728 !important;
+  color: #ffffff !important;
+}
+
+/* Selected team button */
+.research-shell .team-grid button:first-child {
+  color: #ffad62 !important;
+}
+
+/* Add/remove compare button */
+.research-shell .team-grid button:last-child {
+  background: #21150e !important;
+  color: #ffad62 !important;
+  border-color: #8a5129 !important;
+}
