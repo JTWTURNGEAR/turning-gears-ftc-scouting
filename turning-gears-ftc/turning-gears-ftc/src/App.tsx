@@ -2590,11 +2590,9 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   ) : team7215Matches.length > 0 ? (
     <div className="team7215-schedule">
       <div className="team7215-schedule-title">
-       {scoutingMode === "live"
-  ? "{scoutingMode === "live"
-  ? "MATCHES WE ARE IN TODAY"
-  : "UPCOMING MATCHES WITH TRACKED TEAMS"}"
-  : "MATCHES WITH TRACKED TEAMS"}
+              {scoutingMode === "live"
+          ? "MATCHES WE ARE IN TODAY"
+          : "UPCOMING MATCHES WITH TRACKED TEAMS"}
       </div>
 
       <div className="team7215-match-hexagons">
