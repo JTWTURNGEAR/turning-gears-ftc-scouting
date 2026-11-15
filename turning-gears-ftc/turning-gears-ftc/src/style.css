@@ -1763,3 +1763,31 @@ button { cursor: pointer; }
     transform: translateY(0);
   }
 }
+.played-defense-button {
+  width: 100%;
+  padding: 13px 16px;
+  margin: 10px 0;
+  border: 2px solid #f97316;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #24170f, #111111);
+  color: #ff9a3c;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.18);
+  transition: all 0.2s ease;
+}
+
+.played-defense-button:hover {
+  background: linear-gradient(135deg, #3b2111, #17110d);
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.45);
+  transform: translateY(-1px);
+}
+
+.played-defense-button.defense-active {
+  background: linear-gradient(135deg, #f97316, #c2410c);
+  color: #111111;
+  border-color: #ffb15c;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.65);
+}
