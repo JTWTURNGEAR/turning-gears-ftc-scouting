@@ -133,9 +133,6 @@ export default function App() {
   "matches" | "rankings" | "teams" | "manager"
 >("matches");
   const [scoutMode, setScoutMode] = useState<"match" | "notes">("match");
-  const [scoutingMode, setScoutingMode] = useState<
-  "live" | "previous"
->("live");
 const [noteTeamNumber, setNoteTeamNumber] = useState("");
 const [noteText, setNoteText] = useState("");
   const [scouts, setScouts] = useState<Scout[]>([]);
@@ -414,8 +411,7 @@ useEffect(() => {
       return;
     }
 
-
-setEventMatches((data || []) as EventMatch[]);
+    setEventMatches((data || []) as EventMatch[]);
   }
  
 async function loadEventTeams(eventId: string) {
@@ -817,9 +813,9 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
   async function applyScheduleAdjustment() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
- const startIndex = scheduledMatches.findIndex(
-  match => match.id === adjustmentStartMatchId
-);
+  const startIndex = eventMatches.findIndex(
+    match => match.id === adjustmentStartMatchId
+  );
 
  if (
   startIndex < 0 ||
@@ -830,7 +826,7 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
     return;
   }
 
- const matchesToAdjust = scheduledMatches.slice(startIndex);
+  const matchesToAdjust = eventMatches.slice(startIndex);
 
   const confirmed = window.confirm(
     `Apply ${adjustmentMinutes > 0 ? "+" : ""}${adjustmentMinutes} minutes to ${matchesToAdjust.length} matches, starting with ${matchesToAdjust[0].match_type} ${matchesToAdjust[0].match_number}?`
@@ -880,7 +876,7 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
 async function setSelectedMatchToNow() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
-  const startIndex = scheduledMatches.findIndex(
+  const startIndex = eventMatches.findIndex(
     match => match.id === adjustmentStartMatchId
   );
 
@@ -889,13 +885,26 @@ async function setSelectedMatchToNow() {
     return;
   }
 
-  const startingMatch = scheduledMatches[startIndex];
-  const matchesToAdjust = scheduledMatches.slice(startIndex);
+  const startingMatch = eventMatches[startIndex];
+
+  const startingTime = startingMatch.manual_time_override
+    ? new Date(startingMatch.manual_time_override).getTime()
+    : startingMatch.imported_time
+      ? new Date(startingMatch.imported_time).getTime() +
+        (startingMatch.manual_offset_minutes || 0) * 60000
+      : null;
+
+  if (startingTime === null || !Number.isFinite(startingTime)) {
+    setError("The selected match does not have a scheduled time.");
+    return;
+  }
 
   const now = Math.round(Date.now() / 60000) * 60000;
+  const shiftMinutes = Math.round((now - startingTime) / 60000);
+  const matchesToAdjust = eventMatches.slice(startIndex);
 
   const confirmed = window.confirm(
-    `Set ${startingMatch.match_type} ${startingMatch.match_number} to now and schedule all ${matchesToAdjust.length} selected and later matches 6 minutes apart?`
+    `Set ${startingMatch.match_type} ${startingMatch.match_number} to the current time and shift all ${matchesToAdjust.length} selected and later matches by ${shiftMinutes} minutes?`
   );
 
   if (!confirmed) return;
@@ -904,18 +913,25 @@ async function setSelectedMatchToNow() {
   setError("");
   setMessage("");
 
-  for (let i = 0; i < matchesToAdjust.length; i++) {
-    const match = matchesToAdjust[i];
+  for (const match of matchesToAdjust) {
+    const update: {
+      manual_offset_minutes?: number;
+      manual_time_override?: string;
+    } = {};
 
-    const newTime = new Date(
-      now + i * 6 * 60000
-    ).toISOString();
+    if (match.manual_time_override) {
+      update.manual_time_override = new Date(
+        new Date(match.manual_time_override).getTime() +
+        shiftMinutes * 60000
+      ).toISOString();
+    } else {
+      update.manual_offset_minutes =
+        (match.manual_offset_minutes || 0) + shiftMinutes;
+    }
 
     const { error: updateError } = await supabase
       .from("event_matches")
-      .update({
-        manual_time_override: newTime
-      })
+      .update(update)
       .eq("id", match.id);
 
     if (updateError) {
@@ -929,7 +945,7 @@ async function setSelectedMatchToNow() {
   await loadEventMatches(activeEventId);
 
   setMessage(
-    `${matchesToAdjust.length} matches scheduled in 6-minute intervals, starting now.`
+    `${matchesToAdjust.length} matches shifted. The selected match is now set to the current time.`
   );
 
   setBusy(false);
@@ -1915,10 +1931,11 @@ const selectedTeamSummary = teamSummaries.find(
     .map(match => {
       const time = match.manual_time_override
         ? new Date(match.manual_time_override).getTime()
-       : match.imported_time
-  ? new Date(match.imported_time).getTime() +
-    (match.manual_offset_minutes || 0) * 60000
-  : null;
+        : match.imported_time
+          ? new Date(match.imported_time).getTime() +
+            match.manual_offset_minutes * 60000
+          : null;
+
       return { ...match, scheduledTime: time };
     })
     .sort((a, b) =>
@@ -1937,37 +1954,14 @@ const nextMatch = scheduledMatches.find(match =>
   match.scheduledTime !== null &&
   match.scheduledTime > clockNow + 20000
 );
-  const trackedTeamNumbers = scoutingMode === "live"
-  ? new Set([7215])
-  : new Set(
-      eventTeams
-        .filter(team => team.event_id === activeEventId)
-        .map(team => team.team_number)
-    );
-const allTrackedTeamMatches = scheduledMatches.filter(match =>
+  const team7215Matches = scheduledMatches.filter(match =>
   [
     match.red_team_1,
     match.red_team_2,
     match.blue_team_1,
     match.blue_team_2
-  ].some(team => trackedTeamNumbers.has(team))
+  ].includes(7215)
 );
-
-const firstActiveTrackedMatchIndex = allTrackedTeamMatches.findIndex(match =>
-  match.scheduledTime !== null &&
-  match.scheduledTime >= clockNow - 20 * 60 * 1000
-);
-
-const finalFiveStartIndex = Math.max(0, allTrackedTeamMatches.length - 5);
-
-const team7215StartIndex =
-  firstActiveTrackedMatchIndex === -1
-    ? finalFiveStartIndex
-    : Math.min(firstActiveTrackedMatchIndex, finalFiveStartIndex);
-
-const team7215Matches = allTrackedTeamMatches
-  .filter(match => match.scheduledTime !== null)
-  .slice(team7215StartIndex, team7215StartIndex + 5);
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
@@ -1988,16 +1982,15 @@ const futureRelatedTeams = new Set(
       match.red_team_2,
       match.blue_team_1,
       match.blue_team_2
-    ].some(team => trackedTeamNumbers.has(team)))
+    ].includes(7215))
     .flatMap(match => [
       match.red_team_1,
       match.red_team_2,
       match.blue_team_1,
       match.blue_team_2
     ])
-    .filter(team => !trackedTeamNumbers.has(team))
+    .filter(team => team !== 7215)
 );
-
 const upcomingRelatedTeams = nextMatch
   ? [
       nextMatch.red_team_1,
@@ -2005,7 +1998,7 @@ const upcomingRelatedTeams = nextMatch
       nextMatch.blue_team_1,
       nextMatch.blue_team_2
     ].filter(team =>
-      !trackedTeamNumbers.has(team) && futureRelatedTeams.has(team)
+      team !== 7215 && futureRelatedTeams.has(team)
     )
   : [];
 const matchupAlertKey = nextMatch && upcomingRelatedTeams.length > 0
@@ -2490,7 +2483,7 @@ async function downloadResearchEventPdf() {
 }
 
 function allianceTeamButton(team: number, alliance: "red" | "blue") {
-  const isOurTeam = trackedTeamNumbers.has(team);
+  const isOurTeam = team === 7215;
   const isRelated = futureRelatedTeams.has(team);
 
   return (
@@ -2573,9 +2566,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   ) : team7215Matches.length > 0 ? (
     <div className="team7215-schedule">
       <div className="team7215-schedule-title">
-              {scoutingMode === "live"
-          ? "MATCHES WE ARE IN TODAY"
-          : "UPCOMING MATCHES WITH TRACKED TEAMS"}
+        MATCHES WE ARE IN TODAY
       </div>
 
       <div className="team7215-match-hexagons">
@@ -2584,8 +2575,8 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             key={match.id}
             className={`team7215-match-hex ${
               (
- match.scheduledTime !== null &&
-match.scheduledTime < clockNow - 20 * 60 * 1000
+  match.completed ||
+  (match.scheduledTime !== null && match.scheduledTime < clockNow)
 ) ? "completed" : ""
             }`}
           >
@@ -3749,10 +3740,8 @@ return (
           {teams.slice(0, 2).map((team, index) => (
             <span key={team}>
               {index > 0 && " + "}
-            {trackedTeamNumbers.has(team) ? (
-  <strong>
-    ⭐ {team} ({scoutingMode === "live" ? "OUR TEAM" : "TRACKED TEAM"})
-  </strong>
+              {team === 7215 ? (
+                <strong>⭐ {team} (OUR TEAM)</strong>
               ) : (
                 team
               )}
@@ -3773,10 +3762,8 @@ return (
           {teams.slice(2, 4).map((team, index) => (
             <span key={team}>
               {index > 0 && " + "}
-            {trackedTeamNumbers.has(team) ? (
-  <strong>
-    ⭐ {team} ({scoutingMode === "live" ? "OUR TEAM" : "TRACKED TEAM"})
-  </strong>
+              {team === 7215 ? (
+                <strong>⭐ {team} (OUR TEAM)</strong>
               ) : (
                 team
               )}
@@ -3805,32 +3792,6 @@ return (
      {tab === "event" && eventSection === "manager" && isCoordinator && (
         <section className="panel">
           <div className="section-head">
-            <div className="section-head">
-  <h3>Scouting Mode</h3>
-</div>
-
-<div style={{ display: "flex", gap: "10px", marginBottom: "18px" }}>
-  <button
-    className="primary"
-    style={{ flex: 1, opacity: scoutingMode === "live" ? 1 : 0.55 }}
-    onClick={() => setScoutingMode("live")}
-  >
-    Live Scouting
-  </button>
-
-  <button
-    className="primary"
-    style={{ flex: 1, opacity: scoutingMode === "previous" ? 1 : 0.55 }}
-    onClick={() => setScoutingMode("previous")}
-  >
-    Previous Event Scouting
-  </button>
-</div>
-            {scoutingMode === "previous" && !activeEventId && (
-  <p style={{ color: "#f0b44d", marginBottom: "18px" }}>
-    Select a previous event below to load its teams and matches.
-  </p>
-)}
             <h3>Create an event</h3>
           </div>
 
