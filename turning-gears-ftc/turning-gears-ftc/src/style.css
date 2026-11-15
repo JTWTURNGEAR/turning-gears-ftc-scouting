@@ -9,7 +9,9 @@
   text-rendering: optimizeLegibility;
 }
 
-* { box-sizing: border-box; }a
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -618,7 +620,7 @@ button { cursor: pointer; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-@media(min-width: 700px) {
+(min-width: 700px) {
   .content { padding-top: 34px; }
   .action-grid { grid-template-columns: repeat(4, 1fr); }
   .hero-card { padding: 25px; }
@@ -1876,4 +1878,96 @@ button { cursor: pointer; }
   font-weight: 900;
   line-height: 1;
   text-shadow: 0 0 5px #000;
+}
+/* RESPONSIVE HEADER AND MATCH BANNERS */
+@media (max-width: 700px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    position: relative;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .icon-btn {
+    flex: 0 0 auto;
+  }
+
+  .team7215-schedule,
+  .matchup-banner {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .team7215-schedule {
+    padding: 10px 4px;
+  }
+
+  .team7215-match-hexagons {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .team7215-match-hex {
+    width: 48px;
+    height: 44px;
+  }
+
+  .team7215-match-hex span {
+    font-size: 11px;
+  }
+
+  .matchup-banner {
+    padding: 12px 8px;
+  }
+
+  .matchup-banner-title {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+  }
+
+  .matchup-banner-team {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+
+  .matchup-banner-match {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 900;
+    margin-top: 6px;
+  }
+
+  .scouting-current-match {
+    padding: 12px;
+  }
+
+  .scouting-current-match h2 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .team7215-match-hex {
+    width: 42px;
+    height: 39px;
+  }
+
+  .team7215-match-hexagons {
+    gap: 4px;
+  }
+
+  .team7215-schedule-title {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
 }
