@@ -9,7 +9,7 @@ import { configured, supabase } from "./supabase";
 type ScoutGroup =
   | "Scouting Coach"
   | "Parent Scout"
-  | "Student Scout";
+  | "Student Scout";f
 
 type Scout = {
   id: string;
@@ -2589,7 +2589,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       <Fragment key={teamNumber}>
         <th style={{ padding: "8px" }}>Previous Records</th>
         <th style={{ padding: "8px" }}>Active Event</th>
-      </React.Fragment>
+      </Fragment>
     ))}
   </tr>
 </thead>
@@ -2667,7 +2667,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             }}>
               {getValue(currentRecords)}
             </td>
-          </React.Fragment>
+          </Fragment>
         );
       })}
     </tr>
