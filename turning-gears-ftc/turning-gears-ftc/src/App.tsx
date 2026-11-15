@@ -141,7 +141,9 @@ const [noteText, setNoteText] = useState("");
 const [researchTeamFilters, setResearchTeamFilters] = useState<number[]>([]);
   const [researchTeamNumber, setResearchTeamNumber] = useState<number | null>(null);
   const [researchCompareTeams, setResearchCompareTeams] = useState<number[]>([]);
-  useEffect(() => {
+useEffect(() => {
+  let cancelled = false;
+
   async function loadResearchTeams() {
     if (!supabase || researchEventIds.length === 0) {
       setResearchTeams([]);
@@ -153,6 +155,8 @@ const [researchTeamFilters, setResearchTeamFilters] = useState<number[]>([]);
       .select("*")
       .in("event_id", researchEventIds)
       .order("team_number", { ascending: true });
+
+    if (cancelled) return;
 
     if (error) {
       setError("Could not load historical teams: " + error.message);
@@ -172,6 +176,10 @@ const [researchTeamFilters, setResearchTeamFilters] = useState<number[]>([]);
   }
 
   loadResearchTeams();
+
+  return () => {
+    cancelled = true;
+  };
 }, [researchEventIds]);
   const [eventMatches, setEventMatches] = useState<EventMatch[]>([]);
   const [eventTeams, setEventTeams] = useState<EventTeamRow[]>([]);
@@ -446,10 +454,9 @@ async function removeEventTeam(team: EventTeamRow) {
     .eq("active", true)
     .order("name"),
 
-  supabase.from("match_records")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(250),
+ supabase.from("match_records")
+  .select("*")
+  .order("created_at", { ascending: false }),
 
   supabase.from("general_notes")
     .select("*")
@@ -2631,17 +2638,12 @@ setResearchTeamFilters(activeTeams);
           researchEventIds.includes(r.event_id ?? "") &&
           r.team_number === teamNumber
         );
-
-        const isInActiveEvent =
-          !!activeEventId &&
-          eventTeams.some(t => t.team_number === teamNumber);
-
-        const currentRecords = isInActiveEvent
-          ? records.filter(r =>
-              r.event_id === activeEventId &&
-              r.team_number === teamNumber
-            )
-          : [];
+const currentRecords = activeEventId
+  ? records.filter(r =>
+      r.event_id === activeEventId &&
+      r.team_number === teamNumber
+    )
+  : [];
 
         const getValue = (teamRecords: RecordRow[]) => {
           if (teamRecords.length === 0) return "N/A";
