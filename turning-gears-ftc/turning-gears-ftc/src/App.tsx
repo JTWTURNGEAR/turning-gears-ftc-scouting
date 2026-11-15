@@ -2425,7 +2425,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         <p className="muted">
           Select a team to explore its historical scouting data.
         </p>
-<div style={{ marginBottom: "12px" }}>
+<div className="research-team-filter">
   <label>Filter Teams (Select Multiple)</label>
 <button
   type="button"
