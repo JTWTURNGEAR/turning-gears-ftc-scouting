@@ -2604,11 +2604,8 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             key={match.id}
             className={`team7215-match-hex ${
               (
- match.completed ||
-(
-  match.scheduledTime !== null &&
-  match.scheduledTime < clockNow - 20 * 60 * 1000
-)
+ match.scheduledTime !== null &&
+match.scheduledTime < clockNow - 20 * 60 * 1000
 ) ? "completed" : ""
             }`}
           >
