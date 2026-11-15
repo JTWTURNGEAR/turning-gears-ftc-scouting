@@ -128,6 +128,7 @@ export default function App() {
   setError("");
 }
   const [tab, setTab] = useState("home");
+  const [researchSection, setResearchSection] = useState<"research" | "downloads">("research");
   const [eventSection, setEventSection] = useState<
   "matches" | "rankings" | "teams" | "manager"
 >("matches");
@@ -2695,10 +2696,26 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         </>}
    {tab === "research" && (
  <section className="panel research-shell">
-    <div className="section-head">
-      <h3>Historical Research</h3>
-      <span>Archived Events</span>
-    </div>
+<div className="section-head">
+  <h3>Historical Research</h3>
+  <span>Archived Events</span>
+</div>
+
+<div className="sub-tabs">
+  <button
+    className={researchSection === "research" ? "primary" : "secondary"}
+    onClick={() => setResearchSection("research")}
+  >
+    <BookOpen size={16} /> Research
+  </button>
+
+  <button
+    className={researchSection === "downloads" ? "primary" : "secondary"}
+    onClick={() => setResearchSection("downloads")}
+  >
+    <Download size={16} /> PDF Downloads
+  </button>
+</div>
 
     <p className="muted">
       Browse scouting information preserved from completed events.
