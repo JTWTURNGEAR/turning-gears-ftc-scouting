@@ -1543,3 +1543,66 @@ button { cursor: pointer; }
   background: #482a16;
   border-color: #ff8728;
 }
+/* HISTORICAL RESEARCH TEAM FILTER */
+.research-team-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 16px;
+  background: rgba(255, 135, 40, 0.04);
+  border: 1px solid rgba(255, 135, 40, 0.2);
+  border-radius: 12px;
+}
+
+.research-team-filter > label {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.research-team-filter button {
+  background: rgba(255, 135, 40, 0.1);
+  color: #ffad66;
+  border: 1px solid rgba(255, 135, 40, 0.45);
+  border-radius: 9px;
+  padding: 10px 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.research-team-filter button:hover {
+  background: var(--accent);
+  color: #17110d;
+  border-color: var(--accent);
+}
+
+.research-team-filter select {
+  width: 100%;
+  min-height: 150px;
+  padding: 9px;
+  background: #171717;
+  color: #f5eee8;
+  border: 1px solid rgba(255, 135, 40, 0.45);
+  border-radius: 9px;
+  outline: none;
+}
+
+.research-team-filter select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 135, 40, 0.15);
+}
+
+.research-team-filter option {
+  padding: 7px;
+  background: #171717;
+  color: #f5eee8;
+}
+
+.research-team-filter option:checked {
+  background: #9b4b16;
+  color: white;
+}
