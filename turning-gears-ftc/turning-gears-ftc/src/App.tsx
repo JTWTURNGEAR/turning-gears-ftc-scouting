@@ -2692,7 +2692,6 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           alliance: "Red"
         })}
         className={`scouting-banner-team ${
-
         <strong>#{team}</strong>
         <span>
           ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
@@ -2722,10 +2721,6 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           alliance: "Blue"
         })}
         className={`scouting-banner-team ${
-          futureRelatedTeams.has(team) ? "related-team" : ""
-        }`}
-        key={team}
-      >
         <strong>#{team}</strong>
         <span>
           ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
