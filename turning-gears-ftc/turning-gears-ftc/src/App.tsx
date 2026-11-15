@@ -2701,17 +2701,44 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   <span>Archived Events</span>
 </div>
 
-<div className="sub-tabs">
+<div style={{
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  width: "100%",
+  margin: "16px 0",
+  gap: "12px"
+}}>
   <button
-    className={researchSection === "research" ? "primary" : "secondary"}
     onClick={() => setResearchSection("research")}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      background: researchSection === "research" ? "#ff8728" : "#252525",
+      color: "#ffffff",
+      border: "1px solid #ff8728",
+      borderRadius: "9px",
+      padding: "10px 18px",
+      fontWeight: 700
+    }}
   >
     <BookOpen size={16} /> Research
   </button>
 
   <button
-    className={researchSection === "downloads" ? "primary" : "secondary"}
     onClick={() => setResearchSection("downloads")}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      background: researchSection === "downloads" ? "#ff8728" : "#252525",
+      color: "#ffffff",
+      border: "1px solid #ff8728",
+      borderRadius: "9px",
+      padding: "10px 18px",
+      fontWeight: 700
+    }}
   >
     <Download size={16} /> PDF Downloads
   </button>
