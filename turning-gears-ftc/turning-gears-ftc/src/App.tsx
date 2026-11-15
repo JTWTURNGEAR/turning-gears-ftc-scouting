@@ -413,7 +413,7 @@ useEffect(() => {
       setError(matchError.message);
       return;
     }
-
+console.log("LOADED EVENT MATCHES:", data);
     setEventMatches((data || []) as EventMatch[]);
   }
  
@@ -829,7 +829,7 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
     return;
   }
 
-  const matchesToAdjust = eventMatches.slice(startIndex);
+ const matchesToAdjust = scheduledMatches.slice(startIndex);
 
   const confirmed = window.confirm(
     `Apply ${adjustmentMinutes > 0 ? "+" : ""}${adjustmentMinutes} minutes to ${matchesToAdjust.length} matches, starting with ${matchesToAdjust[0].match_type} ${matchesToAdjust[0].match_number}?`
@@ -879,9 +879,9 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
 async function setSelectedMatchToNow() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
-  const startIndex = eventMatches.findIndex(
-    match => match.id === adjustmentStartMatchId
-  );
+ const startIndex = scheduledMatches.findIndex(
+  match => match.id === adjustmentStartMatchId
+);
 
   if (startIndex < 0) {
     setError("Choose a starting match first.");
@@ -1934,11 +1934,10 @@ const selectedTeamSummary = teamSummaries.find(
     .map(match => {
       const time = match.manual_time_override
         ? new Date(match.manual_time_override).getTime()
-        : match.imported_time
-          ? new Date(match.imported_time).getTime() +
-            match.manual_offset_minutes * 60000
-          : null;
-
+       : match.imported_time
+  ? new Date(match.imported_time).getTime() +
+    (match.manual_offset_minutes || 0) * 60000
+  : null;
       return { ...match, scheduledTime: time };
     })
     .sort((a, b) =>
@@ -1975,16 +1974,11 @@ const allTrackedTeamMatches = scheduledMatches.filter(match =>
 
 const upcomingTrackedTeamMatches = allTrackedTeamMatches.filter(match =>
   !match.completed &&
-  !(match.scheduledTime !== null && match.scheduledTime < clockNow)
+  match.scheduledTime !== null &&
+  match.scheduledTime > clockNow + 20000
 );
-
 const team7215Matches =
-  scoutingMode === "live"
-    ? allTrackedTeamMatches
-    : upcomingTrackedTeamMatches.length > 5
-      ? upcomingTrackedTeamMatches.slice(0, 5)
-      : allTrackedTeamMatches.slice(-5);
-
+  upcomingTrackedTeamMatches.slice(0, 5);
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
