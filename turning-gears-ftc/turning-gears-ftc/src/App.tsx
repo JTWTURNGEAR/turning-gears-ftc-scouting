@@ -2004,7 +2004,7 @@ const shouldShowMatchupAlert =
   nextMatch!.scheduledTime !== null &&
   nextMatch!.scheduledTime - clockNow <= 60000 &&
   nextMatch!.scheduledTime - clockNow > 0 &&
-  !shownMatchupAlerts.includes(matchupAlertKey);useEffect(() => {
+  !shownMatchupAlerts.includes(matchupAlertKey);
   useEffect(() => {
   if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedTeam === undefined) {
     return;
@@ -2029,6 +2029,7 @@ useEffect(() => {
 
   return () => window.clearTimeout(timer);
 }, [matchupBanner?.matchId]);
+  
   useEffect(() => {
   if (!matchupBanner) return;
 
@@ -2045,6 +2046,7 @@ useEffect(() => {
     setMatchupBanner(null);
   }
 }, [clockNow, scheduledMatches, matchupBanner]);
+  
 const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
