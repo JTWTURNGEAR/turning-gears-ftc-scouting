@@ -1220,3 +1220,226 @@ button { cursor: pointer; }
 .scout-qr-panel p {
   margin-top: 8px;
 }
+
+/* =====================================
+   HISTORICAL RESEARCH REDESIGN
+===================================== */
+
+.research-shell {
+  background:
+    radial-gradient(ellipse at top right, rgba(255, 135, 40, 0.09), transparent 45%),
+    linear-gradient(145deg, #19130f, #100d0b);
+  border: 1px solid #54351f;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+}
+
+.research-shell > .section-head {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #49301f;
+  margin-bottom: 15px;
+}
+
+.research-shell > .section-head h3 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffad62;
+}
+
+.research-shell > .section-head span {
+  color: #ff8728;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.research-shell > p.muted {
+  max-width: 680px;
+  line-height: 1.65;
+  color: #b9a99a;
+}
+
+/* Archived event cards */
+.research-shell > .scout-row {
+  background: linear-gradient(110deg, #211811, #17120f);
+  border: 1px solid #49301f;
+  border-radius: 13px;
+  padding: 15px;
+  margin: 12px 0;
+  align-items: center;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.research-shell > .scout-row:hover {
+  border-color: #ff8728;
+  transform: translateY(-2px);
+}
+
+.research-shell > .scout-row strong {
+  color: #fff0e2;
+  font-size: 1rem;
+}
+
+.research-shell > .scout-row .muted {
+  margin-top: 5px;
+  color: #a99a8c;
+}
+
+/* Research event workspace */
+.research-shell .panel {
+  background: rgba(8, 8, 8, 0.48);
+  border: 1px solid #3c2b20;
+  border-radius: 15px;
+  padding: 17px;
+  margin-top: 20px;
+}
+
+.research-shell .panel h3 {
+  color: #ffad62;
+  font-family: "Barlow Condensed", sans-serif;
+  letter-spacing: 0.035em;
+}
+
+.research-shell .team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.research-shell .team-grid > .scout-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  background: #17120f;
+  border: 1px solid #3c2b20;
+  border-radius: 12px;
+  padding: 9px;
+  margin: 0;
+}
+
+.research-shell .team-grid > .scout-row:hover {
+  border-color: #8c542b;
+}
+
+.research-shell .team-grid button {
+  min-height: 42px;
+}
+
+.research-shell .team-grid button:first-child {
+  background: #211811;
+  border-color: #49301f;
+}
+
+.research-shell .team-grid button:first-child strong {
+  color: #ffad62;
+  font-size: 1.05rem;
+}
+
+/* Comparison table */
+.research-shell .panel:has(table) {
+  overflow: hidden;
+}
+
+.research-shell .panel:has(table) .section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.research-shell .panel:has(table) .section-head span {
+  color: #ffad62;
+  background: rgba(255, 135, 40, 0.1);
+  border: 1px solid #684022;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.research-shell .panel:has(table) > div[style*="overflow"] {
+  border: 1px solid #49301f;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.research-shell table {
+  background: #110e0c;
+}
+
+.research-shell table th {
+  background: #24170f;
+  color: #ffad62;
+  border-bottom: 1px solid #684022;
+  white-space: nowrap;
+}
+
+.research-shell table td {
+  color: #e8d9cb;
+}
+
+.research-shell table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.research-shell table tbody tr:hover {
+  background: rgba(255, 135, 40, 0.07);
+}
+
+/* Historical records and general notes */
+.research-shell h3 {
+  margin-top: 18px;
+}
+
+.research-shell > div > .scout-row,
+.research-shell .panel > div > .scout-row {
+  background: #19130f;
+  border: 1px solid #49301f;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 10px 0;
+}
+
+.research-shell .scout-row p {
+  color: #d0bdae;
+  line-height: 1.55;
+}
+
+.research-shell .empty {
+  border: 1px dashed #62452f;
+  border-radius: 12px;
+  background: rgba(255, 135, 40, 0.035);
+  padding: 18px;
+  color: #b9a99a;
+  text-align: center;
+}
+
+/* Small screens */
+@media (max-width: 600px) {
+  .research-shell {
+    padding: 13px;
+    border-radius: 15px;
+  }
+
+  .research-shell .panel {
+    padding: 12px;
+  }
+
+  .research-shell .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .research-shell .team-grid > .scout-row {
+    flex-wrap: wrap;
+  }
+
+  .research-shell .team-grid button {
+    font-size: 0.8rem;
+  }
+}
