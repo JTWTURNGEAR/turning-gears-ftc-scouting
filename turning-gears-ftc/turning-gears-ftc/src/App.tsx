@@ -139,6 +139,7 @@ const [noteText, setNoteText] = useState("");
   const [researchEventId, setResearchEventId] = useState("");
   const [researchTeams, setResearchTeams] = useState<EventTeamRow[]>([]);
   const [researchTeamNumber, setResearchTeamNumber] = useState<number | null>(null);
+  const [researchCompareTeams, setResearchCompareTeams] = useState<number[]>([]);
   const [eventMatches, setEventMatches] = useState<EventMatch[]>([]);
   const [eventTeams, setEventTeams] = useState<EventTeamRow[]>([]);
     const [teamListText, setTeamListText] = useState("");
@@ -2401,33 +2402,107 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           {researchTeams.length === 0 ? (
             <Empty text="No team data found for this event." />
           ) : (
-            researchTeams.map(team => (
-              <button
-                className="scout-row secondary"
-                key={team.id}
-                onClick={() => setResearchTeamNumber(team.team_number)}
-                style={{
-                  width: "100%",
-                  textAlign: "left",
-                  border: researchTeamNumber === team.team_number
-                    ? "2px solid var(--accent)"
-                    : undefined
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <strong>#{team.team_number}</strong>
-                  <div className="muted tiny">
-                    {team.team_name || "Team name unavailable"}
-                  </div>
-                </div>
-                {researchTeamNumber === team.team_number
-                  ? "Selected"
-                  : "View Team"}
-              </button>
-            ))
+          researchTeams.map(team => (
+  <div className="scout-row" key={team.id}>
+    <button
+      className="scout-row secondary"
+      onClick={() => setResearchTeamNumber(team.team_number)}
+      style={{
+        flex: 1,
+        textAlign: "left",
+        border: researchTeamNumber === team.team_number
+          ? "2px solid var(--accent)"
+          : undefined
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        <strong>#{team.team_number}</strong>
+        <div className="muted tiny">
+          {team.team_name || "Team name unavailable"}
+        </div>
+      </div>
+      {researchTeamNumber === team.team_number
+        ? "Selected"
+        : "View Team"}
+    </button>
+
+    <button
+      className="secondary"
+      onClick={() => {
+        setResearchCompareTeams(current =>
+          current.includes(team.team_number)
+            ? current.filter(number => number !== team.team_number)
+            : [...current, team.team_number]
+        );
+      }}
+    >
+      {researchCompareTeams.includes(team.team_number)
+        ? "Remove"
+        : "Add to Compare"}
+    </button>
+  </div>
+))
           )}
         </div>
+{researchCompareTeams.length > 0 && (
+  <div className="panel">
+    <div className="section-head">
+      <h3>Research Compare</h3>
+      <span>{researchCompareTeams.length} teams selected</span>
+    </div>
 
+    {researchCompareTeams.map(teamNumber => {
+      const teamRecords = records.filter(r =>
+        r.event_id === researchEventId &&
+        r.team_number === teamNumber
+      );
+
+      const average = (values: (number | null)[]) => {
+        const valid = values.filter(
+          (value): value is number => value !== null
+        );
+
+        return valid.length
+          ? (valid.reduce((sum, value) => sum + value, 0) / valid.length).toFixed(1)
+          : "—";
+      };
+
+      const team = researchTeams.find(
+        t => t.team_number === teamNumber
+      );
+
+      return (
+        <div className="scout-row" key={teamNumber}>
+          <div style={{ flex: 1 }}>
+            <strong>#{teamNumber} — {team?.team_name || "Unknown Team"}</strong>
+            <div className="muted tiny">
+              {teamRecords.length} match records
+            </div>
+            <div className="muted tiny">
+              Auto: {average(teamRecords.map(r => r.auto_rating))}
+              {" · "}Shooting accuracy: {average(teamRecords.map(r => r.shooting_accuracy))}
+              {" · "}Shooting speed: {average(teamRecords.map(r => r.shooting_speed))}
+            </div>
+            <div className="muted tiny">
+              Driving: {average(teamRecords.map(r => r.driving_speed))}
+              {" · "}Maneuverability: {average(teamRecords.map(r => r.maneuverability))}
+              {" · "}Hive tips: {average(teamRecords.map(r => r.hive_tips))}
+            </div>
+          </div>
+
+          <button
+            className="secondary"
+            onClick={() => setResearchCompareTeams(current =>
+              current.filter(number => number !== teamNumber)
+            )}
+          >
+            Remove
+          </button>
+        </div>
+      );
+    })}
+  </div>
+)}
         {researchTeamNumber !== null && (
           <div className="panel">
             <h3>Team #{researchTeamNumber} — Historical Records</h3>
