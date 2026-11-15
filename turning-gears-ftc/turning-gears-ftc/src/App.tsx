@@ -4224,10 +4224,10 @@ onClick={async () => {
         </Field>
 <button
   type="button"
-  className={playedDefense ? "defense-active" : "secondary full"}
+  className={`played-defense-button ${playedDefense ? "defense-active" : ""}`}
   onClick={() => setPlayedDefense(!playedDefense)}
 >
-  {playedDefense ? "✓ Played Defense" : "Played Defense"}
+  🛡️ {playedDefense ? "✓ PLAYED DEFENSE" : "PLAYED DEFENSE"} 🛡️
 </button>
         {!selectedScout &&
           <p className="warning">Choose your scout name on the Dashboard before submitting.</p>}
