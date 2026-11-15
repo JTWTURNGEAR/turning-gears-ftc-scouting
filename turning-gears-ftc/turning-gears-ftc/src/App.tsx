@@ -2464,7 +2464,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   onClick={() => setResearchTeamFilters([])}
   style={{ marginLeft: "8px" }}
 >
-  Auto Unfilter All Teams
+  Unfilter All Teams
 </button>
   <select
     multiple
