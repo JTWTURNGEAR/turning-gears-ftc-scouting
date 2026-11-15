@@ -1964,7 +1964,7 @@ const nextMatch = scheduledMatches.find(match =>
         .filter(team => team.event_id === activeEventId)
         .map(team => team.team_number)
     );
- const team7215Matches = scheduledMatches.filter(match =>
+const allTrackedTeamMatches = scheduledMatches.filter(match =>
   [
     match.red_team_1,
     match.red_team_2,
@@ -1972,6 +1972,18 @@ const nextMatch = scheduledMatches.find(match =>
     match.blue_team_2
   ].some(team => trackedTeamNumbers.has(team))
 );
+
+const upcomingTrackedTeamMatches = allTrackedTeamMatches.filter(match =>
+  !match.completed &&
+  !(match.scheduledTime !== null && match.scheduledTime < clockNow)
+);
+
+const team7215Matches =
+  scoutingMode === "live"
+    ? allTrackedTeamMatches
+    : upcomingTrackedTeamMatches.length > 5
+      ? upcomingTrackedTeamMatches.slice(0, 5)
+      : allTrackedTeamMatches.slice(-5);
 
 const currentMatchTeams = currentMatch
   ? [
@@ -2579,7 +2591,9 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     <div className="team7215-schedule">
       <div className="team7215-schedule-title">
        {scoutingMode === "live"
+  ? "{scoutingMode === "live"
   ? "MATCHES WE ARE IN TODAY"
+  : "UPCOMING MATCHES WITH TRACKED TEAMS"}"
   : "MATCHES WITH TRACKED TEAMS"}
       </div>
 
