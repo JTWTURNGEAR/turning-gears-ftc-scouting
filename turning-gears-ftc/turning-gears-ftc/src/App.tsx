@@ -3991,15 +3991,11 @@ onClick={async () => {
     match_number: String((currentMatch || nextMatch)!.match_number),
     alliance: "Red"
   })}
-  className={`scouting-banner-team ${
-    futureRelatedTeams.has(team) ? "related-team" : ""
-  }`}
-  key={team}
->
-    futureRelatedTeams.has(team) ? "related-team" : ""
-  }`}
-  key={team}
->
+        className={`scouting-banner-team ${
+          futureRelatedTeams.has(team) ? "related-team" : ""
+        }`}
+        key={team}
+      >
             <strong>#{team}</strong>
             <span>
               ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
