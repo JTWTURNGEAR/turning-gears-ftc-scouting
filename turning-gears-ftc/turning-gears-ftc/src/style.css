@@ -124,7 +124,9 @@ button { cursor: pointer; }
 }
 
 .hero-card {
-  position: relative;
+position: sticky;
+top: 0;
+z-index: 100;
   padding: 20px;
   border-radius: 18px;
   background: linear-gradient(120deg, #24160e, #15100c);
