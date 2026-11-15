@@ -136,10 +136,43 @@ const [noteText, setNoteText] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [activeEventId, setActiveEventId] = useState("");
-  const [researchEventId, setResearchEventId] = useState("");
+  const [researchEventIds, setResearchEventIds] = useState<string[]>([]);
   const [researchTeams, setResearchTeams] = useState<EventTeamRow[]>([]);
+  const [researchTeamFilter, setResearchTeamFilter] = useState("");
   const [researchTeamNumber, setResearchTeamNumber] = useState<number | null>(null);
   const [researchCompareTeams, setResearchCompareTeams] = useState<number[]>([]);
+  useEffect(() => {
+  async function loadResearchTeams() {
+    if (!supabase || researchEventIds.length === 0) {
+      setResearchTeams([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("event_teams")
+      .select("*")
+      .in("event_id", researchEventIds)
+      .order("team_number", { ascending: true });
+
+    if (error) {
+      setError("Could not load historical teams: " + error.message);
+      return;
+    }
+
+    const uniqueTeams = Array.from(
+      new Map(
+        ((data || []) as EventTeamRow[]).map(team => [
+          team.team_number,
+          team
+        ])
+      ).values()
+    );
+
+    setResearchTeams(uniqueTeams);
+  }
+
+  loadResearchTeams();
+}, [researchEventIds]);
   const [eventMatches, setEventMatches] = useState<EventMatch[]>([]);
   const [eventTeams, setEventTeams] = useState<EventTeamRow[]>([]);
     const [teamListText, setTeamListText] = useState("");
@@ -2354,56 +2387,66 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                 </div>
               </div>
 
-              <button
-                className="secondary"
-                onClick={async () => {
-  if (!supabase) {
-    alert("Database connection is not available.");
-    return;
-  }
-
-  setResearchEventId(ev.id);
-                  setResearchCompareTeams([]);
-                  setResearchTeamNumber(null);
-
-                  const { data, error } = await supabase
-                    .from("event_teams")
-                    .select("*")
-                    .eq("event_id", ev.id)
-                    .order("team_number");
-
-                  if (error) {
-                    alert("Could not load historical teams: " + error.message);
-                    return;
-                  }
-
-                  setResearchTeams((data || []) as EventTeamRow[]);
-                }}
-              >
-                {researchEventId === ev.id ? "Selected" : "Open Research"}
-              </button>
+             <label style={{
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  cursor: "pointer"
+}}>
+  <input
+    type="checkbox"
+    checked={researchEventIds.includes(ev.id)}
+    onChange={e => {
+      setResearchEventIds(current =>
+        e.target.checked
+          ? [...current, ev.id]
+          : current.filter(id => id !== ev.id)
+      );
+    }}
+  />
+  Select Event
+</label>
             </div>
           );
         })
     )}
 
-    {researchEventId && (
+   {researchEventIds.length > 0 && (
       <div className="panel">
-        <h3>
-          Researching: {
-            events.find(ev => ev.id === researchEventId)?.event_name
-          }
-        </h3>
+       <h3>
+  Researching: {
+    events
+      .filter(ev => researchEventIds.includes(ev.id))
+      .map(ev => ev.event_name)
+      .join(", ")
+  }
+</h3>
 
         <p className="muted">
           Select a team to explore its historical scouting data.
         </p>
-
+<div style={{ marginBottom: "12px" }}>
+  <label>
+    Filter Teams by Number
+    <input
+      type="number"
+      placeholder="Enter a team number..."
+      value={researchTeamFilter}
+      onChange={e => setResearchTeamFilter(e.target.value)}
+    />
+  </label>
+</div>
         <div className="team-grid">
           {researchTeams.length === 0 ? (
             <Empty text="No team data found for this event." />
           ) : (
-          researchTeams.map(team => (
+        researchTeams
+  .filter(team =>
+    researchTeamFilter === "" ||
+    String(team.team_number).includes(researchTeamFilter)
+  )
+  .sort((a, b) => a.team_number - b.team_number)
+  .map(team => (
   <div className="scout-row" key={team.id}>
     <button
       className="scout-row secondary"
@@ -2493,10 +2536,10 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             { label: "Hive Tips", field: "hive_tips" }
           ].map(metric => {
             const values = researchCompareTeams.map(teamNumber => {
-              const teamRecords = records.filter(r =>
-                r.event_id === researchEventId &&
-                r.team_number === teamNumber
-              );
+            const teamRecords = records.filter(r =>
+  researchEventIds.includes(r.event_id ?? "") &&
+  r.team_number === teamNumber
+);
 
               if (metric.field === "count") {
                 return teamRecords.length;
@@ -2586,14 +2629,14 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     <h3>Team #{researchTeamNumber} — Historical Records</h3>
 
     {records.filter(r =>
-      r.event_id === researchEventId &&
+    researchEventIds.includes(r.event_id ?? "") &&
       r.team_number === researchTeamNumber
     ).length === 0 ? (
       <Empty text="No match records found for this team at this event." />
     ) : (
       records
         .filter(r =>
-          r.event_id === researchEventId &&
+       researchEventIds.includes(r.event_id ?? "") &&
           r.team_number === researchTeamNumber
         )
         .map(record => (
@@ -2615,14 +2658,14 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             <h3>General Notes</h3>
 
             {generalNotes.filter(n =>
-              n.event_id === researchEventId &&
+            researchEventIds.includes(n.event_id ?? "") &&
               n.team_number === researchTeamNumber
             ).length === 0 ? (
               <Empty text="No general notes found for this team at this event." />
             ) : (
               generalNotes
                 .filter(n =>
-                  n.event_id === researchEventId &&
+               researchEventIds.includes(n.event_id ?? "") &&
                   n.team_number === researchTeamNumber
                 )
                 .map(note => (
