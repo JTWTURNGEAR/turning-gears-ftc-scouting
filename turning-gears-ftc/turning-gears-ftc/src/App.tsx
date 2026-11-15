@@ -2717,10 +2717,11 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   </button>
 </div>
 
-    <p className="muted">
-      Browse scouting information preserved from completed events.
-      Research filters are independent of Active Scouting.
-    </p>
+<p className="muted">
+  {researchSection === "research"
+    ? "Browse scouting information preserved from completed events. Select events to explore historical team data."
+    : "Select archived events, scout groups, and report sections to create printable PDF downloads."}
+</p>
 
     {events.filter(ev => ev.is_archived).length === 0 ? (
       <Empty text="No archived events yet. Archive a completed event in Event Manager to begin building your Research database." />
@@ -2745,129 +2746,137 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                 </div>
               </div>
 
-            <div style={{
+           
+<div style={{
   display: "flex",
   flexDirection: "column",
   gap: "6px"
 }}>
-  <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-    <input
-      type="checkbox"
-      checked={researchEventIds.includes(ev.id)}
-      onChange={e => {
-        setResearchEventIds(current =>
-          e.target.checked
-            ? [...current, ev.id]
-            : current.filter(id => id !== ev.id)
-        );
-      }}
-    />
-    Select Event for Research
-  </label>
+  {researchSection === "research" && (
+    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <input
+        type="checkbox"
+        checked={researchEventIds.includes(ev.id)}
+        onChange={e => {
+          setResearchEventIds(current =>
+            e.target.checked
+              ? [...current, ev.id]
+              : current.filter(id => id !== ev.id)
+          );
+        }}
+      />
+      Select Event for Research
+    </label>
+  )}
 
-  <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-    <input
-      type="checkbox"
-      checked={pdfEventIds.includes(ev.id)}
-      onChange={e => {
-        setPdfEventIds(current =>
-          e.target.checked
-            ? [...current, ev.id]
-            : current.filter(id => id !== ev.id)
-        );
-      }}
-    />
-    Include in PDF
-  </label>
+  {researchSection === "downloads" && (
+    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <input
+        type="checkbox"
+        checked={pdfEventIds.includes(ev.id)}
+        onChange={e => {
+          setPdfEventIds(current =>
+            e.target.checked
+              ? [...current, ev.id]
+              : current.filter(id => id !== ev.id)
+          );
+        }}
+      />
+      Include in PDF
+    </label>
+  )}
 </div>
             </div>
           );
         })
     )}
-<div className="panel" style={{ marginTop: "16px" }}>
-  <div className="section-head">
-    <h3>PDF Export Center</h3>
-    <span>{pdfEventIds.length} events selected</span>
-  </div>
 
-  <p className="muted">
-    Choose which archived events, scout groups, and information
-    should appear in your printable report.
-  </p>
+{researchSection === "downloads" && (
+  <div className="panel" style={{ marginTop: "16px" }}>
+    <div className="section-head">
+      <h3>PDF Export Center</h3>
+      <span>{pdfEventIds.length} events selected</span>
+    </div>
 
-  <h4>1. Scout Groups to Include</h4>
+    <p className="muted">
+      Choose which archived events, scout groups, and information
+      should appear in your printable report.
+    </p>
 
-  {([
-    "Student Scout",
-    "Parent Scout",
-    "Scouting Coach"
-  ] as ScoutGroup[]).map(group => (
-    <label key={group} style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      padding: "6px"
-    }}>
-      <input
-        type="checkbox"
-        checked={pdfScoutGroups.includes(group)}
-        onChange={e => {
-          setPdfScoutGroups(current =>
-            e.target.checked
-              ? [...current, group]
-              : current.filter(item => item !== group)
-          );
-        }}
-      />
-      {group}
-    </label>
-  ))}
+    <h4>1. Scout Groups to Include</h4>
 
-  <h4>2. Information to Include</h4>
+    {([
+      "Student Scout",
+      "Parent Scout",
+      "Scouting Coach"
+    ] as ScoutGroup[]).map(group => (
+      <label key={group} style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "6px"
+      }}>
+        <input
+          type="checkbox"
+          checked={pdfScoutGroups.includes(group)}
+          onChange={e => {
+            setPdfScoutGroups(current =>
+              e.target.checked
+                ? [...current, group]
+                : current.filter(item => item !== group)
+            );
+          }}
+        />
+        {group}
+      </label>
+    ))}
 
-  {([
-    { id: "teams", label: "Team List and Official Rankings" },
-    { id: "matches", label: "Match Schedule, Alliances and Results" },
-    { id: "records", label: "Individual Match Scouting Records" },
-    { id: "notes", label: "General Scouting Notes" }
-  ]).map(section => (
-    <label key={section.id} style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      padding: "6px"
-    }}>
-      <input
-        type="checkbox"
-        checked={pdfSections.includes(section.id)}
-        onChange={e => {
-          setPdfSections(current =>
-            e.target.checked
-              ? [...current, section.id]
-              : current.filter(item => item !== section.id)
-          );
-        }}
-      />
-      {section.label}
-    </label>
-  ))}
+    <h4>2. Information to Include</h4>
+
+    {([
+      { id: "teams", label: "Team List and Official Rankings" },
+      { id: "matches", label: "Match Schedule, Alliances and Results" },
+      { id: "records", label: "Individual Match Scouting Records" },
+      { id: "notes", label: "General Scouting Notes" }
+    ]).map(section => (
+      <label key={section.id} style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "6px"
+      }}>
+        <input
+          type="checkbox"
+          checked={pdfSections.includes(section.id)}
+          onChange={e => {
+            setPdfSections(current =>
+              e.target.checked
+                ? [...current, section.id]
+                : current.filter(item => item !== section.id)
+            );
+          }}
+        />
+        {section.label}
+      </label>
+    ))}
 
     <p className="muted tiny">
-    Select one or more archived events above using the
-    "Include in PDF" checkboxes.
-  </p>
+      Select one or more archived events above using the
+      "Include in PDF" checkboxes.
+    </p>
 
-  <button
-    className="primary full"
-    onClick={() => downloadResearchEventPdf()}
-    disabled={pdfEventIds.length === 0}
-    style={{ marginTop: "12px" }}
-  >
-    <Download size={18} />
-    Generate and Print PDF
-  </button>
-</div>
-   {researchEventIds.length > 0 && (
+    <button
+      className="primary full"
+      onClick={() => downloadResearchEventPdf()}
+      disabled={pdfEventIds.length === 0}
+      style={{ marginTop: "12px" }}
+    >
+      <Download size={18} />
+      Generate and Print PDF
+    </button>
+  </div>
+)}
+{researchSection === "research" && researchEventIds.length > 0 && (
       <div className="panel">
        <h3>
   Researching: {
