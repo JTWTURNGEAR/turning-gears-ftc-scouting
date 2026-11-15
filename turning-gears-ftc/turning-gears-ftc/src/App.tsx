@@ -1954,6 +1954,14 @@ const nextMatch = scheduledMatches.find(match =>
   match.scheduledTime !== null &&
   match.scheduledTime > clockNow + 20000
 );
+  const team7215Matches = scheduledMatches.filter(match =>
+  [
+    match.red_team_1,
+    match.red_team_2,
+    match.blue_team_1,
+    match.blue_team_2
+  ].includes(7215)
+);
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
@@ -2532,10 +2540,15 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     </div>
   </div>
 
-  {matchupBanner && (
+   {matchupBanner ? (
     <div className="matchup-banner">
       <div className="matchup-banner-title">
-       FUTURE PARTNER OR OPPONENT
+        FUTURE PARTNER OR OPPONENT
+      </div>
+
+      <div className="matchup-banner-match">
+        {scheduledMatches.find(match => match.id === matchupBanner.matchId)?.match_type}{" "}
+        {scheduledMatches.find(match => match.id === matchupBanner.matchId)?.match_number}
       </div>
 
       {matchupBanner.teamNumbers.map(teamNumber => {
@@ -2550,7 +2563,30 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         );
       })}
     </div>
-  )}
+  ) : team7215Matches.length > 0 ? (
+    <div className="team7215-schedule">
+      <div className="team7215-schedule-title">
+        MATCHES WE ARE IN TODAY
+      </div>
+
+      <div className="team7215-match-hexagons">
+        {team7215Matches.map(match => (
+          <div
+            key={match.id}
+            className={`team7215-match-hex ${
+              match.completed ? "completed" : ""
+            }`}
+          >
+            <span>
+              {match.match_type.toLowerCase().includes("qual")
+                ? `Q${match.match_number}`
+                : `${match.match_type} ${match.match_number}`}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : null}
 
   <button className="icon-btn" title="Refresh data" onClick={loadTeam}>
     <RefreshCw size={18}/>
