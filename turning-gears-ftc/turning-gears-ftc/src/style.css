@@ -1470,3 +1470,76 @@ button { cursor: pointer; }
   color: #ffad62 !important;
   border-color: #8a5129 !important;
 }
+
+/* Research comparison table improvements */
+.research-shell .panel:has(table) {
+  border-color: #704321;
+  background: linear-gradient(145deg, #1b140f, #100d0b);
+}
+
+.research-shell table {
+  border-collapse: separate !important;
+  border-spacing: 0;
+  min-width: 560px;
+}
+
+.research-shell table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 14px 12px !important;
+  background: #2a1b11;
+  color: #ffad62;
+  font-size: 0.85rem;
+  border-bottom: 2px solid #8a5129;
+}
+
+.research-shell table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  text-align: left;
+}
+
+.research-shell table td {
+  padding: 13px 12px !important;
+  border-top: 1px solid #39281c;
+  white-space: nowrap;
+}
+
+.research-shell table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #1c140f;
+  color: #f0dfcf;
+  min-width: 145px;
+}
+
+.research-shell table tbody tr:hover td:first-child {
+  background: #302014;
+}
+
+.research-shell table tbody tr:hover td {
+  background-color: rgba(255, 135, 40, 0.07);
+}
+
+.research-shell table td[style*="font-weight: 800"] {
+  background: rgba(255, 135, 40, 0.09);
+  color: #ffad62 !important;
+  font-size: 1.05rem;
+}
+
+.research-shell .panel:has(table) > div[style*="display: flex"] button {
+  border-radius: 20px;
+  background: #29190f;
+  color: #ffad62;
+  border: 1px solid #704321;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+}
+
+.research-shell .panel:has(table) > div[style*="display: flex"] button:hover {
+  background: #482a16;
+  border-color: #ff8728;
+}
