@@ -1791,3 +1791,89 @@ button { cursor: pointer; }
   border-color: #ffb15c;
   box-shadow: 0 0 16px rgba(249, 115, 22, 0.65);
 }
+
+/* TEAM 7215 PERMANENT MATCH SCHEDULE */
+.team7215-schedule {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 6px 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.team7215-schedule-title {
+  color: #ffe600;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-align: center;
+}
+
+.team7215-match-hexagons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.team7215-match-hex {
+  position: relative;
+  width: 58px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  background: #ffe600;
+  clip-path: polygon(
+    25% 0%,
+    75% 0%,
+    100% 50%,
+    75% 100%,
+    25% 100%,
+    0% 50%
+  );
+  filter: drop-shadow(0 0 5px rgba(255, 230, 0, 0.55));
+}
+
+.team7215-match-hex span {
+  position: relative;
+  z-index: 2;
+  color: #111;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.team7215-match-hex.completed {
+  background:
+    repeating-linear-gradient(
+      60deg,
+      transparent 0 7px,
+      rgba(255, 230, 0, 0.3) 7px 9px
+    ),
+    repeating-linear-gradient(
+      120deg,
+      transparent 0 7px,
+      rgba(255, 230, 0, 0.3) 7px 9px
+    ),
+    #292719;
+}
+
+.team7215-match-hex.completed span {
+  color: #ffe600;
+}
+
+.team7215-match-hex.completed::after {
+  content: "✕";
+  position: absolute;
+  z-index: 3;
+  color: #ff4545;
+  font-size: 37px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 5px #000;
+}
