@@ -414,7 +414,8 @@ useEffect(() => {
       return;
     }
 
-    setEventMatches((data || []) as EventMatch[]);
+
+setEventMatches((data || []) as EventMatch[]);
   }
  
 async function loadEventTeams(eventId: string) {
@@ -816,9 +817,9 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
   async function applyScheduleAdjustment() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
-  const startIndex = eventMatches.findIndex(
-    match => match.id === adjustmentStartMatchId
-  );
+ const startIndex = scheduledMatches.findIndex(
+  match => match.id === adjustmentStartMatchId
+);
 
  if (
   startIndex < 0 ||
@@ -829,7 +830,7 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
     return;
   }
 
-  const matchesToAdjust = eventMatches.slice(startIndex);
+ const matchesToAdjust = scheduledMatches.slice(startIndex);
 
   const confirmed = window.confirm(
     `Apply ${adjustmentMinutes > 0 ? "+" : ""}${adjustmentMinutes} minutes to ${matchesToAdjust.length} matches, starting with ${matchesToAdjust[0].match_type} ${matchesToAdjust[0].match_number}?`
@@ -879,16 +880,16 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
 async function setSelectedMatchToNow() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
-  const startIndex = eventMatches.findIndex(
-    match => match.id === adjustmentStartMatchId
-  );
+ const startIndex = scheduledMatches.findIndex(
+  match => match.id === adjustmentStartMatchId
+);
 
   if (startIndex < 0) {
     setError("Choose a starting match first.");
     return;
   }
 
-  const startingMatch = eventMatches[startIndex];
+ const startingMatch = scheduledMatches[startIndex];
 
   const startingTime = startingMatch.manual_time_override
     ? new Date(startingMatch.manual_time_override).getTime()
@@ -904,7 +905,7 @@ async function setSelectedMatchToNow() {
 
   const now = Math.round(Date.now() / 60000) * 60000;
   const shiftMinutes = Math.round((now - startingTime) / 60000);
-  const matchesToAdjust = eventMatches.slice(startIndex);
+ const matchesToAdjust = scheduledMatches.slice(startIndex);
 
   const confirmed = window.confirm(
     `Set ${startingMatch.match_type} ${startingMatch.match_number} to the current time and shift all ${matchesToAdjust.length} selected and later matches by ${shiftMinutes} minutes?`
@@ -1934,11 +1935,10 @@ const selectedTeamSummary = teamSummaries.find(
     .map(match => {
       const time = match.manual_time_override
         ? new Date(match.manual_time_override).getTime()
-        : match.imported_time
-          ? new Date(match.imported_time).getTime() +
-            match.manual_offset_minutes * 60000
-          : null;
-
+       : match.imported_time
+  ? new Date(match.imported_time).getTime() +
+    (match.manual_offset_minutes || 0) * 60000
+  : null;
       return { ...match, scheduledTime: time };
     })
     .sort((a, b) =>
@@ -1964,7 +1964,7 @@ const nextMatch = scheduledMatches.find(match =>
         .filter(team => team.event_id === activeEventId)
         .map(team => team.team_number)
     );
- const team7215Matches = scheduledMatches.filter(match =>
+const allTrackedTeamMatches = scheduledMatches.filter(match =>
   [
     match.red_team_1,
     match.red_team_2,
@@ -1973,6 +1973,21 @@ const nextMatch = scheduledMatches.find(match =>
   ].some(team => trackedTeamNumbers.has(team))
 );
 
+const firstActiveTrackedMatchIndex = allTrackedTeamMatches.findIndex(match =>
+  match.scheduledTime !== null &&
+  match.scheduledTime >= clockNow - 20 * 60 * 1000
+);
+
+const finalFiveStartIndex = Math.max(0, allTrackedTeamMatches.length - 5);
+
+const team7215StartIndex =
+  firstActiveTrackedMatchIndex === -1
+    ? finalFiveStartIndex
+    : Math.min(firstActiveTrackedMatchIndex, finalFiveStartIndex);
+
+const team7215Matches = allTrackedTeamMatches
+  .filter(match => match.scheduledTime !== null)
+  .slice(team7215StartIndex, team7215StartIndex + 5);
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
@@ -2578,9 +2593,9 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   ) : team7215Matches.length > 0 ? (
     <div className="team7215-schedule">
       <div className="team7215-schedule-title">
-       {scoutingMode === "live"
-  ? "MATCHES WE ARE IN TODAY"
-  : "MATCHES WITH TRACKED TEAMS"}
+              {scoutingMode === "live"
+          ? "MATCHES WE ARE IN TODAY"
+          : "UPCOMING MATCHES WITH TRACKED TEAMS"}
       </div>
 
       <div className="team7215-match-hexagons">
@@ -2589,8 +2604,11 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             key={match.id}
             className={`team7215-match-hex ${
               (
-  match.completed ||
-  (match.scheduledTime !== null && match.scheduledTime < clockNow)
+ match.completed ||
+(
+  match.scheduledTime !== null &&
+  match.scheduledTime < clockNow - 20 * 60 * 1000
+)
 ) ? "completed" : ""
             }`}
           >
