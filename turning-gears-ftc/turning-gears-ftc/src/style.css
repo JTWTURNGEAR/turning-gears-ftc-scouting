@@ -1071,7 +1071,42 @@ button { cursor: pointer; }
   font-size: 2rem;
   margin: 8px 0 18px;
 }
+.scouting-banner-team.related-team {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #ffe600;
+  border-radius: 8px;
+  padding: 9px;
+  background:
+    repeating-linear-gradient(
+      60deg,
+      transparent 0 12px,
+      rgba(255, 230, 0, 0.12) 12px 14px
+    ),
+    repeating-linear-gradient(
+      120deg,
+      transparent 0 12px,
+      rgba(255, 230, 0, 0.12) 12px 14px
+    ),
+    rgba(255, 220, 0, 0.12);
+  box-shadow:
+    0 0 8px rgba(255, 230, 0, 0.65),
+    inset 0 0 12px rgba(255, 230, 0, 0.15);
+  animation: scoutingHoneycombGlow 2s ease-in-out infinite alternate;
+}
 
+@keyframes scoutingHoneycombGlow {
+  from {
+    box-shadow:
+      0 0 5px rgba(255, 230, 0, 0.4),
+      inset 0 0 8px rgba(255, 230, 0, 0.1);
+  }
+  to {
+    box-shadow:
+      0 0 16px rgba(255, 230, 0, 0.9),
+      inset 0 0 15px rgba(255, 230, 0, 0.3);
+  }
+}
 .scouting-current-match .alliance-display {
   gap: 18px;
 }
