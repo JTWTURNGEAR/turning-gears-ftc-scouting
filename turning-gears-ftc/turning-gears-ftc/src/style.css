@@ -1973,3 +1973,36 @@ z-index: 100;
     letter-spacing: 1px;
   }
 }
+/* CLICK TEAM BOX INSTRUCTION */
+.scouting-click-instruction {
+  color: #ff9d00;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-align: center;
+  padding: 10px 12px;
+  margin: 10px auto 14px;
+  border: 1px solid rgba(255, 157, 0, 0.55);
+  border-radius: 10px;
+  background: rgba(255, 157, 0, 0.08);
+  text-shadow:
+    0 0 5px rgba(255, 157, 0, 0.9),
+    0 0 12px rgba(255, 100, 0, 0.6);
+  box-shadow:
+    0 0 8px rgba(255, 130, 0, 0.25),
+    inset 0 0 8px rgba(255, 130, 0, 0.08);
+  animation: scouting-orange-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes scouting-orange-glow {
+  from {
+    box-shadow:
+      0 0 5px rgba(255, 130, 0, 0.2),
+      inset 0 0 5px rgba(255, 130, 0, 0.05);
+  }
+  to {
+    box-shadow:
+      0 0 15px rgba(255, 130, 0, 0.55),
+      inset 0 0 10px rgba(255, 130, 0, 0.15);
+  }
+}
