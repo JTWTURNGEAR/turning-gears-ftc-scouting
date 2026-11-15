@@ -2581,7 +2581,37 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     </div>
   </div>
 )}
+{researchTeamNumber !== null && (
+  <div>
+    <h3>Team #{researchTeamNumber} — Historical Records</h3>
 
+    {records.filter(r =>
+      r.event_id === researchEventId &&
+      r.team_number === researchTeamNumber
+    ).length === 0 ? (
+      <Empty text="No match records found for this team at this event." />
+    ) : (
+      records
+        .filter(r =>
+          r.event_id === researchEventId &&
+          r.team_number === researchTeamNumber
+        )
+        .map(record => (
+          <div className="scout-row" key={record.id}>
+            <div>
+              <strong>
+                Match {record.match_number} — {record.alliance} Alliance
+              </strong>
+              <div className="muted tiny">
+                Scout: {record.scout_name}
+                {" · "}Auto: {record.auto_rating ?? "—"}
+                {" · "}Shooting accuracy: {record.shooting_accuracy ?? "—"}
+              </div>
+              {record.notes && <p>{record.notes}</p>}
+            </div>
+          </div>
+        ))
+    )}
             <h3>General Notes</h3>
 
             {generalNotes.filter(n =>
