@@ -2601,7 +2601,10 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   tab === "scout" ? "Match scouting" :
   tab === "records" ? "Submissions" :
  
-  tab === "team-detail" ? `Team ${selectedTeamNumber} profile` :
+ tab === "team-detail" ? `Team ${selectedTeamNumber} — ${
+  eventTeams.find(team => team.team_number === selectedTeamNumber)?.team_name
+  || "Team name unavailable"
+} profile` :
   tab === "event" ? "Event Center" :
   tab === "schedule" ? "Event Schedule" :
   tab === "event-manager" ? "Event Manager" :
@@ -4563,16 +4566,91 @@ onClick={async () => {
   ← Back to event teams
 </button>
     <div className="section-heading">
-      <h3>Team {selectedTeamNumber}</h3>
+    <h3>
+  Team {selectedTeamNumber} — {
+    eventTeams.find(team => team.team_number === selectedTeamNumber)?.team_name
+    || "Team name unavailable"
+  }
+</h3>
       <p className="muted">Individual match scouting history</p>
+    </div>
+        <div className="team7215-schedule">
+      <div className="team7215-schedule-title">
+        MATCH SCHEDULE FOR TEAM {selectedTeamNumber}
+      </div>
+
+      <div className="team7215-match-hexagons">
+        {scheduledMatches
+          .filter(match =>
+            [
+              match.red_team_1,
+              match.red_team_2,
+              match.blue_team_1,
+              match.blue_team_2
+            ].includes(selectedTeamNumber)
+          )
+          .map(match => (
+            <div className="team-schedule-match" key={match.id}>
+              <div
+                className={`team7215-match-hex ${
+                  match.completed ||
+                  (match.scheduledTime !== null &&
+                    match.scheduledTime < clockNow)
+                    ? "completed"
+                    : ""
+                }`}
+              >
+                <span>
+                  {match.match_type.toLowerCase().includes("qual")
+                    ? `Q${match.match_number}`
+                    : `${match.match_type} ${match.match_number}`}
+                </span>
+              </div>
+
+              <div className="alliance-display">
+                <div className="alliance-group">
+                  <b className="red-label">🔴 RED</b>
+                  <div className="alliance-team-row">
+                    {allianceTeamButton(match.red_team_1, "red")}
+                    {allianceTeamButton(match.red_team_2, "red")}
+                  </div>
+                </div>
+
+                <div className="alliance-group">
+                  <b className="blue-label">🔵 BLUE</b>
+                  <div className="alliance-team-row">
+                    {allianceTeamButton(match.blue_team_1, "blue")}
+                    {allianceTeamButton(match.blue_team_2, "blue")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
     </div>
     <button
       type="button"
-      className={
+            className={
         excludedDefenseTeams.includes(selectedTeamNumber)
           ? "defense-active"
           : "secondary full"
       }
+      style={{
+        marginTop: "16px",
+        padding: "14px 18px",
+        borderRadius: "12px",
+        fontWeight: 800,
+        fontSize: "13px",
+        letterSpacing: "0.4px",
+        border: excludedDefenseTeams.includes(selectedTeamNumber)
+          ? "1px solid #f97316"
+          : "1px solid #64748b",
+        background: excludedDefenseTeams.includes(selectedTeamNumber)
+          ? "#7c2d12"
+          : "#1e293b",
+        color: "#ffffff",
+        cursor: "pointer"
+      }}
       onClick={() => {
         const next = excludedDefenseTeams.includes(selectedTeamNumber)
           ? excludedDefenseTeams.filter(team => team !== selectedTeamNumber)
