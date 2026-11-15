@@ -60,7 +60,7 @@ type RecordRow = {
   team_number: number;
   partner_team_number: number | null;
   match_number: number;
-  played_defence: boolean;
+  played_defense: boolean;
   alliance: string;
   scout_name: string;
   scout_group: ScoutGroup | null;
@@ -215,10 +215,10 @@ useEffect(() => {
   const [newScoutGroup, setNewScoutGroup] = useState<ScoutGroup | "">("");
   const [isCoordinator, setIsCoordinator] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
-  const [playedDefence, setPlayedDefence] = useState(false);
-  const [excludedDefenceTeams, setExcludedDefenceTeams] = useState<number[]>(() => {
+  const [playedDefense, setPlayedDefense] = useState(false);
+  const [excludedDefenseTeams, setExcludedDefenseTeams] = useState<number[]>(() => {
   try {
-    return JSON.parse(localStorage.getItem("excludedDefenceTeams") || "[]");
+    return JSON.parse(localStorage.getItem("excludedDefenseTeams") || "[]");
   } catch {
     return [];
   }
@@ -1595,7 +1595,7 @@ if (autoHiveTips + teleopHiveTips > totalHiveTips) {
   team_number: team,
   partner_team_number: partnerTeam,
   match_number: match,
-played_defence: playedDefence,
+played_defense: playedDefense,
 alliance: form.alliance,
   scout_name: editingRecordId ? editingScoutName : selectedScout,
   scout_group: scoutGroup,
@@ -1634,7 +1634,7 @@ alliance: form.alliance,
       : "Match scouting saved for the whole team.");
 
     setForm(emptyForm);
-    setPlayedDefence(false);
+    setPlayedDefense(false);
     setEditingRecordId(null);
     setEditingScoutName("");
     await loadTeam();
@@ -1734,7 +1734,7 @@ async function editRecord(record: RecordRow) {
 
   setEditingRecordId(record.id);
   setEditingScoutName(record.scout_name);
-setPlayedDefence(record.played_defence ?? false);
+setPlayedDefense(record.played_defense ?? false);
  setForm({
   team_number: String(record.team_number),
   partner_team_number: record.partner_team_number
@@ -1845,7 +1845,7 @@ const teamSummaries = useMemo(() => {
   )
 );
   const analysisRecords = filteredRecords.filter(r =>
-    !r.played_defence || !excludedDefenceTeams.includes(r.team_number)
+    !r.played_defense || !excludedDefenseTeams.includes(r.team_number)
   );
   const grouped = new Map<number, RecordRow[]>();
 
@@ -1883,7 +1883,7 @@ const teamSummaries = useMemo(() => {
       emptiedYes: rows.filter(r => r.emptied_flower).length,
       emptiedNo: rows.filter(r => !r.emptied_flower).length
     }));
-}, [records, selectedScoutGroups, excludedDefenceTeams, activeEventId]);
+}, [records, selectedScoutGroups, excludedDefenseTeams, activeEventId]);
 const sortedTeamSummaries = useMemo(() => {
   return [...teamSummaries].sort((a, b) => {
     if (teamSort === "team-high") {
@@ -4224,10 +4224,10 @@ onClick={async () => {
         </Field>
 <button
   type="button"
-  className={playedDefence ? "defence-active" : "secondary full"}
-  onClick={() => setPlayedDefence(!playedDefence)}
+  className={playedDefense ? "defense-active" : "secondary full"}
+  onClick={() => setPlayedDefense(!playedDefense)}
 >
-  {playedDefence ? "✓ Played Defence" : "Played Defence"}
+  {playedDefense ? "✓ Played Defense" : "Played Defense"}
 </button>
         {!selectedScout &&
           <p className="warning">Choose your scout name on the Dashboard before submitting.</p>}
@@ -4253,7 +4253,7 @@ onClick={async () => {
         setEditingRecordId(null);
         setEditingScoutName("");
         setForm(emptyForm);
-        setPlayedDefence(false);
+        setPlayedDefense(false);
         setTab("records");
         setMessage("Editing cancelled.");
       }}
@@ -4464,9 +4464,9 @@ onClick={async () => {
               ? `Team ${r.partner_team_number}`
               : "Not recorded"}
           </div>
-{r.played_defence && (
-  <div className="defence-warning">
-    ⚠ PLAYED DEFENCE — Match {r.match_number}
+{r.played_defense && (
+  <div className="defense-warning">
+    ⚠ PLAYED DEFENSE — Match {r.match_number}
   </div>
 )}
           <div className="mini-ratings">
@@ -4508,22 +4508,22 @@ onClick={async () => {
     <button
       type="button"
       className={
-        excludedDefenceTeams.includes(selectedTeamNumber)
-          ? "defence-active"
+        excludedDefenseTeams.includes(selectedTeamNumber)
+          ? "defense-active"
           : "secondary full"
       }
       onClick={() => {
-        const next = excludedDefenceTeams.includes(selectedTeamNumber)
-          ? excludedDefenceTeams.filter(team => team !== selectedTeamNumber)
-          : [...excludedDefenceTeams, selectedTeamNumber];
+        const next = excludedDefenseTeams.includes(selectedTeamNumber)
+          ? excludedDefenseTeams.filter(team => team !== selectedTeamNumber)
+          : [...excludedDefenseTeams, selectedTeamNumber];
 
-        setExcludedDefenceTeams(next);
-        localStorage.setItem("excludedDefenceTeams", JSON.stringify(next));
+        setExcludedDefenseTeams(next);
+        localStorage.setItem("excludedDefenseTeams", JSON.stringify(next));
       }}
     >
-      {excludedDefenceTeams.includes(selectedTeamNumber)
-        ? "Include Defence Data in Comparisons"
-        : "Exclude Defence Data from Comparisons"}
+      {excludedDefenseTeams.includes(selectedTeamNumber)
+        ? "Include Defense Data in Comparisons"
+        : "Exclude Defense Data from Comparisons"}
     </button>
    {selectedTeamSummary && (
   <div className="stats-grid">
@@ -4551,11 +4551,11 @@ onClick={async () => {
   </div>
 )}
     <h3 className="section-title">Match-by-match history</h3>
-{selectedTeamRecords.some(r => r.played_defence) && (
-  <div className="defence-warning">
-    ⚠ PLAYED DEFENCE — Match numbers: {
+{selectedTeamRecords.some(r => r.played_defense) && (
+  <div className="defense-warning">
+    ⚠ PLAYED DEFENSE — Match numbers: {
       selectedTeamRecords
-        .filter(r => r.played_defence)
+        .filter(r => r.played_defense)
         .map(r => r.match_number)
         .sort((a, b) => a - b)
         .join(", ")
@@ -4790,19 +4790,19 @@ onClick={async () => {
           </div>
           {records.some(r =>
   r.team_number === t.team &&
-  r.played_defence &&
+  r.played_defense &&
   (
     selectedScoutGroups.length === 0 ||
     (r.scout_group !== null &&
       selectedScoutGroups.includes(r.scout_group))
   )
 ) && (
-  <div className="defence-warning">
-    ⚠ PLAYED DEFENCE — Match numbers: {
+  <div className="defense-warning">
+    ⚠ PLAYED DEFENSE — Match numbers: {
       records
         .filter(r =>
           r.team_number === t.team &&
-          r.played_defence &&
+          r.played_defense &&
           (
             selectedScoutGroups.length === 0 ||
             (r.scout_group !== null &&
@@ -4818,22 +4818,22 @@ onClick={async () => {
           <button
   type="button"
   className={
-    excludedDefenceTeams.includes(t.team)
-      ? "defence-active"
+    excludedDefenseTeams.includes(t.team)
+      ? "defense-active"
       : "secondary full"
   }
   onClick={() => {
-    const next = excludedDefenceTeams.includes(t.team)
-      ? excludedDefenceTeams.filter(team => team !== t.team)
-      : [...excludedDefenceTeams, t.team];
+    const next = excludedDefenseTeams.includes(t.team)
+      ? excludedDefenseTeams.filter(team => team !== t.team)
+      : [...excludedDefenseTeams, t.team];
 
-    setExcludedDefenceTeams(next);
-    localStorage.setItem("excludedDefenceTeams", JSON.stringify(next));
+    setExcludedDefenseTeams(next);
+    localStorage.setItem("excludedDefenseTeams", JSON.stringify(next));
   }}
 >
-  {excludedDefenceTeams.includes(t.team)
-    ? "Include Defence Data in Comparisons"
-    : "Exclude Defence Data from Comparisons"}
+  {excludedDefenseTeams.includes(t.team)
+    ? "Include Defense Data in Comparisons"
+    : "Exclude Defense Data from Comparisons"}
 </button>
           <div className="comparison-stat">
             <span>Average RP</span>
