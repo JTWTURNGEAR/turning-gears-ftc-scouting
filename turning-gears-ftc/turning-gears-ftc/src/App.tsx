@@ -2363,6 +2363,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   }
 
   setResearchEventId(ev.id);
+                  setResearchCompareTeams([]);
                   setResearchTeamNumber(null);
 
                   const { data, error } = await supabase
@@ -2451,89 +2452,135 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       <span>{researchCompareTeams.length} teams selected</span>
     </div>
 
-    {researchCompareTeams.map(teamNumber => {
-      const teamRecords = records.filter(r =>
-        r.event_id === researchEventId &&
-        r.team_number === teamNumber
-      );
+    <p className="muted tiny">
+      Average scouting ratings from this archived event. Higher ratings indicate stronger performance.
+    </p>
 
-      const average = (values: (number | null)[]) => {
-        const valid = values.filter(
-          (value): value is number => value !== null
-        );
+    <div style={{ overflowX: "auto" }}>
+      <table style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        minWidth: "480px"
+      }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left", padding: "10px" }}>Metric</th>
+            {researchCompareTeams.map(teamNumber => {
+              const team = researchTeams.find(
+                t => t.team_number === teamNumber
+              );
 
-        return valid.length
-          ? (valid.reduce((sum, value) => sum + value, 0) / valid.length).toFixed(1)
-          : "—";
-      };
+              return (
+                <th key={teamNumber} style={{ padding: "10px" }}>
+                  #{teamNumber}
+                  <div className="muted tiny">
+                    {team?.team_name || "Unknown Team"}
+                  </div>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
 
-      const team = researchTeams.find(
-        t => t.team_number === teamNumber
-      );
+        <tbody>
+          {[
+            { label: "Match Records", field: "count" },
+            { label: "Autonomous", field: "auto_rating" },
+            { label: "Shooting Accuracy", field: "shooting_accuracy" },
+            { label: "Shooting Speed", field: "shooting_speed" },
+            { label: "Driving Speed", field: "driving_speed" },
+            { label: "Maneuverability", field: "maneuverability" },
+            { label: "Hive Tips", field: "hive_tips" }
+          ].map(metric => {
+            const values = researchCompareTeams.map(teamNumber => {
+              const teamRecords = records.filter(r =>
+                r.event_id === researchEventId &&
+                r.team_number === teamNumber
+              );
 
-      return (
-        <div className="scout-row" key={teamNumber}>
-          <div style={{ flex: 1 }}>
-            <strong>#{teamNumber} — {team?.team_name || "Unknown Team"}</strong>
-            <div className="muted tiny">
-              {teamRecords.length} match records
-            </div>
-            <div className="muted tiny">
-              Auto: {average(teamRecords.map(r => r.auto_rating))}
-              {" · "}Shooting accuracy: {average(teamRecords.map(r => r.shooting_accuracy))}
-              {" · "}Shooting speed: {average(teamRecords.map(r => r.shooting_speed))}
-            </div>
-            <div className="muted tiny">
-              Driving: {average(teamRecords.map(r => r.driving_speed))}
-              {" · "}Maneuverability: {average(teamRecords.map(r => r.maneuverability))}
-              {" · "}Hive tips: {average(teamRecords.map(r => r.hive_tips))}
-            </div>
-          </div>
+              if (metric.field === "count") {
+                return teamRecords.length;
+              }
 
-          <button
-            className="secondary"
-            onClick={() => setResearchCompareTeams(current =>
-              current.filter(number => number !== teamNumber)
-            )}
-          >
-            Remove
-          </button>
-        </div>
-      );
-    })}
+              const fieldValues = teamRecords
+                .map(r => r[metric.field as keyof RecordRow])
+                .filter(
+                  (value): value is number =>
+                    typeof value === "number"
+                );
+
+              return fieldValues.length
+                ? fieldValues.reduce((sum, value) => sum + value, 0) /
+                    fieldValues.length
+                : null;
+            });
+
+            const validValues = values.filter(
+              (value): value is number => value !== null
+            );
+
+            const bestValue = validValues.length
+              ? Math.max(...validValues)
+              : null;
+
+            return (
+              <tr key={metric.field}>
+                <td style={{
+                  padding: "10px",
+                  borderTop: "1px solid var(--border)"
+                }}>
+                  <strong>{metric.label}</strong>
+                </td>
+
+                {values.map((value, index) => (
+                  <td
+                    key={researchCompareTeams[index]}
+                    style={{
+                      padding: "10px",
+                      textAlign: "center",
+                      borderTop: "1px solid var(--border)",
+                      fontWeight: value !== null && value === bestValue
+                        ? 800
+                        : 400,
+                      color: value !== null && value === bestValue
+                        ? "var(--accent)"
+                        : "inherit"
+                    }}
+                  >
+                    {value === null
+                      ? "—"
+                      : metric.field === "count"
+                        ? value
+                        : value.toFixed(1)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    <div style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "8px",
+      marginTop: "12px"
+    }}>
+      {researchCompareTeams.map(teamNumber => (
+        <button
+          key={teamNumber}
+          className="secondary"
+          onClick={() => setResearchCompareTeams(current =>
+            current.filter(number => number !== teamNumber)
+          )}
+        >
+          Remove #{teamNumber}
+        </button>
+      ))}
+    </div>
   </div>
 )}
-        {researchTeamNumber !== null && (
-          <div className="panel">
-            <h3>Team #{researchTeamNumber} — Historical Records</h3>
-
-            {records.filter(r =>
-              r.event_id === researchEventId &&
-              r.team_number === researchTeamNumber
-            ).length === 0 ? (
-              <Empty text="No match records found for this team at this event." />
-            ) : (
-              records
-                .filter(r =>
-                  r.event_id === researchEventId &&
-                  r.team_number === researchTeamNumber
-                )
-                .sort((a, b) => a.match_number - b.match_number)
-                .map(record => (
-                  <div className="scout-row" key={record.id}>
-                    <div style={{ flex: 1 }}>
-                      <strong>Match {record.match_number}</strong>
-                      <div className="muted tiny">
-                        {record.alliance} alliance · Scouted by {record.scout_name}
-                      </div>
-                      <div className="muted tiny">
-                        Auto: {record.auto_rating} · Shooting accuracy: {record.shooting_accuracy}
-                      </div>
-                      {record.notes && <p>{record.notes}</p>}
-                    </div>
-                  </div>
-                ))
-            )}
 
             <h3>General Notes</h3>
 
