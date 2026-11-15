@@ -2446,15 +2446,10 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       return;
     }
 
-    const availableTeams = new Set(
-      researchTeams.map(team => team.team_number)
-    );
-
     const activeTeams = (data || [])
-      .map(team => Number(team.team_number))
-      .filter(teamNumber => availableTeams.has(teamNumber));
+  .map(team => Number(team.team_number));
 
-    setResearchTeamFilters(activeTeams);
+setResearchTeamFilters(activeTeams);
   }}
 >
  Auto Filter Active Event Teams
