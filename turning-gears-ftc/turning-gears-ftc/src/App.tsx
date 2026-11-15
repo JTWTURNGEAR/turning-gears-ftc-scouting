@@ -816,9 +816,9 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
   async function applyScheduleAdjustment() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
-  const startIndex = eventMatches.findIndex(
-    match => match.id === adjustmentStartMatchId
-  );
+ const startIndex = scheduledMatches.findIndex(
+  match => match.id === adjustmentStartMatchId
+);
 
  if (
   startIndex < 0 ||
@@ -888,7 +888,7 @@ async function setSelectedMatchToNow() {
     return;
   }
 
-  const startingMatch = eventMatches[startIndex];
+ const startingMatch = scheduledMatches[startIndex];
 
   const startingTime = startingMatch.manual_time_override
     ? new Date(startingMatch.manual_time_override).getTime()
@@ -904,7 +904,7 @@ async function setSelectedMatchToNow() {
 
   const now = Math.round(Date.now() / 60000) * 60000;
   const shiftMinutes = Math.round((now - startingTime) / 60000);
-  const matchesToAdjust = eventMatches.slice(startIndex);
+ const matchesToAdjust = scheduledMatches.slice(startIndex);
 
   const confirmed = window.confirm(
     `Set ${startingMatch.match_type} ${startingMatch.match_number} to the current time and shift all ${matchesToAdjust.length} selected and later matches by ${shiftMinutes} minutes?`
