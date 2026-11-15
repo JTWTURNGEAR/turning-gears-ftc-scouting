@@ -949,10 +949,26 @@ button { cursor: pointer; }
 }
 
 .alliance-team.related-team {
+  position: relative;
+  overflow: hidden;
   border: 2px solid #ffe600 !important;
   outline: 2px solid rgba(255, 230, 0, 0.65);
   outline-offset: 2px;
-  box-shadow: 0 0 10px rgba(255, 230, 0, 0.55);
+  background-image:
+    repeating-linear-gradient(
+      60deg,
+      transparent 0 12px,
+      rgba(255, 230, 0, 0.20) 12px 14px
+    ),
+    repeating-linear-gradient(
+      120deg,
+      transparent 0 12px,
+      rgba(255, 230, 0, 0.20) 12px 14px
+    );
+  box-shadow:
+    0 0 8px rgba(255, 230, 0, 0.65),
+    inset 0 0 12px rgba(255, 230, 0, 0.15);
+  animation: scoutingHoneycombGlow 2s ease-in-out infinite alternate;
   font-weight: 900;
 }
 
