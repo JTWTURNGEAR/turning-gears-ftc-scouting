@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Activity, House, Users, ClipboardList, Wrench, BarChart3, Plus, BookOpen,
   RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil, CalendarDays
@@ -2586,7 +2586,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
 
   <tr>
     {researchCompareTeams.map(teamNumber => (
-      <React.Fragment key={teamNumber}>
+      <Fragment key={teamNumber}>
         <th style={{ padding: "8px" }}>Previous Records</th>
         <th style={{ padding: "8px" }}>Active Event</th>
       </React.Fragment>
@@ -2651,7 +2651,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         };
 
         return (
-          <React.Fragment key={teamNumber}>
+          <Fragment key={teamNumber}>
             <td style={{
               padding: "10px",
               textAlign: "center",
