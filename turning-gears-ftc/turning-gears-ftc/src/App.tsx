@@ -2006,13 +2006,13 @@ const shouldShowMatchupAlert =
   nextMatch!.scheduledTime - clockNow > 0 &&
   !shownMatchupAlerts.includes(matchupAlertKey);
   useEffect(() => {
-  if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedTeam === undefined) {
+  if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedMatch === undefined) {
     return;
   }
 
   setMatchupBanner({
     matchId: nextMatch.id,
-    teamNumber: upcomingRelatedTeam
+    teamNumber: upcomingRelatedMatch
   });
 
   setShownMatchupAlerts(previous =>
