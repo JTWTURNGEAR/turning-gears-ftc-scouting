@@ -2005,25 +2005,30 @@ const shouldShowMatchupAlert =
   nextMatch!.scheduledTime - clockNow <= 60000 &&
   nextMatch!.scheduledTime - clockNow > 0 &&
   !shownMatchupAlerts.includes(matchupAlertKey);useEffect(() => {
-  if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedMatch === undefined) {
+  useEffect(() => {
+  if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedTeam === undefined) {
     return;
   }
 
   setMatchupBanner({
     matchId: nextMatch.id,
-    teamNumber: upcomingRelatedMatch
+    teamNumber: upcomingRelatedTeam
   });
 
   setShownMatchupAlerts(previous =>
     [...previous, matchupAlertKey]
   );
+}, [shouldShowMatchupAlert, matchupAlertKey]);
+
+useEffect(() => {
+  if (!matchupBanner) return;
 
   const timer = window.setTimeout(() => {
     setMatchupBanner(null);
   }, 10000);
 
   return () => window.clearTimeout(timer);
-}, [shouldShowMatchupAlert, matchupAlertKey]);
+}, [matchupBanner?.matchId]);
   useEffect(() => {
   if (!matchupBanner) return;
 
