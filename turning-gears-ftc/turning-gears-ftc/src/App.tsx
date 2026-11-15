@@ -133,9 +133,6 @@ export default function App() {
   "matches" | "rankings" | "teams" | "manager"
 >("matches");
   const [scoutMode, setScoutMode] = useState<"match" | "notes">("match");
-  const [scoutingMode, setScoutingMode] = useState<
-  "live" | "previous"
->("live");
 const [noteTeamNumber, setNoteTeamNumber] = useState("");
 const [noteText, setNoteText] = useState("");
   const [scouts, setScouts] = useState<Scout[]>([]);
@@ -1957,22 +1954,14 @@ const nextMatch = scheduledMatches.find(match =>
   match.scheduledTime !== null &&
   match.scheduledTime > clockNow + 20000
 );
-  const trackedTeamNumbers = scoutingMode === "live"
-  ? new Set([7215])
-  : new Set(
-      eventTeams
-        .filter(team => team.event_id === activeEventId)
-        .map(team => team.team_number)
-    );
- const team7215Matches = scheduledMatches.filter(match =>
+  const team7215Matches = scheduledMatches.filter(match =>
   [
     match.red_team_1,
     match.red_team_2,
     match.blue_team_1,
     match.blue_team_2
-  ].some(team => trackedTeamNumbers.has(team))
+  ].includes(7215)
 );
-
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
@@ -1993,16 +1982,15 @@ const futureRelatedTeams = new Set(
       match.red_team_2,
       match.blue_team_1,
       match.blue_team_2
-    ].some(team => trackedTeamNumbers.has(team)))
+    ].includes(7215))
     .flatMap(match => [
       match.red_team_1,
       match.red_team_2,
       match.blue_team_1,
       match.blue_team_2
     ])
-    .filter(team => !trackedTeamNumbers.has(team))
+    .filter(team => team !== 7215)
 );
-
 const upcomingRelatedTeams = nextMatch
   ? [
       nextMatch.red_team_1,
@@ -2010,7 +1998,7 @@ const upcomingRelatedTeams = nextMatch
       nextMatch.blue_team_1,
       nextMatch.blue_team_2
     ].filter(team =>
-      !trackedTeamNumbers.has(team) && futureRelatedTeams.has(team)
+      team !== 7215 && futureRelatedTeams.has(team)
     )
   : [];
 const matchupAlertKey = nextMatch && upcomingRelatedTeams.length > 0
@@ -2495,7 +2483,7 @@ async function downloadResearchEventPdf() {
 }
 
 function allianceTeamButton(team: number, alliance: "red" | "blue") {
-  const isOurTeam = trackedTeamNumbers.has(team);
+  const isOurTeam = team === 7215;
   const isRelated = futureRelatedTeams.has(team);
 
   return (
@@ -2578,9 +2566,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   ) : team7215Matches.length > 0 ? (
     <div className="team7215-schedule">
       <div className="team7215-schedule-title">
-       {scoutingMode === "live"
-  ? "MATCHES WE ARE IN TODAY"
-  : "MATCHES WITH TRACKED TEAMS"}
+        MATCHES WE ARE IN TODAY
       </div>
 
       <div className="team7215-match-hexagons">
@@ -3754,10 +3740,8 @@ return (
           {teams.slice(0, 2).map((team, index) => (
             <span key={team}>
               {index > 0 && " + "}
-            {trackedTeamNumbers.has(team) ? (
-  <strong>
-    ⭐ {team} ({scoutingMode === "live" ? "OUR TEAM" : "TRACKED TEAM"})
-  </strong>
+              {team === 7215 ? (
+                <strong>⭐ {team} (OUR TEAM)</strong>
               ) : (
                 team
               )}
@@ -3778,10 +3762,8 @@ return (
           {teams.slice(2, 4).map((team, index) => (
             <span key={team}>
               {index > 0 && " + "}
-            {trackedTeamNumbers.has(team) ? (
-  <strong>
-    ⭐ {team} ({scoutingMode === "live" ? "OUR TEAM" : "TRACKED TEAM"})
-  </strong>
+              {team === 7215 ? (
+                <strong>⭐ {team} (OUR TEAM)</strong>
               ) : (
                 team
               )}
@@ -3810,32 +3792,6 @@ return (
      {tab === "event" && eventSection === "manager" && isCoordinator && (
         <section className="panel">
           <div className="section-head">
-            <div className="section-head">
-  <h3>Scouting Mode</h3>
-</div>
-
-<div style={{ display: "flex", gap: "10px", marginBottom: "18px" }}>
-  <button
-    className="primary"
-    style={{ flex: 1, opacity: scoutingMode === "live" ? 1 : 0.55 }}
-    onClick={() => setScoutingMode("live")}
-  >
-    Live Scouting
-  </button>
-
-  <button
-    className="primary"
-    style={{ flex: 1, opacity: scoutingMode === "previous" ? 1 : 0.55 }}
-    onClick={() => setScoutingMode("previous")}
-  >
-    Previous Event Scouting
-  </button>
-</div>
-            {scoutingMode === "previous" && !activeEventId && (
-  <p style={{ color: "#f0b44d", marginBottom: "18px" }}>
-    Select a previous event below to load its teams and matches.
-  </p>
-)}
             <h3>Create an event</h3>
           </div>
 
