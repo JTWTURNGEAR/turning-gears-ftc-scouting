@@ -2546,9 +2546,11 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       <span>{researchCompareTeams.length} teams selected</span>
     </div>
 
-    <p className="muted tiny">
-      Average scouting ratings from this archived event. Higher ratings indicate stronger performance.
-    </p>
+   <p className="muted tiny">
+  Compare each team's historical averages across selected archived events
+  against its current active event match records. Teams not in the active
+  event, or without match records, will show N/A.
+</p>
 
     <div style={{ overflowX: "auto" }}>
       <table style={{
@@ -2556,102 +2558,121 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
         borderCollapse: "collapse",
         minWidth: "480px"
       }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: "left", padding: "10px" }}>Metric</th>
-            {researchCompareTeams.map(teamNumber => {
-              const team = researchTeams.find(
-                t => t.team_number === teamNumber
-              );
+   <thead>
+  <tr>
+    <th rowSpan={2} style={{ textAlign: "left", padding: "10px" }}>
+      Metric
+    </th>
 
-              return (
-                <th key={teamNumber} style={{ padding: "10px" }}>
-                  #{teamNumber}
-                  <div className="muted tiny">
-                    {team?.team_name || "Unknown Team"}
-                  </div>
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
+    {researchCompareTeams.map(teamNumber => {
+      const team = researchTeams.find(
+        t => t.team_number === teamNumber
+      );
 
-        <tbody>
-          {[
-            { label: "Match Records", field: "count" },
-            { label: "Autonomous", field: "auto_rating" },
-            { label: "Shooting Accuracy", field: "shooting_accuracy" },
-            { label: "Shooting Speed", field: "shooting_speed" },
-            { label: "Driving Speed", field: "driving_speed" },
-            { label: "Maneuverability", field: "maneuverability" },
-            { label: "Hive Tips", field: "hive_tips" }
-          ].map(metric => {
-            const values = researchCompareTeams.map(teamNumber => {
-            const teamRecords = records.filter(r =>
-  researchEventIds.includes(r.event_id ?? "") &&
-  r.team_number === teamNumber
-);
+      return (
+        <th
+          key={teamNumber}
+          colSpan={2}
+          style={{ padding: "10px" }}
+        >
+          #{teamNumber}
+          <div className="muted tiny">
+            {team?.team_name || "Unknown Team"}
+          </div>
+        </th>
+      );
+    })}
+  </tr>
 
-              if (metric.field === "count") {
-                return teamRecords.length;
-              }
+  <tr>
+    {researchCompareTeams.map(teamNumber => (
+      <React.Fragment key={teamNumber}>
+        <th style={{ padding: "8px" }}>Previous Records</th>
+        <th style={{ padding: "8px" }}>Active Event</th>
+      </React.Fragment>
+    ))}
+  </tr>
+</thead>
+     <tbody>
+  {[
+    { label: "Match Records", field: "count" },
+    { label: "Autonomous", field: "auto_rating" },
+    { label: "Shooting Accuracy", field: "shooting_accuracy" },
+    { label: "Shooting Speed", field: "shooting_speed" },
+    { label: "Driving Speed", field: "driving_speed" },
+    { label: "Maneuverability", field: "maneuverability" },
+    { label: "Hive Tips", field: "hive_tips" }
+  ].map(metric => (
+    <tr key={metric.field}>
+      <td style={{
+        padding: "10px",
+        borderTop: "1px solid var(--border)"
+      }}>
+        <strong>{metric.label}</strong>
+      </td>
 
-              const fieldValues = teamRecords
-                .map(r => r[metric.field as keyof RecordRow])
-                .filter(
-                  (value): value is number =>
-                    typeof value === "number"
-                );
+      {researchCompareTeams.map(teamNumber => {
+        const previousRecords = records.filter(r =>
+          researchEventIds.includes(r.event_id ?? "") &&
+          r.team_number === teamNumber
+        );
 
-              return fieldValues.length
-                ? fieldValues.reduce((sum, value) => sum + value, 0) /
-                    fieldValues.length
-                : null;
-            });
+        const isInActiveEvent =
+          !!activeEventId &&
+          eventTeams.some(t => t.team_number === teamNumber);
 
-            const validValues = values.filter(
-              (value): value is number => value !== null
+        const currentRecords = isInActiveEvent
+          ? records.filter(r =>
+              r.event_id === activeEventId &&
+              r.team_number === teamNumber
+            )
+          : [];
+
+        const getValue = (teamRecords: RecordRow[]) => {
+          if (teamRecords.length === 0) return "N/A";
+
+          if (metric.field === "count") {
+            return teamRecords.length;
+          }
+
+          const fieldValues = teamRecords
+            .map(r => r[metric.field as keyof RecordRow])
+            .filter(
+              (value): value is number =>
+                typeof value === "number"
             );
 
-            const bestValue = validValues.length
-              ? Math.max(...validValues)
-              : null;
+          return fieldValues.length
+            ? (
+                fieldValues.reduce((sum, value) => sum + value, 0) /
+                fieldValues.length
+              ).toFixed(1)
+            : "N/A";
+        };
 
-            return (
-              <tr key={metric.field}>
-                <td style={{
-                  padding: "10px",
-                  borderTop: "1px solid var(--border)"
-                }}>
-                  <strong>{metric.label}</strong>
-                </td>
+        return (
+          <React.Fragment key={teamNumber}>
+            <td style={{
+              padding: "10px",
+              textAlign: "center",
+              borderTop: "1px solid var(--border)"
+            }}>
+              {getValue(previousRecords)}
+            </td>
 
-                {values.map((value, index) => (
-                  <td
-                    key={researchCompareTeams[index]}
-                    style={{
-                      padding: "10px",
-                      textAlign: "center",
-                      borderTop: "1px solid var(--border)",
-                      fontWeight: value !== null && value === bestValue
-                        ? 800
-                        : 400,
-                      color: value !== null && value === bestValue
-                        ? "var(--accent)"
-                        : "inherit"
-                    }}
-                  >
-                    {value === null
-                      ? "—"
-                      : metric.field === "count"
-                        ? value
-                        : value.toFixed(1)}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
+            <td style={{
+              padding: "10px",
+              textAlign: "center",
+              borderTop: "1px solid var(--border)"
+            }}>
+              {getValue(currentRecords)}
+            </td>
+          </React.Fragment>
+        );
+      })}
+    </tr>
+  ))}
+</tbody>
       </table>
     </div>
 
