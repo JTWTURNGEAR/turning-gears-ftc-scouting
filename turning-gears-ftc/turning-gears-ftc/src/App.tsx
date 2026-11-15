@@ -413,8 +413,8 @@ useEffect(() => {
       setError(matchError.message);
       return;
     }
-console.log("MATCH COUNT:", data?.length);
-alert("Matches loaded: " + (data?.length ?? 0));
+
+
 setEventMatches((data || []) as EventMatch[]);
   }
  
