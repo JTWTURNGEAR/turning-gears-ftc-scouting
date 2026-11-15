@@ -2718,6 +2718,10 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       background: researchSection === "research" ? "#ff8728" : "#252525",
       color: "#ffffff",
       border: "1px solid #ff8728",
+      boxShadow: researchSection === "research"
+  ? "0 0 12px rgba(255, 135, 40, 0.45)"
+  : "none",
+transition: "all 0.2s ease",
       borderRadius: "9px",
       padding: "10px 18px",
       fontWeight: 700
@@ -2735,6 +2739,10 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       background: researchSection === "downloads" ? "#ff8728" : "#252525",
       color: "#ffffff",
       border: "1px solid #ff8728",
+   boxShadow: researchSection === "downloads"
+  ? "0 0 12px rgba(255, 135, 40, 0.45)"
+  : "none",
+transition: "all 0.2s ease",
       borderRadius: "9px",
       padding: "10px 18px",
       fontWeight: 700
