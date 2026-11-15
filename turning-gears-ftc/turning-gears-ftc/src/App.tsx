@@ -880,35 +880,22 @@ function parseSchedule(text: string, year?: number, eventDate?: string) {
 async function setSelectedMatchToNow() {
   if (!supabase || !isCoordinator || !activeEventId) return;
 
- const startIndex = scheduledMatches.findIndex(
-  match => match.id === adjustmentStartMatchId
-);
+  const startIndex = scheduledMatches.findIndex(
+    match => match.id === adjustmentStartMatchId
+  );
 
   if (startIndex < 0) {
     setError("Choose a starting match first.");
     return;
   }
 
- const startingMatch = scheduledMatches[startIndex];
-
-  const startingTime = startingMatch.manual_time_override
-    ? new Date(startingMatch.manual_time_override).getTime()
-    : startingMatch.imported_time
-      ? new Date(startingMatch.imported_time).getTime() +
-        (startingMatch.manual_offset_minutes || 0) * 60000
-      : null;
-
-  if (startingTime === null || !Number.isFinite(startingTime)) {
-    setError("The selected match does not have a scheduled time.");
-    return;
-  }
+  const startingMatch = scheduledMatches[startIndex];
+  const matchesToAdjust = scheduledMatches.slice(startIndex);
 
   const now = Math.round(Date.now() / 60000) * 60000;
-  const shiftMinutes = Math.round((now - startingTime) / 60000);
- const matchesToAdjust = scheduledMatches.slice(startIndex);
 
   const confirmed = window.confirm(
-    `Set ${startingMatch.match_type} ${startingMatch.match_number} to the current time and shift all ${matchesToAdjust.length} selected and later matches by ${shiftMinutes} minutes?`
+    `Set ${startingMatch.match_type} ${startingMatch.match_number} to now and schedule all ${matchesToAdjust.length} selected and later matches 6 minutes apart?`
   );
 
   if (!confirmed) return;
@@ -917,25 +904,18 @@ async function setSelectedMatchToNow() {
   setError("");
   setMessage("");
 
-  for (const match of matchesToAdjust) {
-    const update: {
-      manual_offset_minutes?: number;
-      manual_time_override?: string;
-    } = {};
+  for (let i = 0; i < matchesToAdjust.length; i++) {
+    const match = matchesToAdjust[i];
 
-    if (match.manual_time_override) {
-      update.manual_time_override = new Date(
-        new Date(match.manual_time_override).getTime() +
-        shiftMinutes * 60000
-      ).toISOString();
-    } else {
-      update.manual_offset_minutes =
-        (match.manual_offset_minutes || 0) + shiftMinutes;
-    }
+    const newTime = new Date(
+      now + i * 6 * 60000
+    ).toISOString();
 
     const { error: updateError } = await supabase
       .from("event_matches")
-      .update(update)
+      .update({
+        manual_time_override: newTime
+      })
       .eq("id", match.id);
 
     if (updateError) {
@@ -949,7 +929,7 @@ async function setSelectedMatchToNow() {
   await loadEventMatches(activeEventId);
 
   setMessage(
-    `${matchesToAdjust.length} matches shifted. The selected match is now set to the current time.`
+    `${matchesToAdjust.length} matches scheduled in 6-minute intervals, starting now.`
   );
 
   setBusy(false);
