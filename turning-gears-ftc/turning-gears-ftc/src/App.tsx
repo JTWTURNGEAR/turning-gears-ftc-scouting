@@ -3974,7 +3974,12 @@ onClick={async () => {
             </span>
           </div>
         ))}
-      </div>
+         </div>
+    </div>
+
+    <div className="scouting-hex-legend">
+      <span className="scouting-hex-legend-ball" />
+      <span>Teams in Hexed Gold are Future partner or opponent</span>
     </div>
   </div>
 )}
