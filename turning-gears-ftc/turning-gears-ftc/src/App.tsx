@@ -2699,7 +2699,15 @@ const currentRecords = activeEventId
               color: isBestPrevious ? "#ff8728" : "inherit",
               fontWeight: isBestPrevious ? 800 : 400
             }}>
-              {previousValue}
+                        {previousValue}
+            </td>
+
+            <td style={{
+              padding: "10px",
+              textAlign: "center",
+              borderTop: "1px solid var(--border)"
+            }}>
+              {getValue(currentRecords)}
             </td>
           </Fragment>
         );
