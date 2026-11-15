@@ -2,7 +2,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Activity, House, Users, ClipboardList, Wrench, BarChart3, Plus, BookOpen,
-  RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil, CalendarDays
+  RefreshCw, CheckCircle2, AlertCircle, Trash2, Pencil, CalendarDays, Download
 } from "lucide-react";
 import { configured, supabase } from "./supabase";
 
@@ -109,7 +109,14 @@ teleop_hive_tips: 0 as number | "",
  emptied_flower: false,
 notes: ""
 };
-
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 export default function App() {
   const [sessionReady, setSessionReady] = useState(false);
   const [joined, setJoined] = useState(false);
@@ -141,6 +148,19 @@ const [noteText, setNoteText] = useState("");
 const [researchTeamFilters, setResearchTeamFilters] = useState<number[]>([]);
   const [researchTeamNumber, setResearchTeamNumber] = useState<number | null>(null);
   const [researchCompareTeams, setResearchCompareTeams] = useState<number[]>([]);
+  const [pdfEventIds, setPdfEventIds] = useState<string[]>([]);
+const [pdfScoutGroups, setPdfScoutGroups] = useState<ScoutGroup[]>([
+  "Student Scout",
+  "Parent Scout",
+  "Scouting Coach"
+]);
+
+const [pdfSections, setPdfSections] = useState<string[]>([
+  "teams",
+  "matches",
+  "records",
+  "notes"
+]);
 useEffect(() => {
   let cancelled = false;
 
@@ -2059,6 +2079,320 @@ const filtered = combined.filter(item => {
    selectedScoutGroups,
   activeEventId
 ]);
+
+async function downloadResearchEventPdf() {
+  if (!supabase) {
+    setError("Database connection is unavailable.");
+    return;
+  }
+
+  if (pdfEventIds.length === 0) {
+    setError("Select at least one archived event for the PDF.");
+    return;
+  }
+
+  if (pdfSections.length === 0) {
+    setError("Select at least one report section.");
+    return;
+  }
+
+  if (
+    (pdfSections.includes("records") || pdfSections.includes("notes")) &&
+    pdfScoutGroups.length === 0
+  ) {
+    setError("Select at least one scout group.");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    setError("Please allow pop-ups to generate the PDF report.");
+    return;
+  }
+
+  printWindow.document.write(
+    "<html><body><h2>Preparing historical event report...</h2></body></html>"
+  );
+
+  const selectedEvents = events.filter(ev =>
+    pdfEventIds.includes(ev.id)
+  );
+
+  const [
+    { data: teamData, error: teamError },
+    { data: matchData, error: matchError },
+    { data: recordData, error: recordError },
+    { data: noteData, error: noteError }
+  ] = await Promise.all([
+    supabase.from("event_teams")
+      .select("*")
+      .in("event_id", pdfEventIds),
+
+    supabase.from("event_matches")
+      .select("*")
+      .in("event_id", pdfEventIds)
+      .order("match_number", { ascending: true }),
+
+    supabase.from("match_records")
+      .select("*")
+      .in("event_id", pdfEventIds)
+      .order("match_number", { ascending: true }),
+
+    supabase.from("general_notes")
+      .select("*")
+      .in("event_id", pdfEventIds)
+      .order("created_at", { ascending: true })
+  ]);
+
+  const queryError =
+    teamError || matchError || recordError || noteError;
+
+  if (queryError) {
+    printWindow.close();
+    setError("Could not load PDF data: " + queryError.message);
+    return;
+  }
+
+  const teams = (teamData || []) as EventTeamRow[];
+  const matches = (matchData || []) as EventMatch[];
+  const allRecords = (recordData || []) as RecordRow[];
+  const allNotes = (noteData || []) as GeneralNoteRow[];
+
+  const allowedGroups = pdfScoutGroups;
+
+  const rows = (headers: string[], data: string[][]) => `
+    <table>
+      <thead>
+        <tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${data.length
+          ? data.map(row =>
+              `<tr>${row.map(cell =>
+                `<td>${escapeHtml(cell)}</td>`
+              ).join("")}</tr>`
+            ).join("")
+          : `<tr><td colspan="${headers.length}">No data available</td></tr>`
+        }
+      </tbody>
+    </table>
+  `;
+
+  const eventReports = selectedEvents.map((event, index) => {
+    const eventTeamsForReport = teams
+      .filter(team => team.event_id === event.id)
+      .sort((a, b) => a.team_number - b.team_number);
+
+    const eventMatchesForReport = matches
+      .filter(match => match.event_id === event.id)
+      .sort((a, b) => a.match_number - b.match_number);
+
+    const eventRecords = allRecords
+      .filter(record =>
+        record.event_id === event.id &&
+        record.scout_group !== null &&
+        allowedGroups.includes(record.scout_group)
+      )
+      .sort((a, b) =>
+        a.match_number - b.match_number ||
+        a.team_number - b.team_number
+      );
+
+    const eventNotes = allNotes
+      .filter(note =>
+        note.event_id === event.id &&
+        allowedGroups.includes(note.scout_group)
+      );
+
+    return `
+      <section class="event-report ${index > 0 ? "new-page" : ""}">
+        <h1>${escapeHtml(event.event_name)}</h1>
+
+        <p class="subtitle">
+          TURNING GEARS FTC SCOUTING · Historical Event Report
+        </p>
+
+        <p>Event date: ${escapeHtml(event.event_date || "Not recorded")}</p>
+
+        ${pdfSections.includes("teams") ? `
+          <h2>1. Event Teams and Rankings</h2>
+          ${rows(
+            ["Team", "Team Name", "Rank", "Ranking Points", "Tie Breaker Points", "Highest Score", "Matches Played", "OPR", "NP-OPR"],
+            eventTeamsForReport.map(team => [
+              String(team.team_number),
+              team.team_name || "Unknown",
+              String(team.event_rank ?? "N/A"),
+              String(team.ranking_points ?? "N/A"),
+              String(team.tie_breaker_points ?? "N/A"),
+              String(team.highest_score ?? "N/A"),
+              String(team.matches_played ?? "N/A"),
+              String(team.opr ?? "N/A"),
+              String(team.np_opr ?? "N/A")
+            ])
+          )}
+        ` : ""}
+
+        ${pdfSections.includes("matches") ? `
+          <h2>2. Match Schedule and Results</h2>
+          ${rows(
+            ["Match", "Type", "Red Team 1", "Red Team 2", "Red Score", "Blue Team 1", "Blue Team 2", "Blue Score", "Completed"],
+            eventMatchesForReport.map(match => [
+              String(match.match_number),
+              match.match_type,
+              String(match.red_team_1),
+              String(match.red_team_2),
+              String(match.red_score ?? "N/A"),
+              String(match.blue_team_1),
+              String(match.blue_team_2),
+              String(match.blue_score ?? "N/A"),
+              match.completed ? "Yes" : "No"
+            ])
+          )}
+        ` : ""}
+
+        ${pdfSections.includes("records") ? `
+          <h2>3. Individual Scouting Records</h2>
+          <p class="subtitle">
+            Included scout groups: ${escapeHtml(allowedGroups.join(", "))}
+          </p>
+          ${rows(
+            ["Match", "Team", "Alliance", "Scout", "Group", "Auto", "Accuracy", "Shooting Speed", "Driving Speed", "Maneuverability", "Hive Tips", "Auto Tips", "Teleop Tips", "Notes"],
+            eventRecords.map(record => [
+              String(record.match_number),
+              String(record.team_number),
+              record.alliance,
+              record.scout_name,
+              record.scout_group || "N/A",
+              String(record.auto_rating ?? "N/A"),
+              String(record.shooting_accuracy ?? "N/A"),
+              String(record.shooting_speed ?? "N/A"),
+              String(record.driving_speed ?? "N/A"),
+              String(record.maneuverability ?? "N/A"),
+              String(record.hive_tips ?? 0),
+              String(record.auto_hive_tips ?? 0),
+              String(record.teleop_hive_tips ?? 0),
+              record.notes || ""
+            ])
+          )}
+        ` : ""}
+
+        ${pdfSections.includes("notes") ? `
+          <h2>4. General Scouting Notes</h2>
+          ${rows(
+            ["Team", "Scout", "Group", "Date", "Notes"],
+            eventNotes.map(note => [
+              String(note.team_number),
+              note.scout_name,
+              note.scout_group,
+              new Date(note.created_at).toLocaleDateString(),
+              note.notes
+            ])
+          )}
+        ` : ""}
+
+        <p class="subtitle">
+          End of ${escapeHtml(event.event_name)} report
+        </p>
+      </section>
+    `;
+  }).join("");
+
+  const report = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>TURNING GEARS - Historical Event Reports</title>
+      <style>
+        @page {
+          size: landscape;
+          margin: 14mm;
+        }
+
+        body {
+          font-family: Arial, Helvetica, sans-serif;
+          color: #111;
+          font-size: 10pt;
+          line-height: 1.4;
+        }
+
+        h1 {
+          font-size: 22pt;
+          margin-bottom: 4px;
+        }
+
+        h2 {
+          font-size: 15pt;
+          border-bottom: 2px solid #222;
+          padding-bottom: 5px;
+          margin-top: 28px;
+        }
+
+        p {
+          margin: 4px 0 12px;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 10px 0 20px;
+          page-break-inside: auto;
+        }
+
+        tr {
+          page-break-inside: avoid;
+        }
+
+        th, td {
+          border: 1px solid #999;
+          padding: 6px;
+          text-align: left;
+          vertical-align: top;
+        }
+
+        th {
+          background: #eee;
+          font-weight: bold;
+        }
+
+        thead {
+          display: table-header-group;
+        }
+
+        .subtitle {
+          color: #444;
+        }
+
+        .new-page {
+          page-break-before: always;
+        }
+
+        @media print {
+          body {
+            print-color-adjust: exact;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <p>Generated: ${escapeHtml(new Date().toLocaleDateString())}</p>
+      ${eventReports}
+    </body>
+    </html>
+  `;
+
+  printWindow.document.open();
+  printWindow.document.write(report);
+  printWindow.document.close();
+  printWindow.focus();
+
+  printWindow.onload = () => {
+    printWindow.print();
+  };
+
+  setError("");
+}
+
  function openTeamProfile(team: number) {
   setSelectedTeamNumber(team);
   setTab("team-detail");
@@ -2394,30 +2728,128 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                 </div>
               </div>
 
-             <label style={{
+            <div style={{
   display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  cursor: "pointer"
+  flexDirection: "column",
+  gap: "6px"
 }}>
-  <input
-    type="checkbox"
-    checked={researchEventIds.includes(ev.id)}
-    onChange={e => {
-      setResearchEventIds(current =>
-        e.target.checked
-          ? [...current, ev.id]
-          : current.filter(id => id !== ev.id)
-      );
-    }}
-  />
-  Select Event
-</label>
+  <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <input
+      type="checkbox"
+      checked={researchEventIds.includes(ev.id)}
+      onChange={e => {
+        setResearchEventIds(current =>
+          e.target.checked
+            ? [...current, ev.id]
+            : current.filter(id => id !== ev.id)
+        );
+      }}
+    />
+    Select Event for Research
+  </label>
+
+  <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <input
+      type="checkbox"
+      checked={pdfEventIds.includes(ev.id)}
+      onChange={e => {
+        setPdfEventIds(current =>
+          e.target.checked
+            ? [...current, ev.id]
+            : current.filter(id => id !== ev.id)
+        );
+      }}
+    />
+    Include in PDF
+  </label>
+</div>
             </div>
           );
         })
     )}
+<div className="panel" style={{ marginTop: "16px" }}>
+  <div className="section-head">
+    <h3>PDF Export Center</h3>
+    <span>{pdfEventIds.length} events selected</span>
+  </div>
 
+  <p className="muted">
+    Choose which archived events, scout groups, and information
+    should appear in your printable report.
+  </p>
+
+  <h4>1. Scout Groups to Include</h4>
+
+  {([
+    "Student Scout",
+    "Parent Scout",
+    "Scouting Coach"
+  ] as ScoutGroup[]).map(group => (
+    <label key={group} style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: "6px"
+    }}>
+      <input
+        type="checkbox"
+        checked={pdfScoutGroups.includes(group)}
+        onChange={e => {
+          setPdfScoutGroups(current =>
+            e.target.checked
+              ? [...current, group]
+              : current.filter(item => item !== group)
+          );
+        }}
+      />
+      {group}
+    </label>
+  ))}
+
+  <h4>2. Information to Include</h4>
+
+  {([
+    { id: "teams", label: "Team List and Official Rankings" },
+    { id: "matches", label: "Match Schedule, Alliances and Results" },
+    { id: "records", label: "Individual Match Scouting Records" },
+    { id: "notes", label: "General Scouting Notes" }
+  ]).map(section => (
+    <label key={section.id} style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: "6px"
+    }}>
+      <input
+        type="checkbox"
+        checked={pdfSections.includes(section.id)}
+        onChange={e => {
+          setPdfSections(current =>
+            e.target.checked
+              ? [...current, section.id]
+              : current.filter(item => item !== section.id)
+          );
+        }}
+      />
+      {section.label}
+    </label>
+  ))}
+
+    <p className="muted tiny">
+    Select one or more archived events above using the
+    "Include in PDF" checkboxes.
+  </p>
+
+  <button
+    className="primary full"
+    onClick={() => downloadResearchEventPdf()}
+    disabled={pdfEventIds.length === 0}
+    style={{ marginTop: "12px" }}
+  >
+    <Download size={18} />
+    Generate and Print PDF
+  </button>
+</div>
    {researchEventIds.length > 0 && (
       <div className="panel">
        <h3>
