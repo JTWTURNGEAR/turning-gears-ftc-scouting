@@ -2319,7 +2319,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   </button>
 </section>
         </>}
-   && (
+   {tab === "research" && (
  <section className="panel research-shell">
     <div className="section-head">
       <h3>Historical Research</h3>
