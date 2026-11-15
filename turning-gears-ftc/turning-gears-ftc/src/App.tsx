@@ -1973,13 +1973,21 @@ const allTrackedTeamMatches = scheduledMatches.filter(match =>
   ].some(team => trackedTeamNumbers.has(team))
 );
 
-const upcomingTrackedTeamMatches = allTrackedTeamMatches.filter(match =>
-  !match.completed &&
+const firstActiveTrackedMatchIndex = allTrackedTeamMatches.findIndex(match =>
   match.scheduledTime !== null &&
-  match.scheduledTime > clockNow + 20000
+  match.scheduledTime >= clockNow - 20 * 60 * 1000
 );
-const team7215Matches =
-  upcomingTrackedTeamMatches.slice(0, 5);
+
+const finalFiveStartIndex = Math.max(0, allTrackedTeamMatches.length - 5);
+
+const team7215StartIndex =
+  firstActiveTrackedMatchIndex === -1
+    ? finalFiveStartIndex
+    : Math.min(firstActiveTrackedMatchIndex, finalFiveStartIndex);
+
+const team7215Matches = allTrackedTeamMatches
+  .filter(match => match.scheduledTime !== null)
+  .slice(team7215StartIndex, team7215StartIndex + 5);
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
@@ -2596,8 +2604,11 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
             key={match.id}
             className={`team7215-match-hex ${
               (
-  match.completed ||
-  (match.scheduledTime !== null && match.scheduledTime < clockNow)
+ match.completed ||
+(
+  match.scheduledTime !== null &&
+  match.scheduledTime < clockNow - 20 * 60 * 1000
+)
 ) ? "completed" : ""
             }`}
           >
