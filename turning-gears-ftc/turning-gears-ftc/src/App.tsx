@@ -413,8 +413,9 @@ useEffect(() => {
       setError(matchError.message);
       return;
     }
-console.log("LOADED EVENT MATCHES:", data);
-    setEventMatches((data || []) as EventMatch[]);
+console.log("MATCH COUNT:", data?.length);
+alert("Matches loaded: " + (data?.length ?? 0));
+setEventMatches((data || []) as EventMatch[]);
   }
  
 async function loadEventTeams(eventId: string) {
