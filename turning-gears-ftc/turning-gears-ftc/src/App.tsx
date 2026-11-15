@@ -255,10 +255,9 @@ const [shownMatchupAlerts, setShownMatchupAlerts] = useState<string[]>([]);
     const [clockNow, setClockNow] = useState(() => Date.now());
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setClockNow(Date.now());
-    }, 15000);
-
+const timer = window.setInterval(() => {
+  setClockNow(Date.now());
+}, 1000);
     return () => window.clearInterval(timer);
   }, []);
 useEffect(() => {
@@ -1947,15 +1946,14 @@ const selectedTeamSummary = teamSummaries.find(
 const currentMatch = [...scheduledMatches].reverse().find(match =>
   !match.completed &&
   match.scheduledTime !== null &&
-  match.scheduledTime <= clockNow
+  match.scheduledTime <= clockNow + 20000
 );
 
 const nextMatch = scheduledMatches.find(match =>
   !match.completed &&
   match.scheduledTime !== null &&
-  match.scheduledTime > clockNow
+  match.scheduledTime > clockNow + 20000
 );
-
 const currentMatchTeams = currentMatch
   ? [
       currentMatch.red_team_1,
@@ -2641,7 +2639,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                   <h3>
                     {currentMatch.match_type} {currentMatch.match_number}
                   </h3>
-                  <p className="muted">Scheduled start time has passed.</p>
+               <p className="muted">Preparing for scheduled match.</p>
 
                   <div className="alliance-display">
                     <div className="alliance-group">
@@ -3946,7 +3944,12 @@ onClick={async () => {
           (currentMatch || nextMatch)!.red_team_1,
           (currentMatch || nextMatch)!.red_team_2
         ].map(team => (
-          <div className="scouting-banner-team" key={team}>
+         <div
+  className={`scouting-banner-team ${
+    futureRelatedTeams.has(team) ? "related-team" : ""
+  }`}
+  key={team}
+>
             <strong>#{team}</strong>
             <span>
               ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
@@ -3961,7 +3964,12 @@ onClick={async () => {
           (currentMatch || nextMatch)!.blue_team_1,
           (currentMatch || nextMatch)!.blue_team_2
         ].map(team => (
-          <div className="scouting-banner-team" key={team}>
+        <div
+  className={`scouting-banner-team ${
+    futureRelatedTeams.has(team) ? "related-team" : ""
+  }`}
+  key={team}
+>
             <strong>#{team}</strong>
             <span>
               ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
