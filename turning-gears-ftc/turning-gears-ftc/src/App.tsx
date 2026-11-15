@@ -2719,7 +2719,11 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           )}
         </section>
         <div className="stats-grid">
-          <Stat label="SUBMISSIONS" value={records.length} icon={<ClipboardList/>}/>
+    <Stat
+  label="SUBMISSIONS"
+  value={records.filter(r => r.event_id === activeEventId).length}
+  icon={<ClipboardList/>}
+/>
           <Stat label="TEAMS SCOUTED" value={teamSummaries.length} icon={<Activity/>}/>
           <Stat label="SCOUTS" value={scouts.length} icon={<Users/>}/>
         </div>
@@ -4227,7 +4231,7 @@ onClick={async () => {
   className={`played-defense-button ${playedDefense ? "defense-active" : ""}`}
   onClick={() => setPlayedDefense(!playedDefense)}
 >
-  🛡️ {playedDefense ? "✓ PLAYED DEFENSE" : "PLAYED DEFENSE"} 🛡️
+  🛡️ {playedDefense ? "✓ SCOUTED TEAM PLAYED DEFENSE" : "PLAYED DEFENSE"} 🛡️
 </button>
         {!selectedScout &&
           <p className="warning">Choose your scout name on the Dashboard before submitting.</p>}
