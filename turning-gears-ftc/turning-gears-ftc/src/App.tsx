@@ -246,6 +246,12 @@ const [compareTeam3, setCompareTeam3] = useState("");
   const [adjustmentStartMatchId, setAdjustmentStartMatchId] = useState("");
 const [adjustmentMinutes, setAdjustmentMinutes] = useState<number | ""> (5);
   const [error, setError] = useState("");
+  const [matchupBanner, setMatchupBanner] = useState<{
+  matchId: string;
+  teamNumber: number;
+} | null>(null);
+
+const [shownMatchupAlerts, setShownMatchupAlerts] = useState<string[]>([]);
     const [clockNow, setClockNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -1911,7 +1917,11 @@ const selectedTeamRecords = records
     )
   )
   .sort((a, b) => a.match_number - b.match_number);
-
+const matchupBannerTeam = matchupBanner
+  ? eventTeams.find(
+      team => team.team_number === matchupBanner.teamNumber
+    )
+  : undefined;
 
 const selectedTeamSummary = teamSummaries.find(
   t => t.team === selectedTeamNumber
@@ -1974,7 +1984,62 @@ const futureRelatedTeams = new Set(
     ])
     .filter(team => team !== 7215)
 );
- 
+ const upcomingRelatedMatch = nextMatch
+  ? [
+      nextMatch.red_team_1,
+      nextMatch.red_team_2,
+      nextMatch.blue_team_1,
+      nextMatch.blue_team_2
+    ].find(team =>
+      team !== 7215 && futureRelatedTeams.has(team)
+    )
+  : undefined;
+  const matchupAlertKey = nextMatch && upcomingRelatedMatch !== undefined
+  ? `${nextMatch.id}-${upcomingRelatedMatch}`
+  : "";
+
+const shouldShowMatchupAlert =
+  Boolean(nextMatch) &&
+  upcomingRelatedMatch !== undefined &&
+  nextMatch!.scheduledTime !== null &&
+  nextMatch!.scheduledTime - clockNow <= 60000 &&
+  nextMatch!.scheduledTime - clockNow > 0 &&
+  !shownMatchupAlerts.includes(matchupAlertKey);useEffect(() => {
+  if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedMatch === undefined) {
+    return;
+  }
+
+  setMatchupBanner({
+    matchId: nextMatch.id,
+    teamNumber: upcomingRelatedMatch
+  });
+
+  setShownMatchupAlerts(previous =>
+    [...previous, matchupAlertKey]
+  );
+
+  const timer = window.setTimeout(() => {
+    setMatchupBanner(null);
+  }, 10000);
+
+  return () => window.clearTimeout(timer);
+}, [shouldShowMatchupAlert, matchupAlertKey]);
+  useEffect(() => {
+  if (!matchupBanner) return;
+
+  const bannerMatch = scheduledMatches.find(
+    match => match.id === matchupBanner.matchId
+  );
+
+  if (
+    !bannerMatch ||
+    bannerMatch.completed ||
+    bannerMatch.scheduledTime === null ||
+    bannerMatch.scheduledTime <= clockNow
+  ) {
+    setMatchupBanner(null);
+  }
+}, [clockNow, scheduledMatches, matchupBanner]);
 const filteredRecords = useMemo(() => {
   const search = recordSearch.trim().toLowerCase();
 
@@ -2456,7 +2521,18 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
       <button className="icon-btn" title="Refresh data" onClick={loadTeam}>
         <RefreshCw size={18}/>
       </button>
-    </header>
+       </header>
+
+    {matchupBanner && (
+      <div className="matchup-banner">
+        <div className="matchup-banner-title">
+          FUTURE MATCHUP CONNECTION
+        </div>
+        <div className="matchup-banner-team">
+          #{matchupBanner.teamNumber} — {matchupBannerTeam?.team_name || "Team name unavailable"}
+        </div>
+      </div>
+    )}
 
     <main className="content">
       <div className="welcome">
