@@ -9,7 +9,7 @@ import { configured, supabase } from "./supabase";
 type ScoutGroup =
   | "Scouting Coach"
   | "Parent Scout"
-  | "Student Scout";f
+  | "Student Scout";
 
 type Scout = {
   id: string;
