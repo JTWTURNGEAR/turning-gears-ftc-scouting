@@ -246,9 +246,9 @@ const [compareTeam3, setCompareTeam3] = useState("");
   const [adjustmentStartMatchId, setAdjustmentStartMatchId] = useState("");
 const [adjustmentMinutes, setAdjustmentMinutes] = useState<number | ""> (5);
   const [error, setError] = useState("");
-  const [matchupBanner, setMatchupBanner] = useState<{
+const [matchupBanner, setMatchupBanner] = useState<{
   matchId: string;
-  teamNumber: number;
+  teamNumbers: number[];
 } | null>(null);
 
 const [shownMatchupAlerts, setShownMatchupAlerts] = useState<string[]>([]);
@@ -1917,12 +1917,13 @@ const selectedTeamRecords = records
     )
   )
   .sort((a, b) => a.match_number - b.match_number);
-const matchupBannerTeam = matchupBanner
-  ? eventTeams.find(
-      team => team.team_number === matchupBanner.teamNumber
+const matchupBannerTeams = matchupBanner
+  ? matchupBanner.teamNumbers.map(teamNumber =>
+      eventTeams.find(
+        team => team.team_number === teamNumber
+      )
     )
-  : undefined;
-
+  : [];
 const selectedTeamSummary = teamSummaries.find(
   t => t.team === selectedTeamNumber
 );
@@ -1984,35 +1985,39 @@ const futureRelatedTeams = new Set(
     ])
     .filter(team => team !== 7215)
 );
- const upcomingRelatedMatch = nextMatch
+const upcomingRelatedTeams = nextMatch
   ? [
       nextMatch.red_team_1,
       nextMatch.red_team_2,
       nextMatch.blue_team_1,
       nextMatch.blue_team_2
-    ].find(team =>
+    ].filter(team =>
       team !== 7215 && futureRelatedTeams.has(team)
     )
-  : undefined;
-  const matchupAlertKey = nextMatch && upcomingRelatedMatch !== undefined
-  ? `${nextMatch.id}-${upcomingRelatedMatch}`
+  : [];
+const matchupAlertKey = nextMatch && upcomingRelatedTeams.length > 0
+  ? `${nextMatch.id}-${upcomingRelatedTeams.join("-")}`
   : "";
 
 const shouldShowMatchupAlert =
   Boolean(nextMatch) &&
-  upcomingRelatedMatch !== undefined &&
+  upcomingRelatedTeams.length > 0 &&
   nextMatch!.scheduledTime !== null &&
   nextMatch!.scheduledTime - clockNow <= 60000 &&
   nextMatch!.scheduledTime - clockNow > 0 &&
   !shownMatchupAlerts.includes(matchupAlertKey);
-  useEffect(() => {
-  if (!shouldShowMatchupAlert || !nextMatch || upcomingRelatedMatch === undefined) {
+ useEffect(() => {
+  if (
+    !shouldShowMatchupAlert ||
+    !nextMatch ||
+    upcomingRelatedTeams.length === 0
+  ) {
     return;
   }
 
   setMatchupBanner({
     matchId: nextMatch.id,
-    teamNumber: upcomingRelatedMatch
+    teamNumbers: upcomingRelatedTeams
   });
 
   setShownMatchupAlerts(previous =>
@@ -2025,7 +2030,7 @@ useEffect(() => {
 
   const timer = window.setTimeout(() => {
     setMatchupBanner(null);
-  }, 10000);
+  }, 20000);
 
   return () => window.clearTimeout(timer);
 }, [matchupBanner?.matchId]);
@@ -2520,26 +2525,39 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     </section>
   </main>;
   return <div className="app-shell">
-    <header className="topbar">
-      <div className="brand">
-        <div className="brand-mark small">TG</div>
-        <div><b>TURNING GEARS</b><span>FTC SCOUTING</span></div>
-      </div>
-      <button className="icon-btn" title="Refresh data" onClick={loadTeam}>
-        <RefreshCw size={18}/>
-      </button>
-       </header>
+  <header className="topbar">
+  <div className="brand">
+    <div className="brand-mark small">TG</div>
+    <div>
+      <b>TURNING GEARS</b>
+      <span>FTC SCOUTING</span>
+    </div>
+  </div>
 
-    {matchupBanner && (
-      <div className="matchup-banner">
-        <div className="matchup-banner-title">
-          FUTURE MATCHUP CONNECTION
-        </div>
-        <div className="matchup-banner-team">
-          #{matchupBanner.teamNumber} — {matchupBannerTeam?.team_name || "Team name unavailable"}
-        </div>
+  {matchupBanner && (
+    <div className="matchup-banner">
+      <div className="matchup-banner-title">
+        FUTURE MATCHUP CONNECTION
       </div>
-    )}
+
+      {matchupBanner.teamNumbers.map(teamNumber => {
+        const team = eventTeams.find(
+          item => item.team_number === teamNumber
+        );
+
+        return (
+          <div className="matchup-banner-team" key={teamNumber}>
+            #{teamNumber} — {team?.team_name || "Team name unavailable"}
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+  <button className="icon-btn" title="Refresh data" onClick={loadTeam}>
+    <RefreshCw size={18}/>
+  </button>
+</header>
 
     <main className="content">
       <div className="welcome">
