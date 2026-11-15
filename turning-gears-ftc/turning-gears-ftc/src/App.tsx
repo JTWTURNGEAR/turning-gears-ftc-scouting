@@ -138,7 +138,7 @@ const [noteText, setNoteText] = useState("");
   const [activeEventId, setActiveEventId] = useState("");
   const [researchEventIds, setResearchEventIds] = useState<string[]>([]);
   const [researchTeams, setResearchTeams] = useState<EventTeamRow[]>([]);
-  const [researchTeamFilter, setResearchTeamFilter] = useState("");
+ const [researchTeamFilters, setResearchTeamFilters] = useState<number[]>([]);
   const [researchTeamNumber, setResearchTeamNumber] = useState<number | null>(null);
   const [researchCompareTeams, setResearchCompareTeams] = useState<number[]>([]);
   useEffect(() => {
@@ -2426,25 +2426,76 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
           Select a team to explore its historical scouting data.
         </p>
 <div style={{ marginBottom: "12px" }}>
-  <label>
-    Filter Teams by Number
-    <input
-      type="number"
-      placeholder="Enter a team number..."
-      value={researchTeamFilter}
-      onChange={e => setResearchTeamFilter(e.target.value)}
-    />
-  </label>
+  <label>Filter Teams (Select Multiple)</label>
+<button
+  type="button"
+  onClick={async () => {
+    if (!activeEventId || !supabase) {
+      setError("Please select an active event first.");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("event_teams")
+      .select("team_number")
+      .eq("event_id", activeEventId)
+      .order("team_number", { ascending: true });
+
+    if (error) {
+      setError("Could not load active event teams: " + error.message);
+      return;
+    }
+
+    const availableTeams = new Set(
+      researchTeams.map(team => team.team_number)
+    );
+
+    const activeTeams = (data || [])
+      .map(team => Number(team.team_number))
+      .filter(teamNumber => availableTeams.has(teamNumber));
+
+    setResearchTeamFilters(activeTeams);
+  }}
+>
+  Auto Select Active Event Teams
+</button>
+  <select
+    multiple
+    value={researchTeamFilters.map(String)}
+    onChange={e => {
+      setResearchTeamFilters(
+        Array.from(e.target.selectedOptions, option =>
+          Number(option.value)
+        )
+      );
+    }}
+    style={{
+      width: "100%",
+      minHeight: "140px",
+      padding: "8px"
+    }}
+  >
+    {researchTeams
+      .sort((a, b) => a.team_number - b.team_number)
+      .map(team => (
+        <option
+          key={team.team_number}
+          value={team.team_number}
+        >
+          Team {team.team_number}
+        </option>
+      ))}
+  </select>
 </div>
         <div className="team-grid">
           {researchTeams.length === 0 ? (
             <Empty text="No team data found for this event." />
           ) : (
         researchTeams
-  .filter(team =>
-    researchTeamFilter === "" ||
-    String(team.team_number).includes(researchTeamFilter)
-  )
+ .filter(team =>
+  researchTeamFilters.length === 0 ||
+  researchTeamFilters.includes(team.team_number)
+)
   .sort((a, b) => a.team_number - b.team_number)
   .map(team => (
   <div className="scout-row" key={team.id}>
