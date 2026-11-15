@@ -2662,10 +2662,15 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                       {currentMatch.blue_score !== null && (
                         <span>Score: {currentMatch.blue_score}</span>
                       )}
-                    </div>
-                  </div>
-                </div>
-              )}
+                         </div>
+    </div>
+
+    <div className="scouting-hex-legend">
+      <span className="scouting-hex-legend-ball" />
+      <span>Teams in Hexed Gold are Future partner or opponent</span>
+    </div>
+  </div>
+)}
 
               {nextMatch && (
                 <div className="live-match-card">
