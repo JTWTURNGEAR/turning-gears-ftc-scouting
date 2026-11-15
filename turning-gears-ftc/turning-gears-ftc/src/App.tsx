@@ -2842,7 +2842,8 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     </div>
 
     <Field label="Sort teams">
-      <select
+     <select
+  multiple
         value={eventTeamSort}
         onChange={e => setEventTeamSort(e.target.value)}
       >
