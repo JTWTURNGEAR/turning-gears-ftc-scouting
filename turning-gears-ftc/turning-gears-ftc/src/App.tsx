@@ -2591,9 +2591,6 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     </div>
   ) : null}
 
-  <button className="icon-btn" title="Refresh data" onClick={loadTeam}>
-    <RefreshCw size={18}/>
-  </button>
 </header>
 
     <main className="content">
