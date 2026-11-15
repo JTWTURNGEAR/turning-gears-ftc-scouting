@@ -2670,66 +2670,23 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
                   </h3>
                <p className="muted">Preparing for scheduled match.</p>
 
-               <div className="alliance-display">
+             <div className="alliance-display">
   <div className="alliance-group">
     <b className="red-label">🔴 RED ALLIANCE</b>
-    {[
-      (currentMatch || nextMatch)!.red_team_1,
-      (currentMatch || nextMatch)!.red_team_2
-    ].map((team, index) => (
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setForm({
-          ...form,
-          team_number: String(team),
-          partner_team_number: String(
-            index === 0
-              ? (currentMatch || nextMatch)!.red_team_2
-              : (currentMatch || nextMatch)!.red_team_1
-          ),
-          match_number: String((currentMatch || nextMatch)!.match_number),
-          alliance: "Red"
-        })}
-        className={`scouting-banner-team ${
-        <strong>#{team}</strong>
-        <span>
-          ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
-        </span>
-      </div>
-    ))}
+    <div className="alliance-team-row">
+      {allianceTeamButton(currentMatch.red_team_1, "red")}
+      {allianceTeamButton(currentMatch.red_team_2, "red")}
+    </div>
   </div>
 
   <div className="alliance-group">
     <b className="blue-label">🔵 BLUE ALLIANCE</b>
-    {[
-      (currentMatch || nextMatch)!.blue_team_1,
-      (currentMatch || nextMatch)!.blue_team_2
-    ].map((team, index) => (
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setForm({
-          ...form,
-          team_number: String(team),
-          partner_team_number: String(
-            index === 0
-              ? (currentMatch || nextMatch)!.blue_team_2
-              : (currentMatch || nextMatch)!.blue_team_1
-          ),
-          match_number: String((currentMatch || nextMatch)!.match_number),
-          alliance: "Blue"
-        })}
-        className={`scouting-banner-team ${
-        <strong>#{team}</strong>
-        <span>
-          ({eventTeams.find(t => t.team_number === team)?.team_name || "Team name unavailable"})
-        </span>
-      </div>
-    ))}
+    <div className="alliance-team-row">
+      {allianceTeamButton(currentMatch.blue_team_1, "blue")}
+      {allianceTeamButton(currentMatch.blue_team_2, "blue")}
+    </div>
   </div>
 </div>
-
     <div className="scouting-hex-legend">
       <span className="scouting-hex-legend-ball" />
       <span>Teams in Hexed Gold are Future partner or opponent</span>
