@@ -2457,7 +2457,14 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
     setResearchTeamFilters(activeTeams);
   }}
 >
-  Auto Select Active Event Teams
+ Auto Filter Active Event Teams
+</button>
+  <button
+  type="button"
+  onClick={() => setResearchTeamFilters([])}
+  style={{ marginLeft: "8px" }}
+>
+  Auto Unfilter All Teams
 </button>
   <select
     multiple
