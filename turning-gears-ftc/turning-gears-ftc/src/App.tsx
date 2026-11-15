@@ -3929,7 +3929,7 @@ onClick={async () => {
         {scoutMode === "match" && (currentMatch || nextMatch) && (
   <div className="live-match-card scouting-current-match">
     <span className="eyebrow">
-      {currentMatch ? "CURRENT MATCH" : "UP NEXT"}
+    {currentMatch ? "PREPARING / CURRENT MATCH" : "UP NEXT"}
     </span>
 
     <h2>
