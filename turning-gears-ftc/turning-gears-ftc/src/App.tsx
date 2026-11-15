@@ -2664,23 +2664,40 @@ setResearchTeamFilters(activeTeams);
               ).toFixed(1)
             : "N/A";
         };
+        const previousNumbers = researchCompareTeams
+          .map(compareTeamNumber => {
+            const teamRecords = records.filter(r =>
+              researchEventIds.includes(r.event_id ?? "") &&
+              r.team_number === compareTeamNumber
+            );
 
+            const value = getValue(teamRecords);
+            return value === "N/A" ? null : Number(value);
+          })
+          .filter(
+            (value): value is number =>
+              value !== null && Number.isFinite(value)
+          );
+
+        const previousValue = getValue(previousRecords);
+
+        const isBestPrevious =
+          previousValue !== "N/A" &&
+          previousNumbers.length > 0 &&
+          Number(previousValue) === Math.max(...previousNumbers);
         return (
           <Fragment key={teamNumber}>
-            <td style={{
+                    <td style={{
               padding: "10px",
               textAlign: "center",
-              borderTop: "1px solid var(--border)"
+              borderTop: "1px solid var(--border)",
+              background: isBestPrevious
+                ? "rgba(255, 135, 40, 0.22)"
+                : "transparent",
+              color: isBestPrevious ? "#ff8728" : "inherit",
+              fontWeight: isBestPrevious ? 800 : 400
             }}>
-              {getValue(previousRecords)}
-            </td>
-
-            <td style={{
-              padding: "10px",
-              textAlign: "center",
-              borderTop: "1px solid var(--border)"
-            }}>
-              {getValue(currentRecords)}
+              {previousValue}
             </td>
           </Fragment>
         );
