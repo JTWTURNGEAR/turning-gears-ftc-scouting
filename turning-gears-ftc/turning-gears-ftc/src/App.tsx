@@ -2461,33 +2461,46 @@ setResearchTeamFilters(activeTeams);
 >
   Unfilter All Teams
 </button>
-  <select
-    multiple
-    value={researchTeamFilters.map(String)}
-    onChange={e => {
-      setResearchTeamFilters(
-        Array.from(e.target.selectedOptions, option =>
-          Number(option.value)
-        )
-      );
-    }}
-    style={{
-      width: "100%",
-      minHeight: "140px",
-      padding: "8px"
-    }}
-  >
-    {researchTeams
-      .sort((a, b) => a.team_number - b.team_number)
-      .map(team => (
-        <option
-          key={team.team_number}
-          value={team.team_number}
-        >
-          Team {team.team_number}
-        </option>
-      ))}
-  </select>
+ <div
+  style={{
+    width: "100%",
+    maxHeight: "220px",
+    overflowY: "auto",
+    padding: "8px",
+    background: "#171717",
+    border: "1px solid rgba(255, 135, 40, 0.45)",
+    borderRadius: "9px"
+  }}
+>
+  {researchTeams
+    .sort((a, b) => a.team_number - b.team_number)
+    .map(team => (
+      <label
+        key={team.team_number}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "7px",
+          cursor: "pointer",
+          color: "#f5eee8"
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={researchTeamFilters.includes(team.team_number)}
+          onChange={e => {
+            setResearchTeamFilters(current =>
+              e.target.checked
+                ? [...current, team.team_number]
+                : current.filter(number => number !== team.team_number)
+            );
+          }}
+        />
+        Team {team.team_number}
+      </label>
+    ))}
+</div>
 </div>
         <div className="team-grid">
           {researchTeams.length === 0 ? (
