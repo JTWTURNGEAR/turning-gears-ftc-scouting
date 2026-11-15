@@ -2537,7 +2537,7 @@ function allianceTeamButton(team: number, alliance: "red" | "blue") {
   {matchupBanner && (
     <div className="matchup-banner">
       <div className="matchup-banner-title">
-        FUTURE MATCHUP CONNECTION
+       FUTURE PARTNER OR OPPONENT
       </div>
 
       {matchupBanner.teamNumbers.map(teamNumber => {
