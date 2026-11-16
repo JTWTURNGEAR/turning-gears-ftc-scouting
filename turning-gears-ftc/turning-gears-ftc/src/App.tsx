@@ -1963,6 +1963,17 @@ const nextMatch = scheduledMatches.find(match =>
   match.scheduledTime !== null &&
   match.scheduledTime > clockNow + 20000
 );
+  const scoutingCurrentMatch = [...scheduledMatches].reverse().find(match =>
+  !match.completed &&
+  match.scheduledTime !== null &&
+  match.scheduledTime <= clockNow + 15000
+);
+
+const scoutingNextMatch = scheduledMatches.find(match =>
+  !match.completed &&
+  match.scheduledTime !== null &&
+  match.scheduledTime > clockNow + 15000
+);
   const team7215Matches = scheduledMatches.filter(match =>
   [
     match.red_team_1,
@@ -3988,15 +3999,15 @@ onClick={async () => {
         </section>
       )}
       {tab === "scout" && <section className="panel form-panel">
-        {scoutMode === "match" && (currentMatch || nextMatch) && (
+        {scoutMode === "match" && (scoutingCurrentMatch || scoutingNextMatch) && (
   <div className="live-match-card scouting-current-match">
     <span className="eyebrow">
     {currentMatch ? "PREPARING / CURRENT MATCH" : "UP NEXT"}
     </span>
 
     <h2>
-      {(currentMatch || nextMatch)!.match_type}{" "}
-      {(currentMatch || nextMatch)!.match_number}
+      {(scoutingCurrentMatch || scoutingNextMatch)!.match_type}{" "}
+      {(scoutingCurrentMatch || scoutingNextMatch)!.match_number}
     </h2>
 <div className="scouting-click-instruction">
   CLICK ANY TEAM BOX TO AUTO-FILL THE SCOUTING FORM
@@ -4005,8 +4016,8 @@ onClick={async () => {
       <div className="alliance-group">
         <b className="red-label">🔴 RED ALLIANCE</b>
         {[
-  (currentMatch || nextMatch)!.red_team_1,
-  (currentMatch || nextMatch)!.red_team_2
+  (scoutingCurrentMatch || scoutingNextMatch)!.red_team_1,
+  (scoutingCurrentMatch || scoutingNextMatch)!.red_team_2
 ].map((team, index) => (
       <div
   role="button"
@@ -4016,10 +4027,10 @@ onClick={async () => {
     team_number: String(team),
     partner_team_number: String(
       index === 0
-        ? (currentMatch || nextMatch)!.red_team_2
-        : (currentMatch || nextMatch)!.red_team_1
+        ? (scoutingCurrentMatch || scoutingNextMatch)!.red_team_2
+        : (scoutingCurrentMatch || scoutingNextMatch)!.red_team_1
     ),
-    match_number: String((currentMatch || nextMatch)!.match_number),
+    match_number: String((scoutingCurrentMatch || scoutingNextMatch)!.match_number),
     alliance: "Red"
   })}
         className={`scouting-banner-team ${
@@ -4038,8 +4049,8 @@ onClick={async () => {
       <div className="alliance-group">
         <b className="blue-label">🔵 BLUE ALLIANCE</b>
        {[
-  (currentMatch || nextMatch)!.blue_team_1,
-  (currentMatch || nextMatch)!.blue_team_2
+  (scoutingCurrentMatch || scoutingNextMatch)!.blue_team_1,
+  (scoutingCurrentMatch || scoutingNextMatch)!.blue_team_2
 ].map((team, index) => (
       <div
   role="button"
@@ -4049,10 +4060,10 @@ onClick={async () => {
     team_number: String(team),
     partner_team_number: String(
       index === 0
-        ? (currentMatch || nextMatch)!.blue_team_2
-        : (currentMatch || nextMatch)!.blue_team_1
+        ? (scoutingCurrentMatch || scoutingNextMatch)!.blue_team_2
+        : (scoutingCurrentMatch || scoutingNextMatch)!.blue_team_1
     ),
-    match_number: String((currentMatch || nextMatch)!.match_number),
+    match_number: String((scoutingCurrentMatch || scoutingNextMatch)!.match_number),
     alliance: "Blue"
   })}
          className={`scouting-banner-team ${
