@@ -2068,3 +2068,46 @@ z-index: 100;
   text-transform: uppercase;
   animation: scoutingHoneycombGlow 2s ease-in-out infinite alternate;
 }
+
+/* MOBILE COMPARE TEAM PICKER FIX */
+@media (max-width: 600px) {
+  .compare-selectors {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    width: 100%;
+  }
+
+  .compare-selectors .field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .compare-team-picker {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .compare-team-picker summary {
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .compare-team-options {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    max-height: 220px;
+    margin-top: 5px;
+    z-index: 20;
+  }
+
+  .compare-team-options button {
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
