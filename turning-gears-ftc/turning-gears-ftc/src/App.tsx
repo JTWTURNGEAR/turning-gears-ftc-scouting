@@ -76,6 +76,7 @@ type RecordRow = {
   can_shoot_nectar: boolean;
   refilled_flower: boolean;
   emptied_flower: boolean;
+  parked_in_autonomous: boolean;
   notes: string | null;
 };
 type GeneralNoteRow = {
@@ -107,6 +108,7 @@ teleop_hive_tips: 0 as number | "",
   can_shoot_nectar: false,
   refilled_flower: false,
  emptied_flower: false,
+  parked_in_autonomous: false,
 notes: ""
 };
 function escapeHtml(value: unknown): string {
@@ -1610,6 +1612,7 @@ alliance: form.alliance,
   can_shoot_nectar: form.can_shoot_nectar,
   refilled_flower: form.refilled_flower,
   emptied_flower: form.emptied_flower,
+    parked_in_autonomous: form.parked_in_autonomous,
   notes: form.notes.trim()
 };
 
@@ -1753,6 +1756,7 @@ setPlayedDefense(record.played_defense ?? false);
   can_shoot_nectar: record.can_shoot_nectar ?? false,
   refilled_flower: record.refilled_flower ?? false,
   emptied_flower: record.emptied_flower ?? false,
+   parked_in_autonomous: record.parked_in_autonomous ?? false,
   notes: record.notes ?? ""
 });
 
@@ -1880,8 +1884,14 @@ const teamSummaries = useMemo(() => {
       refilledYes: rows.filter(r => r.refilled_flower).length,
       refilledNo: rows.filter(r => !r.refilled_flower).length,
 
-      emptiedYes: rows.filter(r => r.emptied_flower).length,
-      emptiedNo: rows.filter(r => !r.emptied_flower).length
+     emptiedYes: rows.filter(r => r.emptied_flower).length,
+emptiedNo: rows.filter(r => !r.emptied_flower).length,
+
+parkedAutoYes: rows.filter(r => r.parked_in_autonomous).length,
+parkedAutoNo: rows.filter(r => !r.parked_in_autonomous).length,
+parkedAutoPercent: rows.length > 0
+  ? (rows.filter(r => r.parked_in_autonomous).length / rows.length) * 100
+  : 0
     }));
 }, [records, selectedScoutGroups, excludedDefenseTeams, activeEventId]);
 const sortedTeamSummaries = useMemo(() => {
@@ -3249,7 +3259,8 @@ setResearchTeamFilters(activeTeams);
     { label: "Shooting Speed", field: "shooting_speed" },
     { label: "Driving Speed", field: "driving_speed" },
     { label: "Maneuverability", field: "maneuverability" },
-    { label: "Hive Tips", field: "hive_tips" }
+    { label: "Hive Tips", field: "hive_tips" },
+    { label: "Autonomous Parking Success", field: "parked_in_autonomous" }
   ].map(metric => (
     <tr key={metric.field}>
       <td style={{
@@ -3271,27 +3282,37 @@ const currentRecords = activeEventId
     )
   : [];
 
-        const getValue = (teamRecords: RecordRow[]) => {
-          if (teamRecords.length === 0) return "N/A";
+      const getValue = (teamRecords: RecordRow[]) => {
+  if (teamRecords.length === 0) return "N/A";
 
-          if (metric.field === "count") {
-            return teamRecords.length;
-          }
+  if (metric.field === "count") {
+    return teamRecords.length;
+  }
 
-          const fieldValues = teamRecords
-            .map(r => r[metric.field as keyof RecordRow])
-            .filter(
-              (value): value is number =>
-                typeof value === "number"
-            );
+  if (metric.field === "parked_in_autonomous") {
+    const parkedCount = teamRecords.filter(
+      r => r.parked_in_autonomous
+    ).length;
 
-          return fieldValues.length
-            ? (
-                fieldValues.reduce((sum, value) => sum + value, 0) /
-                fieldValues.length
-              ).toFixed(1)
-            : "N/A";
-        };
+    return `${Math.round(
+      (parkedCount / teamRecords.length) * 100
+    )}%`;
+  }
+
+  const fieldValues = teamRecords
+    .map(r => r[metric.field as keyof RecordRow])
+    .filter(
+      (value): value is number =>
+        typeof value === "number"
+    );
+
+  return fieldValues.length
+    ? (
+        fieldValues.reduce((sum, value) => sum + value, 0) /
+        fieldValues.length
+      ).toFixed(1)
+    : "N/A";
+};
         const previousNumbers = researchCompareTeams
           .map(compareTeamNumber => {
             const teamRecords = records.filter(r =>
@@ -3300,7 +3321,7 @@ const currentRecords = activeEventId
             );
 
             const value = getValue(teamRecords);
-            return value === "N/A" ? null : Number(value);
+          return value === "N/A" ? null : parseFloat(String(value));
           })
           .filter(
             (value): value is number =>
@@ -4278,10 +4299,21 @@ onClick={async () => {
     />
     <span><span>Able To Pull Balls From Flower</span></span>
   </label>
+  <label className="check-field">
+    <input
+      type="checkbox"
+      checked={form.parked_in_autonomous}
+      onChange={e => setForm({
+        ...form,
+        parked_in_autonomous: e.target.checked
+      })}
+    />
+    <span>Parked in Autonomous</span>
+  </label>
 </div>
 
 
-        <Field label="Notes / observations">
+<Field label="Notes / observations">
           <textarea rows={3} value={form.notes}
             onChange={e => setForm({...form, notes: e.target.value})}
             placeholder="What worked well? Any failures, inconsistency, or partner interaction?"/>
@@ -4542,6 +4574,7 @@ onClick={async () => {
             <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
          <span>Able To Pull Balls From Flower <b>{r.emptied_flower ? "Yes" : "No"}</b></span>
+            <span>Parked in Autonomous <b>{r.parked_in_autonomous ? "Yes" : "No"}</b></span>
             <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
           </div>
@@ -4681,10 +4714,10 @@ onClick={async () => {
       <span>Shooting</span>
     </div>
 
-    <div className="stat">
-      <strong>{selectedTeamSummary.mobility?.toFixed(1) ?? "—"}</strong>
-      <span>Mobility</span>
-    </div>
+   <div className="stat">
+  <strong>{selectedTeamSummary.parkedAutoPercent.toFixed(0)}%</strong>
+  <span>Autonomous Parking Success</span>
+</div>
 
 
   </div>
@@ -4730,6 +4763,7 @@ onClick={async () => {
             <span>Can shoot nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
            <span>Able To Pull Balls From Flower<b>{r.emptied_flower ? "Yes" : "No"}</b></span>
+            <span>Parked in Autonomous <b>{r.parked_in_autonomous ? "Yes" : "No"}</b></span>
           </div>
 
           {r.notes && (
