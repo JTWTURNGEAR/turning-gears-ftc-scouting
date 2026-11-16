@@ -4276,7 +4276,7 @@ onClick={async () => {
         emptied_flower: e.target.checked
       })}
     />
-    <span>Emptied flower</span>
+    <span><span>Able To Pull Balls From Flower</span></span>
   </label>
 </div>
 
@@ -4541,7 +4541,7 @@ onClick={async () => {
             <span>Total Hive Tips <b>{r.hive_tips ?? 0}</b></span>
             <span>Auto Hive Tips <b>{r.auto_hive_tips ?? 0}</b></span>
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
-           <span>Emptied flower <b>{r.emptied_flower ? "Yes" : "No"}</b></span>
+         <span>Able To Pull Balls From Flower <b>{r.emptied_flower ? "Yes" : "No"}</b></span>
             <span>Nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
           </div>
@@ -4729,7 +4729,7 @@ onClick={async () => {
             <span>TeleOp Hive Tips <b>{r.teleop_hive_tips ?? 0}</b></span>
             <span>Can shoot nectar <b>{r.can_shoot_nectar ? "Yes" : "No"}</b></span>
             <span>Refilled flower <b>{r.refilled_flower ? "Yes" : "No"}</b></span>
-           <span>Emptied flower <b>{r.emptied_flower ? "Yes" : "No"}</b></span>
+           <span>Able To Pull Balls From Flower<b>{r.emptied_flower ? "Yes" : "No"}</b></span>
           </div>
 
           {r.notes && (
@@ -5065,7 +5065,7 @@ onClick={async () => {
 </div>
 
 <div className="comparison-stat">
-  <span>Emptied Flower</span>
+  <span>Able To Pull Balls From Flower</span>
   <strong>
     <span style={{ color: "#22c55e" }}>✓ {t.emptiedYes}/{t.count}</span>
     {" "}
