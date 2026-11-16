@@ -2031,3 +2031,40 @@ z-index: 100;
       inset 0 0 10px rgba(255, 130, 0, 0.15);
   }
 }
+/* FUTURE PARTNERS OR OPPONENTS MATCH BANNER */
+.match-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.future-related-match-banner {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  padding: 5px 10px;
+  border: 1px solid #ffe600;
+  border-radius: 7px;
+  color: #ffe600;
+  background:
+    repeating-linear-gradient(
+      60deg,
+      transparent 0 8px,
+      rgba(255, 230, 0, 0.18) 8px 10px
+    ),
+    repeating-linear-gradient(
+      120deg,
+      transparent 0 8px,
+      rgba(255, 230, 0, 0.18) 8px 10px
+    ),
+    rgba(255, 220, 0, 0.10);
+  box-shadow:
+    0 0 8px rgba(255, 230, 0, 0.55),
+    inset 0 0 10px rgba(255, 230, 0, 0.15);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  animation: scoutingHoneycombGlow 2s ease-in-out infinite alternate;
+}
