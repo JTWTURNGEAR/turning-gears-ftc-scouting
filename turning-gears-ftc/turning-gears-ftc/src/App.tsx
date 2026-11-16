@@ -3736,9 +3736,17 @@ const blueWins =
 
 return (
   <div className="action-card schedule-match-card" key={match.id}>
-    <b>
-      {match.match_type} {match.match_number}
-    </b>
+  <div className="match-heading">
+  <b>
+    {match.match_type} {match.match_number}
+  </b>
+
+  {teams.some(team => futureRelatedTeams.has(team)) && (
+    <span className="future-related-match-banner">
+      Future Partners Or Opponents
+    </span>
+  )}
+</div>
 
     <span>
       {matchTime
