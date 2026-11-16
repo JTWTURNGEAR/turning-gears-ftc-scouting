@@ -5269,6 +5269,39 @@ function Field({label, children}: {
 }
 
 
+function Empty({text}: {text: string}) {
+  return <div className="empty">{text}</div>;
+}
+
+function RatingPill({value}: {value: number | null}) {
+  return (
+    <span className="rating-pill">
+      {value === null
+        ? "—"
+        : Number.isInteger(value)
+        ? value
+        : value.toFixed(1)}
+    </span>
+  );
+}
+
+function NavItem({active, icon, label, onClick}: {
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={active ? "nav-item active" : "nav-item"}
+      onClick={onClick}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
+
 function Rating({label, value, onChange}: {
   label: string; value: number; onChange: (v: number) => void
 }) {
