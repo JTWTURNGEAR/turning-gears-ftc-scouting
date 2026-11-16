@@ -5323,34 +5323,36 @@ function NavItem({active, icon, label, onClick}: {
 function Rating({label, value, onChange}: {
   label: string; value: number; onChange: (v: number) => void
 }) {
-  const guides: Record<number, string> = {
-    1: label === "Autonomous"
+ const normalizedLabel = label.toLowerCase().trim();
+
+const guides: Record<number, string> = {
+    1: normalizedLabel.includes("autonomous")
       ? "No autonomous activity"
-      : label === "Shooting Accuracy"
+      : normalizedLabel.includes("shooting accuracy")
       ? "Almost never scores shots"
-      : label === "Shooting Speed"
+      : normalizedLabel.includes("shooting speed")
       ? "Very slow; struggles to get shots off"
-      : label === "Driving Speed"
+      : normalizedLabel.includes("driving speed")
       ? "Very slow movement around the field"
       : "Struggles to drive, collect balls, or complete cycles efficiently",
 
-    3: label === "Autonomous"
+    3: normalizedLabel.includes("autonomous")
       ? "Can shoot, but is unreliable and does not collect additional balls"
-      : label === "Shooting Accuracy"
+      : normalizedLabel.includes("shooting accuracy")
       ? "Scores some shots, but misses frequently"
-      : label === "Shooting Speed"
+      : normalizedLabel.includes("shooting speed")
       ? "Shoots at a moderate pace, with noticeable delays"
-      : label === "Driving Speed"
+      : normalizedLabel.includes("driving speed")
       ? "Moves around the field at an average pace"
       : "Completes cycles, but routes or positioning are inefficient",
 
-    5: label === "Autonomous"
+    5: normalizedLabel.includes("autonomous")
       ? "Can shoot, collect more balls, shoot again, and park"
-      : label === "Shooting Accuracy"
+      : normalizedLabel.includes("shooting accuracy")
       ? "Consistently scores nearly every shot"
-      : label === "Shooting Speed"
+      : normalizedLabel.includes("shooting speed")
       ? "Shoots quickly with minimal delays"
-      : label === "Driving Speed"
+      : normalizedLabel.includes("driving speed")
       ? "Moves quickly and efficiently"
       : "Drives smoothly, follows efficient routes, collects quickly, and returns to shoot with minimal wasted movement"
   };
