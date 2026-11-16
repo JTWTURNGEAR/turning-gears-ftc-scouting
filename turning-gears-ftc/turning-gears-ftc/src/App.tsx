@@ -5268,9 +5268,42 @@ function Field({label, children}: {
   return <label className="field"><span>{label}</span>{children}</label>;
 }
 
+
 function Rating({label, value, onChange}: {
   label: string; value: number; onChange: (v: number) => void
 }) {
+  const guides: Record<number, string> = {
+    1: label === "Autonomous"
+      ? "No autonomous activity"
+      : label === "Shooting Accuracy"
+      ? "Almost never scores shots"
+      : label === "Shooting Speed"
+      ? "Very slow; struggles to get shots off"
+      : label === "Driving Speed"
+      ? "Very slow movement around the field"
+      : "Struggles to drive, collect balls, or complete cycles efficiently",
+
+    3: label === "Autonomous"
+      ? "Can shoot, but is unreliable and does not collect additional balls"
+      : label === "Shooting Accuracy"
+      ? "Scores some shots, but misses frequently"
+      : label === "Shooting Speed"
+      ? "Shoots at a moderate pace, with noticeable delays"
+      : label === "Driving Speed"
+      ? "Moves around the field at an average pace"
+      : "Completes cycles, but routes or positioning are inefficient",
+
+    5: label === "Autonomous"
+      ? "Can shoot, collect more balls, shoot again, and park"
+      : label === "Shooting Accuracy"
+      ? "Consistently scores nearly every shot"
+      : label === "Shooting Speed"
+      ? "Shoots quickly with minimal delays"
+      : label === "Driving Speed"
+      ? "Moves quickly and efficiently"
+      : "Drives smoothly, follows efficient routes, collects quickly, and returns to shoot with minimal wasted movement"
+  };
+
   return <div className="rating">
     <span>{label}</span>
     <div className="rating-buttons">
@@ -5279,22 +5312,12 @@ function Rating({label, value, onChange}: {
           onClick={() => onChange(n)}>{n}</button>
       )}
     </div>
+    <div className="rating-guide">
+      {[1, 3, 5].map(n => (
+        <div key={n}>
+          <b>{n}:</b> {guides[n]}
+        </div>
+      ))}
+    </div>
   </div>;
-}
-
-function RatingPill({value}: {value: number | null}) {
-  return <span className="rating-pill">
-    {value === null ? "—" : Number.isInteger(value) ? value : value.toFixed(1)}
-  </span>;
-}
-
-function Empty({text}: {text: string}) {
-  return <div className="empty">{text}</div>;
-}
-
-function NavItem({active, icon, label, onClick}: {
-  active: boolean; icon: React.ReactNode; label: string; onClick: () => void
-}) {
-  return <button className={active ? "nav-item active" : "nav-item"}
-    onClick={onClick}>{icon}<span>{label}</span></button>;
 }
