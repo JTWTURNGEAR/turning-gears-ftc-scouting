@@ -232,6 +232,7 @@ const [editingScoutName, setEditingScoutName] = useState("");
   "Both" | "Match Records" | "General Notes"
 >("Both");
   const [selectedScoutGroups, setSelectedScoutGroups] = useState<ScoutGroup[]>([]);
+const [selectedScoutsFilter, setSelectedScoutsFilter] = useState<string[]>([]);
 const [recordMatchFilter, setRecordMatchFilter] = useState("");
 const [recordAllianceFilter, setRecordAllianceFilter] = useState("All");
   const [recordSort, setRecordSort] = useState("match");
@@ -1848,8 +1849,12 @@ const teamSummaries = useMemo(() => {
   )
 );
   const analysisRecords = filteredRecords.filter(r =>
-    !r.played_defense || !excludedDefenseTeams.includes(r.team_number)
-  );
+  (!r.played_defense || !excludedDefenseTeams.includes(r.team_number)) &&
+  (
+    selectedScoutsFilter.length === 0 ||
+    selectedScoutsFilter.includes(r.scout_name)
+  )
+);
   const grouped = new Map<number, RecordRow[]>();
 
  analysisRecords.forEach(r => {
@@ -1892,7 +1897,7 @@ parkedAutoPercent: rows.length > 0
   ? (rows.filter(r => r.parked_in_autonomous).length / rows.length) * 100
   : 0
     }));
-}, [records, selectedScoutGroups, excludedDefenseTeams, activeEventId]);
+}, [records, selectedScoutGroups, selectedScoutsFilter, excludedDefenseTeams, activeEventId]);
 const sortedTeamSummaries = useMemo(() => {
   return [...teamSummaries].sort((a, b) => {
     if (teamSort === "team-high") {
@@ -1922,6 +1927,10 @@ const selectedTeamRecords = records
       selectedScoutGroups.length === 0 ||
       (r.scout_group !== null &&
         selectedScoutGroups.includes(r.scout_group))
+    ) &&
+    (
+      selectedScoutsFilter.length === 0 ||
+      selectedScoutsFilter.includes(r.scout_name)
     )
   )
   .sort((a, b) => a.match_number - b.match_number);
@@ -2104,17 +2113,47 @@ const filteredRecords = useMemo(() => {
 
  
 const filtered = combined.filter(item => {
-      if (item.record.event_id !== activeEventId) return false;
-    const scoutGroup = item.record.scout_group;
+  if (item.record.event_id !== activeEventId) return false;
 
-    const matchesGroup =
-      selectedScoutGroups.length === 0 ||
-      (scoutGroup !== null &&
-        selectedScoutGroups.includes(scoutGroup));
+  const scoutGroup = item.record.scout_group;
 
-    if (!matchesGroup) return false;
+  const matchesGroup =
+    selectedScoutGroups.length === 0 ||
+    (scoutGroup !== null &&
+      selectedScoutGroups.includes(scoutGroup));
 
-    if (item.submissionType === "note") {
+  if (!matchesGroup) return false;
+
+  const matchesScout =
+    selectedScoutsFilter.length === 0 ||
+    selectedScoutsFilter.includes(item.record.scout_name);
+
+  if (!matchesScout) return false;
+
+  if (item.submissionType === "note") {
+    const n = item.record;
+
+    return (
+      !search ||
+      String(n.team_number).includes(search) ||
+      n.scout_name.toLowerCase().includes(search) ||
+      n.notes.toLowerCase().includes(search)
+    );
+  }
+
+  const r = item.record;
+
+  return (
+    (!search ||
+      String(r.team_number).includes(search) ||
+      r.scout_name.toLowerCase().includes(search) ||
+      (r.notes || "").toLowerCase().includes(search)) &&
+    (!recordMatchFilter ||
+      String(r.match_number) === recordMatchFilter) &&
+    (recordAllianceFilter === "All" ||
+      r.alliance === recordAllianceFilter)
+  );
+});
       const n = item.record;
 
       return (
@@ -2180,7 +2219,8 @@ const filtered = combined.filter(item => {
   recordAllianceFilter,
   recordSort,
   recordTypeFilter,
-   selectedScoutGroups,
+    selectedScoutGroups,
+  selectedScoutsFilter,
   activeEventId
 ]);
 
@@ -4447,11 +4487,35 @@ onClick={async () => {
             {group}
           </label>
         ))}
+         </div>
+  </div>
+
+  {isCoordinator && (
+    <div className="filter-group">
+      <strong>Filter by individual scout</strong>
+      <div className="checkbox-list">
+        {scouts.map(scout => (
+          <label className="check-field" key={scout.id}>
+            <input
+              type="checkbox"
+              checked={selectedScoutsFilter.includes(scout.name)}
+              onChange={e =>
+                setSelectedScoutsFilter(current =>
+                  e.target.checked
+                    ? [...current, scout.name]
+                    : current.filter(name => name !== scout.name)
+                )
+              }
+            />
+            {scout.name}
+          </label>
+        ))}
       </div>
     </div>
+  )}
 
-    <select
-       multiple
+  <select
+     multiple
       className="sort-select"
 
       value={recordSort}
@@ -4472,6 +4536,7 @@ onClick={async () => {
         setRecordSort("match");
         setRecordTypeFilter("Both");
         setSelectedScoutGroups([]);
+        setSelectedScoutsFilter([]);
       }}
     >
       <RefreshCw size={15} /> Reset filters
@@ -4795,13 +4860,17 @@ onClick={async () => {
     <h3 className="section-title">General Notes</h3>
 
     {generalNotes
-      .filter(n =>
-        n.team_number === selectedTeamNumber &&
-        (
-          selectedScoutGroups.length === 0 ||
-          selectedScoutGroups.includes(n.scout_group)
-        )
-      )
+   .filter(n =>
+  n.team_number === selectedTeamNumber &&
+  (
+    selectedScoutGroups.length === 0 ||
+    selectedScoutGroups.includes(n.scout_group)
+  ) &&
+  (
+    selectedScoutsFilter.length === 0 ||
+    selectedScoutsFilter.includes(n.scout_name)
+  )
+)
       .sort((a, b) =>
         new Date(b.created_at).getTime() -
         new Date(a.created_at).getTime()
@@ -4823,13 +4892,19 @@ onClick={async () => {
         </div>
       ))}
 
-    {generalNotes.filter(n =>
-      n.team_number === selectedTeamNumber &&
-      (
-        selectedScoutGroups.length === 0 ||
-        selectedScoutGroups.includes(n.scout_group)
-      )
-    ).length === 0 && (
+    {generalNotes
+    .filter(n =>
+  n.team_number === selectedTeamNumber &&
+  (
+    selectedScoutGroups.length === 0 ||
+    selectedScoutGroups.includes(n.scout_group)
+  ) &&
+  (
+    selectedScoutsFilter.length === 0 ||
+    selectedScoutsFilter.includes(n.scout_name)
+  )
+)
+      .length === 0 && (
       <p className="muted">No general notes found for this team.</p>
     )}
   </section>
