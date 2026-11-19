@@ -4486,14 +4486,24 @@ onClick={async () => {
           <label className="check-field" key={scout.id}>
             <input
               type="checkbox"
-              checked={selectedScoutsFilter.includes(scout.name)}
-              onChange={e =>
-                setSelectedScoutsFilter(current =>
-                  e.target.checked
-                    ? [...current, scout.name]
-                    : current.filter(name => name !== scout.name)
-                )
-              }
+             checked={
+  selectedScoutsFilter.length === 0 ||
+  selectedScoutsFilter.includes(scout.name)
+}
+onChange={e =>
+  setSelectedScoutsFilter(current => {
+    const allScoutNames = scouts.map(s => s.name);
+
+    const currentSelection =
+      current.length === 0 ? allScoutNames : current;
+
+    return e.target.checked
+      ? [...currentSelection, scout.name].filter(
+          (name, index, arr) => arr.indexOf(name) === index
+        )
+      : currentSelection.filter(name => name !== scout.name);
+  })
+}
             />
             {scout.name}
           </label>
@@ -4946,14 +4956,24 @@ onClick={async () => {
           <label className="check-field" key={scout.id}>
             <input
               type="checkbox"
-              checked={selectedScoutsFilter.includes(scout.name)}
-              onChange={e =>
-                setSelectedScoutsFilter(current =>
-                  e.target.checked
-                    ? [...current, scout.name]
-                    : current.filter(name => name !== scout.name)
-                )
-              }
+             checked={
+  selectedScoutsFilter.length === 0 ||
+  selectedScoutsFilter.includes(scout.name)
+}
+onChange={e =>
+  setSelectedScoutsFilter(current => {
+    const allScoutNames = scouts.map(s => s.name);
+
+    const currentSelection =
+      current.length === 0 ? allScoutNames : current;
+
+    return e.target.checked
+      ? [...currentSelection, scout.name].filter(
+          (name, index, arr) => arr.indexOf(name) === index
+        )
+      : currentSelection.filter(name => name !== scout.name);
+  })
+}
             />
             {scout.name}
           </label>
@@ -5287,14 +5307,24 @@ onClick={async () => {
           <label className="check-field" key={scout.id}>
             <input
               type="checkbox"
-              checked={selectedScoutsFilter.includes(scout.name)}
-              onChange={e =>
-                setSelectedScoutsFilter(current =>
-                  e.target.checked
-                    ? [...current, scout.name]
-                    : current.filter(name => name !== scout.name)
-                )
-              }
+             checked={
+  selectedScoutsFilter.length === 0 ||
+  selectedScoutsFilter.includes(scout.name)
+}
+onChange={e =>
+  setSelectedScoutsFilter(current => {
+    const allScoutNames = scouts.map(s => s.name);
+
+    const currentSelection =
+      current.length === 0 ? allScoutNames : current;
+
+    return e.target.checked
+      ? [...currentSelection, scout.name].filter(
+          (name, index, arr) => arr.indexOf(name) === index
+        )
+      : currentSelection.filter(name => name !== scout.name);
+  })
+}
             />
             {scout.name}
           </label>
