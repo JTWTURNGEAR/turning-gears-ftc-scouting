@@ -2154,29 +2154,6 @@ const filtered = combined.filter(item => {
       r.alliance === recordAllianceFilter)
   );
 });
-      const n = item.record;
-
-      return (
-        !search ||
-        String(n.team_number).includes(search) ||
-        n.scout_name.toLowerCase().includes(search) ||
-        n.notes.toLowerCase().includes(search)
-      );
-    }
-
-    const r = item.record;
-
-    return (
-      (!search ||
-        String(r.team_number).includes(search) ||
-        r.scout_name.toLowerCase().includes(search) ||
-        (r.notes || "").toLowerCase().includes(search)) &&
-      (!recordMatchFilter ||
-        String(r.match_number) === recordMatchFilter) &&
-      (recordAllianceFilter === "All" ||
-        r.alliance === recordAllianceFilter)
-    );
-  });
 
   return [...filtered].sort((a, b) => {
     if (recordSort === "team-low") {
