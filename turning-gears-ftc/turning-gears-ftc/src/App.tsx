@@ -4928,7 +4928,40 @@ onClick={async () => {
       ))}
     </div>
   </div>
+{isCoordinator && (
+  <div className="filter-group">
+    <button
+      type="button"
+      className="secondary full"
+      onClick={() => setScoutFilterCollapsed(current => !current)}
+    >
+      {scoutFilterCollapsed
+        ? `Filter by individual scout ${selectedScoutsFilter.length > 0 ? `(${selectedScoutsFilter.length} selected)` : ""} ▾`
+        : "Hide individual scout filter ▴"}
+    </button>
 
+    {!scoutFilterCollapsed && (
+      <div className="checkbox-list">
+        {scouts.map(scout => (
+          <label className="check-field" key={scout.id}>
+            <input
+              type="checkbox"
+              checked={selectedScoutsFilter.includes(scout.name)}
+              onChange={e =>
+                setSelectedScoutsFilter(current =>
+                  e.target.checked
+                    ? [...current, scout.name]
+                    : current.filter(name => name !== scout.name)
+                )
+              }
+            />
+            {scout.name}
+          </label>
+        ))}
+      </div>
+    )}
+  </div>
+)}
   <div className="compare-team-filter">
   <span>Show teams:</span>
   <button
